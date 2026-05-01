@@ -122,3 +122,18 @@ export interface ProductDetailPageData {
   relatedProducts: Product[];
   accessories: Product[];
 }
+
+export interface SearchCatalogProduct {
+  id: string;
+  slug: string;
+  title: string;
+  sku: string;
+  itemNumber: string;
+  manufacturer: string;
+  mpn: string;
+  shortSpec: string;
+  price: string;
+  uom: string;
+  thumbnail?: string;
+  availability: string;
+}

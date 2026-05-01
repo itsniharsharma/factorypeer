@@ -3,26 +3,36 @@ import { SearchBar } from "@/components/ui/search-bar";
 
 export function MainHeader() {
   return (
-    <header className="border-b border-line bg-white">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-[220px_1fr_260px] items-center gap-4 px-4 py-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Procurement Suite
-          </p>
-          <p className="text-2xl font-extrabold tracking-tight text-brand">FACTORYPEER</p>
+    <header className="border-b border-slate-700 bg-slate-950">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-3 py-2.5">
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              Industrial Supply
+            </p>
+            <p className="text-base font-extrabold tracking-tight text-white">FACTORYPEER</p>
+          </div>
+          <nav className="hidden gap-6 text-xs font-semibold text-slate-300 lg:flex">
+            <a href="#" className="hover:text-white">Catalog</a>
+            <a href="#" className="hover:text-white">KeepStock</a>
+            <a href="#" className="hover:text-white">Help</a>
+            <a href="#" className="hover:text-white">1-800-SUPPLY</a>
+          </nav>
         </div>
 
-        <SearchBar />
+        <div className="flex-1 max-w-xl">
+          <SearchBar />
+        </div>
 
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="secondary" size="sm">
-            Account
+        <div className="flex items-center gap-1.5">
+          <Button variant="secondary" size="sm" className="hidden text-xs text-slate-300 sm:flex">
+            Register
           </Button>
-          <Button variant="secondary" size="sm">
-            Orders
+          <Button variant="primary" size="sm" className="text-xs font-bold">
+            Sign In
           </Button>
-          <Button variant="primary" size="sm">
-            Cart (08)
+          <Button variant="secondary" size="sm" className="text-xs">
+            Cart
           </Button>
         </div>
       </div>

@@ -74,25 +74,27 @@ export function ProductDetailTemplate({ data }: ProductDetailTemplateProps) {
         </div>
       </section>
 
-      <SpecTable title="Technical Specifications" rows={data.specificationRows} />
+      <div className="border border-line bg-white p-2.5">
+        <SpecTable title="Technical Specifications" rows={data.specificationRows} />
+      </div>
 
-      <section className="grid gap-3 lg:grid-cols-2">
-        <article className="border border-line bg-white p-3">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">
-            Product Description
+      <section className="grid gap-2 lg:grid-cols-2">
+        <article className="border border-line bg-white p-2.5">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
+            Description
           </h2>
-          <p className="mt-2 text-xs text-slate-700">{data.description}</p>
+          <p className="mt-1.5 text-[11px] leading-snug text-slate-700">{data.description}</p>
         </article>
 
-        <article className="border border-line bg-white p-3">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">
-            Documents and Datasheets
+        <article className="border border-line bg-white p-2.5">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
+            Documents
           </h2>
-          <ul className="mt-2 space-y-1.5">
+          <ul className="mt-1.5 space-y-0.5">
             {data.documents.map((document) => (
               <li key={document.id}>
-                <a href="#" className="text-xs font-semibold text-brand hover:underline">
-                  {document.name} ({document.type})
+                <a href="#" className="text-[11px] font-semibold text-brand hover:underline">
+                  {document.name} <span className="text-slate-500">({document.type})</span>
                 </a>
               </li>
             ))}
@@ -100,38 +102,38 @@ export function ProductDetailTemplate({ data }: ProductDetailTemplateProps) {
         </article>
       </section>
 
-      <section className="border border-line bg-white p-3">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">
-          Related Products
+      <section className="border border-line bg-slate-50 p-2.5">
+        <h2 className="mb-1.5 text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
+          Alternative Options
         </h2>
-        <div className="grid gap-2 md:grid-cols-3">
+        <div className="grid gap-1.5 md:grid-cols-3">
           {data.relatedProducts.map((product) => (
-            <article key={product.id} className="border border-line bg-slate-50 p-2">
-              <p className="text-xs font-semibold text-slate-900">{product.title}</p>
-              <p className="mt-1 text-[11px] text-slate-600">
+            <article key={product.id} className="border border-line bg-white p-1.5">
+              <p className="text-[11px] font-semibold text-slate-900">{product.title}</p>
+              <p className="mt-0.5 text-[10px] text-slate-600">
                 Item #: {product.itemNumber ?? product.sku}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-900">
-                {product.price} / {product.uom}
+                {product.price} <span className="text-[10px] font-medium text-slate-600">/ {product.uom}</span>
               </p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="border border-line bg-white p-3">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-700">
-          Frequently Bought Together / Accessories
+      <section className="border border-line bg-white p-2.5">
+        <h2 className="mb-1.5 text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
+          Compatible Accessories
         </h2>
-        <div className="grid gap-2 md:grid-cols-2">
+        <div className="grid gap-1.5 md:grid-cols-2">
           {data.accessories.map((product) => (
-            <article key={product.id} className="border border-line bg-slate-50 p-2">
-              <p className="text-xs font-semibold text-slate-900">{product.title}</p>
-              <p className="mt-1 text-[11px] text-slate-600">
+            <article key={product.id} className="border border-line bg-slate-50 p-1.5">
+              <p className="text-[11px] font-semibold text-slate-900">{product.title}</p>
+              <p className="mt-0.5 text-[10px] text-slate-600">
                 Item #: {product.itemNumber ?? product.sku}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-900">
-                {product.price} / {product.uom}
+                {product.price} <span className="text-[10px] font-medium text-slate-600">/ {product.uom}</span>
               </p>
             </article>
           ))}

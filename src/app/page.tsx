@@ -15,7 +15,7 @@ import {
 export default function Home() {
   return (
     <AppShell>
-      <section className="space-y-2">
+      <section className="space-y-3">
         <PromoBannerRow banners={homepagePromoBanners} />
         <FeaturedProductsRow products={homepageFeaturedProducts} />
         <CategoryTileGrid tiles={homepageCategoryTiles} />

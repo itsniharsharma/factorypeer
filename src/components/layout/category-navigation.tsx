@@ -4,8 +4,6 @@ import { useRef, useState } from "react";
 import {
   megaMenuCategoryColumns,
   megaMenuUtilityLinks,
-  navQuickLinks,
-  topCategories,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -31,16 +29,16 @@ export function CategoryNavigation() {
   };
 
   return (
-    <nav className="relative border-b border-line bg-slate-100">
-      <div className="mx-auto grid h-10 max-w-[1440px] grid-cols-[112px_1fr_auto] items-center gap-2 px-3">
-        <div className="relative" onMouseEnter={handleOpen} onMouseLeave={handleClose}>
+    <nav className="relative border-b border-slate-400 bg-slate-800">
+      <div className="mx-auto grid h-10 max-w-[1440px] grid-cols-[136px_1fr] items-center gap-2 px-3">
+        <div className="relative" onMouseLeave={handleClose}>
           <button
             type="button"
             aria-expanded={isOpen}
-            onClick={() => setIsOpen((prev) => !prev)}
+            onMouseEnter={handleOpen}
             className={cn(
-              "flex h-10 w-full items-center justify-center gap-1 text-xs font-bold",
-              isOpen ? "bg-white text-slate-900" : "bg-slate-800 text-white",
+              "inline-flex h-10 w-fit items-center justify-start gap-1 px-0 text-xs font-bold whitespace-nowrap",
+               isOpen ? "bg-white text-slate-900" : "bg-slate-800 text-slate-100",
             )}
           >
             All Products
@@ -55,7 +53,6 @@ export function CategoryNavigation() {
               isOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0",
             )}
             onMouseEnter={handleOpen}
-            onMouseLeave={handleClose}
           >
             <section
               className={cn(
@@ -101,25 +98,7 @@ export function CategoryNavigation() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 overflow-x-auto">
-          {topCategories.map((category) => (
-            <a
-              key={category}
-              href="#"
-              className="whitespace-nowrap text-[11px] font-semibold text-slate-700 hover:text-brand"
-            >
-              {category}
-            </a>
-          ))}
-        </div>
-
-        <div className="hidden items-center gap-4 md:flex">
-          {navQuickLinks.map((item) => (
-            <a key={item} href="#" className="text-xs font-semibold text-slate-800 hover:text-brand">
-              {item}
-            </a>
-          ))}
-        </div>
+        <div />
       </div>
 
     </nav>

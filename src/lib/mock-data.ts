@@ -265,19 +265,19 @@ export const homepagePromoBanners: PromoBanner[] = [
     id: "home-banner-1",
     title: "Electrical Essentials",
     subtitle: "Switchgear and motor control inventory",
-    image: "/images/banner-electrical.svg",
+    image: "/images/landing-top-1.jpg",
   },
   {
     id: "home-banner-2",
     title: "Plant Safety Readiness",
     subtitle: "PPE and compliance products in stock",
-    image: "/images/banner-safety.svg",
+    image: "/images/landing-top-2.jpg",
   },
   {
     id: "home-banner-3",
     title: "Fastener Bulk Supply",
     subtitle: "High-volume hardware replenishment",
-    image: "/images/banner-fasteners.svg",
+    image: "/images/landing-top-3.jpg",
   },
 ];
 

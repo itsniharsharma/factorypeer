@@ -2,6 +2,7 @@ import {
   CatalogCategoryPageData,
   ProductDetailPageData,
   ProductListingPageData,
+  SearchCatalogProduct,
 } from "@/lib/types";
 
 export const catalogCategoryPages: CatalogCategoryPageData[] = [
@@ -336,7 +337,115 @@ export const productDetailPages: ProductDetailPageData[] = [
       },
     ],
   },
+  {
+    slug: "siemens-3vl1712-breaker",
+    title: "Siemens Sentron Circuit Breaker 3VL 3-Pole 125A",
+    brand: "Factorypeer",
+    sku: "3VL1712",
+    itemNumber: "21S330",
+    manufacturerModel: "Siemens 3VL1712",
+    availability: "Limited Stock",
+    leadTime: "2-3 business days",
+    price: "$345.50",
+    uom: "Each",
+    images: ["/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg"],
+    description:
+      "Industrial molded case breaker for feeder and distribution protection in electrical control assemblies.",
+    specificationRows: [
+      { label: "Voltage Rating", value: "600V AC" },
+      { label: "Current Rating", value: "125A" },
+      { label: "Poles", value: "3-Pole" },
+      { label: "Interrupt Rating", value: "18kAIC" },
+      { label: "Trip Type", value: "Adjustable Thermal Magnetic" },
+      { label: "Mounting", value: "Panel Mount" },
+      { label: "Standards", value: "UL 489, IEC 60947-2" },
+      { label: "Weight", value: "3.6 lb" },
+    ],
+    documents: [
+      { id: "doc-s1", name: "Technical Data Sheet", type: "PDF" },
+      { id: "doc-s2", name: "Wiring Diagram", type: "PDF" },
+    ],
+    relatedProducts: [],
+    accessories: [],
+  },
+  {
+    slug: "schneider-hja36080-breaker",
+    title: "Schneider PowerPact H-Frame Breaker 3-Pole 80A",
+    brand: "Factorypeer",
+    sku: "HJA36080",
+    itemNumber: "33H981",
+    manufacturerModel: "Schneider HJA36080",
+    availability: "In Stock",
+    leadTime: "Ships same day",
+    price: "$318.75",
+    uom: "Each",
+    images: ["/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg"],
+    description:
+      "PowerPact molded case breaker for industrial switchboards and machinery branch circuit protection.",
+    specificationRows: [
+      { label: "Voltage Rating", value: "600V AC" },
+      { label: "Current Rating", value: "80A" },
+      { label: "Poles", value: "3-Pole" },
+      { label: "Interrupt Rating", value: "25kAIC" },
+      { label: "Trip Type", value: "Thermal Magnetic" },
+      { label: "Mounting", value: "Bolt-On" },
+      { label: "Standards", value: "UL 489, CSA" },
+      { label: "Weight", value: "3.4 lb" },
+    ],
+    documents: [
+      { id: "doc-p1", name: "Specification Sheet", type: "PDF" },
+      { id: "doc-p2", name: "Installation Guide", type: "PDF" },
+    ],
+    relatedProducts: [],
+    accessories: [],
+  },
+  {
+    slug: "square-d-qo230-breaker",
+    title: "Square D QO Miniature Breaker 2-Pole 30A",
+    brand: "Factorypeer",
+    sku: "QO230",
+    itemNumber: "65Q209",
+    manufacturerModel: "Square D QO230",
+    availability: "In Stock",
+    leadTime: "Ships same day",
+    price: "$29.95",
+    uom: "Each",
+    images: ["/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg", "/images/product-thumb.svg"],
+    description:
+      "Miniature branch circuit breaker for panelboard protection in commercial and light industrial systems.",
+    specificationRows: [
+      { label: "Voltage Rating", value: "120/240V AC" },
+      { label: "Current Rating", value: "30A" },
+      { label: "Poles", value: "2-Pole" },
+      { label: "Interrupt Rating", value: "10kAIC" },
+      { label: "Trip Type", value: "Thermal Magnetic" },
+      { label: "Mounting", value: "Plug-On" },
+      { label: "Standards", value: "UL 489" },
+      { label: "Weight", value: "0.5 lb" },
+    ],
+    documents: [
+      { id: "doc-q1", name: "Product Bulletin", type: "PDF" },
+      { id: "doc-q2", name: "Safety Instructions", type: "PDF" },
+    ],
+    relatedProducts: [],
+    accessories: [],
+  },
 ];
+
+export const searchCatalogProducts: SearchCatalogProduct[] = productDetailPages.map((product) => ({
+  id: product.slug,
+  slug: product.slug,
+  title: product.title,
+  sku: product.sku,
+  itemNumber: product.itemNumber,
+  manufacturer: product.manufacturerModel.split(" ")[0] ?? "Industrial",
+  mpn: product.manufacturerModel,
+  shortSpec: product.specificationRows.slice(0, 2).map((row) => `${row.label}: ${row.value}`).join(", "),
+  price: product.price,
+  uom: product.uom,
+  thumbnail: product.images[0],
+  availability: product.availability,
+}));
 
 export function getCatalogCategoryBySlug(slug: string) {
   return catalogCategoryPages.find((page) => page.slug === slug);
@@ -348,4 +457,45 @@ export function getProductListingBySlug(slug: string) {
 
 export function getProductDetailBySlug(slug: string) {
   return productDetailPages.find((page) => page.slug === slug);
+}
+
+function normalizeSearchQuery(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function getExactCatalogProductMatch(query: string) {
+  const normalized = normalizeSearchQuery(query);
+  if (!normalized) return undefined;
+
+  return searchCatalogProducts.find((product) => {
+    return (
+      product.sku.toLowerCase() === normalized ||
+      product.itemNumber.toLowerCase() === normalized ||
+      product.mpn.toLowerCase() === normalized
+    );
+  });
+}
+
+export function searchCatalogProductsByQuery(query: string) {
+  const normalized = normalizeSearchQuery(query);
+  if (!normalized) return [];
+
+  return searchCatalogProducts.filter((product) => {
+    const haystack = [
+      product.title,
+      product.sku,
+      product.itemNumber,
+      product.manufacturer,
+      product.mpn,
+      product.shortSpec,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(normalized);
+  });
+}
+
+export function getSearchSuggestions(query: string) {
+  return searchCatalogProductsByQuery(query).slice(0, 6);
 }
