@@ -23,22 +23,22 @@ export function CategoryTileGrid({ tiles }: CategoryTileGridProps) {
           </a>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
         {tiles.map((tile) => (
           <article
             key={tile.id}
-            className="flex min-h-[168px] flex-col items-center justify-start border-r border-b border-slate-300 bg-white px-2 py-3 text-center last:border-r-0"
+            className="flex min-h-[192px] flex-col items-center justify-start border-r border-b border-slate-300 bg-white px-3 py-4 text-center last:border-r-0"
           >
-            <div className="relative h-[92px] w-full overflow-hidden bg-white">
+            <div className="relative h-[110px] w-full overflow-hidden bg-white">
               <Image
                 src={tile.image}
                 alt={tile.label}
                 fill
                 className="object-contain object-center"
-                sizes="(max-width: 1024px) 50vw, 14vw"
+                sizes="(max-width: 1280px) 20vw, 14vw"
               />
             </div>
-            <p className="mt-3 max-w-[120px] text-[14px] leading-tight text-slate-900">
+            <p className="mt-4 max-w-[132px] text-[14px] leading-tight text-slate-900">
               {tile.label}
             </p>
           </article>

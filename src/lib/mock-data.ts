@@ -294,6 +294,15 @@ export const homepageCategoryTiles: CategoryTile[] = [
   { id: "tile-10", label: "Tools", image: "/images/category-tile.svg" },
   { id: "tile-11", label: "Facility Maintenance", image: "/images/category-tile.svg" },
   { id: "tile-12", label: "Welding", image: "/images/category-tile.svg" },
+  { id: "tile-13", label: "Bearings", image: "/images/category-tile.svg" },
+  { id: "tile-14", label: "Belts & Chains", image: "/images/category-tile.svg" },
+  { id: "tile-15", label: "Motors", image: "/images/category-tile.svg" },
+  { id: "tile-16", label: "Valves", image: "/images/category-tile.svg" },
+  { id: "tile-17", label: "Sensors", image: "/images/category-tile.svg" },
+  { id: "tile-18", label: "Controls", image: "/images/category-tile.svg" },
+  { id: "tile-19", label: "Lubrication", image: "/images/category-tile.svg" },
+  { id: "tile-20", label: "Safety Signs", image: "/images/category-tile.svg" },
+  { id: "tile-21", label: "Cleaning Supplies", image: "/images/category-tile.svg" },
 ];
 
 export const homepageFeaturedProducts: Product[] = [
