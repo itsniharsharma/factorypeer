@@ -1,7 +1,9 @@
 /** Server-only catalog API fetch (direct to catalog-admin-api; same DB as admin UI proxy). */
 
+import { getCatalogAdminApiBaseUrl } from "@/config/catalog-env";
+
 function catalogUpstreamBase(): string {
-  return (process.env["CATALOG_ADMIN_API_URL"] ?? "http://127.0.0.1:4040").replace(/\/$/, "");
+  return getCatalogAdminApiBaseUrl();
 }
 
 export const DEFAULT_REVALIDATE_SECONDS = 60;

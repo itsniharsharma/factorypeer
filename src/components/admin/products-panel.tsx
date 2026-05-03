@@ -22,6 +22,51 @@ import { AdminModal } from "./modal";
 
 const PAGE_SIZE = 20;
 
+function linesToList(s: string): string[] {
+  return s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+}
+
+function formatMediaForSave(raw: string): Array<{ url: string; alt?: string; sortOrder: number }> {
+  return linesToList(raw)
+    .map((line, i) => {
+      const [urlPart, altPart] = line.split("|").map((x) => x.trim());
+      if (!urlPart) return null;
+      return { url: urlPart, alt: altPart || undefined, sortOrder: i };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+}
+
+function formatAttachmentsForSave(raw: string): Array<{ title: string; url: string; docType: string }> {
+  return linesToList(raw)
+    .map((line) => {
+      const [title, url, docType] = line.split("|").map((x) => x.trim());
+      if (!url) return null;
+      return { title: title || "Document", url, docType: docType || "other" };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+}
+
+function formatIds(raw: string): string[] {
+  return raw.split(/[\s,]+/).map((x) => x.trim()).filter(Boolean);
+}
+
+function mediaToText(media?: ProductDoc["media"]) {
+  if (!media?.length) return "";
+  return [...media]
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((m) => (m.alt ? `${m.url} | ${m.alt}` : m.url))
+    .join("\n");
+}
+
+function attachmentsToText(att?: ProductDoc["attachments"]) {
+  if (!att?.length) return "";
+  return att.map((a) => [a.title, a.url, a.docType ?? "other"].join(" | ")).join("\n");
+}
+
+function idsToText(ids?: string[]) {
+  return ids?.length ? ids.join(", ") : "";
+}
+
 function flattenCategories(nodes: CategoryDoc[], out: { id: string; label: string }[] = [], prefix = ""): { id: string; label: string }[] {
   for (const n of nodes) {
     out.push({ id: n._id, label: `${prefix}${n.title} (${n.slug})` });
@@ -54,6 +99,15 @@ export function ProductsPanel() {
   const [searchText, setSearchText] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [defaultVariantId, setDefaultVariantId] = useState("");
+  const [longDescription, setLongDescription] = useState("");
+  const [featuresText, setFeaturesText] = useState("");
+  const [applicationsText, setApplicationsText] = useState("");
+  const [marketingBulletsText, setMarketingBulletsText] = useState("");
+  const [mediaLines, setMediaLines] = useState("");
+  const [attachmentLines, setAttachmentLines] = useState("");
+  const [relatedIds, setRelatedIds] = useState("");
+  const [compatibleIds, setCompatibleIds] = useState("");
+  const [recommendedIds, setRecommendedIds] = useState("");
 
   const [variantModal, setVariantModal] = useState<
     null | { mode: "create"; productId: string } | { mode: "edit"; v: ProductVariantDoc }
@@ -70,6 +124,9 @@ export function ProductsPanel() {
   const [vSpecRowId, setVSpecRowId] = useState("");
   const [vSearchBlob, setVSearchBlob] = useState("");
   const [vSortOrder, setVSortOrder] = useState("");
+  const [vLeadTime, setVLeadTime] = useState("");
+  const [vMoq, setVMoq] = useState("");
+  const [vPackaging, setVPackaging] = useState("");
 
   const [linkModal, setLinkModal] = useState<null | { variant: ProductVariantDoc }>(null);
   const [linkSpecRowId, setLinkSpecRowId] = useState("");
@@ -139,6 +196,15 @@ export function ProductsPanel() {
     setSearchText("");
     setSortOrder("");
     setDefaultVariantId("");
+    setLongDescription("");
+    setFeaturesText("");
+    setApplicationsText("");
+    setMarketingBulletsText("");
+    setMediaLines("");
+    setAttachmentLines("");
+    setRelatedIds("");
+    setCompatibleIds("");
+    setRecommendedIds("");
     setProductModal({ mode: "create" });
   }
 
@@ -151,6 +217,15 @@ export function ProductsPanel() {
     setSearchText(p.searchText ?? "");
     setSortOrder(p.sortOrder != null ? String(p.sortOrder) : "");
     setDefaultVariantId(p.defaultVariantId ?? "");
+    setLongDescription(p.longDescription ?? "");
+    setFeaturesText((p.features ?? []).join("\n"));
+    setApplicationsText((p.applications ?? []).join("\n"));
+    setMarketingBulletsText((p.marketingBullets ?? []).join("\n"));
+    setMediaLines(mediaToText(p.media));
+    setAttachmentLines(attachmentsToText(p.attachments));
+    setRelatedIds(idsToText(p.relatedProductIds));
+    setCompatibleIds(idsToText(p.compatibleProductIds));
+    setRecommendedIds(idsToText(p.recommendedProductIds));
     setProductModal({ mode: "edit", p });
   }
 
@@ -171,6 +246,14 @@ export function ProductsPanel() {
     }
     try {
       const ids = [...categoryIds];
+      const media = formatMediaForSave(mediaLines);
+      const attachments = formatAttachmentsForSave(attachmentLines);
+      const rel = formatIds(relatedIds);
+      const comp = formatIds(compatibleIds);
+      const rec = formatIds(recommendedIds);
+      const feat = linesToList(featuresText);
+      const apps = linesToList(applicationsText);
+      const bullets = linesToList(marketingBulletsText);
       if (productModal?.mode === "create") {
         await createProduct({
           slug,
@@ -180,6 +263,15 @@ export function ProductsPanel() {
           categoryIds: ids.length ? ids : undefined,
           searchText: searchText || undefined,
           sortOrder: so,
+          longDescription: longDescription.trim() || undefined,
+          features: feat.length ? feat : undefined,
+          applications: apps.length ? apps : undefined,
+          marketingBullets: bullets.length ? bullets : undefined,
+          media: media.length ? media : undefined,
+          attachments: attachments.length ? attachments : undefined,
+          relatedProductIds: rel.length ? rel : undefined,
+          compatibleProductIds: comp.length ? comp : undefined,
+          recommendedProductIds: rec.length ? rec : undefined,
         });
         toast.success("Product created");
       } else if (productModal?.mode === "edit") {
@@ -193,6 +285,15 @@ export function ProductsPanel() {
           searchText: searchText || undefined,
           sortOrder: so,
           defaultVariantId: dvid ? dvid : null,
+          longDescription: longDescription.trim() || null,
+          features: feat,
+          applications: apps,
+          marketingBullets: bullets,
+          media,
+          attachments,
+          relatedProductIds: rel,
+          compatibleProductIds: comp,
+          recommendedProductIds: rec,
         });
         toast.success("Product updated");
       }
@@ -228,6 +329,9 @@ export function ProductsPanel() {
     setVSpecRowId("");
     setVSearchBlob("");
     setVSortOrder("");
+    setVLeadTime("");
+    setVMoq("");
+    setVPackaging("");
     setVariantModal({ mode: "create", productId });
   }
 
@@ -244,6 +348,9 @@ export function ProductsPanel() {
     setVSpecRowId(v.specRowId ?? "");
     setVSearchBlob(v.searchBlob ?? "");
     setVSortOrder(v.sortOrder != null ? String(v.sortOrder) : "");
+    setVLeadTime(v.leadTime ?? "");
+    setVMoq(v.moq != null ? String(v.moq) : "");
+    setVPackaging(v.packaging ?? "");
     setVariantModal({ mode: "edit", v });
   }
 
@@ -254,6 +361,11 @@ export function ProductsPanel() {
       return;
     }
     const specRow = vSpecRowId.trim();
+    const moqParsed = vMoq.trim() ? Number.parseInt(vMoq, 10) : undefined;
+    if (vMoq.trim() && (Number.isNaN(moqParsed) || (moqParsed != null && moqParsed < 1))) {
+      toast.error("MOQ must be a positive integer or empty");
+      return;
+    }
     try {
       if (variantModal?.mode === "create") {
         await createVariant(variantModal.productId, {
@@ -265,6 +377,9 @@ export function ProductsPanel() {
           currency: vCurrency || undefined,
           availability: vAvailability || undefined,
           uom: vUom || undefined,
+          leadTime: vLeadTime || undefined,
+          moq: moqParsed != null && !Number.isNaN(moqParsed) ? moqParsed : null,
+          packaging: vPackaging || undefined,
           status: vStatus,
           specRowId: specRow ? specRow : null,
           searchBlob: vSearchBlob || undefined,
@@ -281,6 +396,9 @@ export function ProductsPanel() {
           currency: vCurrency || undefined,
           availability: vAvailability || undefined,
           uom: vUom || null,
+          leadTime: vLeadTime || null,
+          moq: moqParsed != null && !Number.isNaN(moqParsed) ? moqParsed : null,
+          packaging: vPackaging || null,
           status: vStatus,
           specRowId: specRow ? specRow : null,
           searchBlob: vSearchBlob || undefined,
@@ -618,6 +736,90 @@ export function ProductsPanel() {
               ))}
             </div>
           </div>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">Long description (PDP)</span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-sans text-xs"
+              rows={5}
+              value={longDescription}
+              onChange={(e) => setLongDescription(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">Features (one per line)</span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 text-xs"
+              rows={4}
+              value={featuresText}
+              onChange={(e) => setFeaturesText(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">Applications (one per line)</span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 text-xs"
+              rows={4}
+              value={applicationsText}
+              onChange={(e) => setApplicationsText(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">Marketing bullets (one per line)</span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 text-xs"
+              rows={3}
+              value={marketingBulletsText}
+              onChange={(e) => setMarketingBulletsText(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">
+              Media URLs (one per line; optional “|” alt text)
+            </span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+              rows={4}
+              value={mediaLines}
+              onChange={(e) => setMediaLines(e.target.value)}
+              placeholder={"https://cdn.example.com/img.webp\nhttps://... | Front angle"}
+            />
+          </label>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">
+              Attachments: title | url | docType (manual, datasheet, sds, certification, drawing, other)
+            </span>
+            <textarea
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+              rows={3}
+              value={attachmentLines}
+              onChange={(e) => setAttachmentLines(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">Related product IDs</span>
+            <input
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+              value={relatedIds}
+              onChange={(e) => setRelatedIds(e.target.value)}
+              placeholder="comma or space separated ObjectIds"
+            />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">Compatible product IDs</span>
+            <input
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+              value={compatibleIds}
+              onChange={(e) => setCompatibleIds(e.target.value)}
+            />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">Recommended product IDs</span>
+            <input
+              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+              value={recommendedIds}
+              onChange={(e) => setRecommendedIds(e.target.value)}
+            />
+          </label>
         </div>
       </AdminModal>
 
@@ -677,6 +879,29 @@ export function ProductsPanel() {
           <label className="md:col-span-1">
             <span className="text-slate-600">UOM</span>
             <input className="mt-1 w-full rounded-sm border px-2 py-1" value={vUom} onChange={(e) => setVUom(e.target.value)} />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">Lead time</span>
+            <input className="mt-1 w-full rounded-sm border px-2 py-1" value={vLeadTime} onChange={(e) => setVLeadTime(e.target.value)} placeholder="e.g. Ships in 2–3 days" />
+          </label>
+          <label className="md:col-span-1">
+            <span className="text-slate-600">MOQ</span>
+            <input
+              className="mt-1 w-full rounded-sm border px-2 py-1"
+              value={vMoq}
+              onChange={(e) => setVMoq(e.target.value)}
+              inputMode="numeric"
+              placeholder="optional integer"
+            />
+          </label>
+          <label className="md:col-span-2">
+            <span className="text-slate-600">Packaging / sell unit</span>
+            <input
+              className="mt-1 w-full rounded-sm border px-2 py-1"
+              value={vPackaging}
+              onChange={(e) => setVPackaging(e.target.value)}
+              placeholder="e.g. 1 EA, Box of 10"
+            />
           </label>
           <label className="md:col-span-1">
             <span className="text-slate-600">Spec row ID</span>

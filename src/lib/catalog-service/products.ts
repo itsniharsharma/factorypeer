@@ -6,8 +6,10 @@ import type {
   SearchCatalogProduct,
   CatalogTaxonomyNode,
   SpecRow,
+  CatalogBreadcrumb,
+  ProductAttachmentDoc,
 } from "@/lib/types";
-import { catalogServerJsonList } from "./fetch";
+import { catalogServerJson, catalogServerJsonList } from "./fetch";
 import { getTaxonomyTree } from "./taxonomy";
 import { buildSpecMatrixForCategory } from "./matrix";
 
@@ -66,7 +68,94 @@ async function specificationRowsForPublishedVariant(
   return [];
 }
 
+function breadcrumbsForProduct(
+  categoryIds: string[] | undefined,
+  tree: CatalogTaxonomyNode[],
+): CatalogBreadcrumb[] {
+  const crumbs: CatalogBreadcrumb[] = [{ label: "All products", href: "/" }];
+  const cid = categoryIds?.[0];
+  if (!cid) return crumbs;
+  const path = findCategoryPath(tree, cid);
+  if (!path?.length) return crumbs;
+  const segments: string[] = [];
+  for (const node of path) {
+    segments.push(node.slug);
+    crumbs.push({
+      label: node.title,
+      href: `/category/${segments.join("/")}`,
+    });
+  }
+  return crumbs;
+}
+
+function normalizeProductImages(product: ProductDoc): Array<{ url: string; alt: string }> {
+  const media = product.media;
+  if (!media?.length) {
+    return [{ url: PLACEHOLDER_IMG, alt: product.title }];
+  }
+  const sorted = [...media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  return sorted.map((m, i) => ({
+    url: m.url.trim(),
+    alt: m.alt?.trim() || `${product.title} — image ${i + 1}`,
+  }));
+}
+
+function normalizeAttachmentDocType(raw?: string): ProductAttachmentDoc["docType"] {
+  const allowed: ProductAttachmentDoc["docType"][] = [
+    "manual",
+    "datasheet",
+    "sds",
+    "certification",
+    "drawing",
+    "other",
+  ];
+  if (raw && (allowed as string[]).includes(raw)) return raw as ProductAttachmentDoc["docType"];
+  return "other";
+}
+
+type ProductSummaryCardDto = {
+  productId: string;
+  slug: string;
+  title: string;
+  brand?: string;
+  sku: string;
+  itemNumber?: string;
+  manufacturer?: string;
+  price: string;
+  uom: string;
+  availability: string;
+};
+
+/** Single batched API — avoids N+1 variant fetches per related SKU. */
+async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Product[]> {
+  if (!ids?.length) return [];
+  const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 48);
+  if (!unique.length) return [];
+
+  const rows = await catalogServerJson<ProductSummaryCardDto[]>(
+    `/products/summary-cards?ids=${unique.join(",")}`,
+    {
+      next: { revalidate: 60, tags: ["catalog", "pdp-summary-cards"] },
+    },
+  );
+  const list = Array.isArray(rows) ? rows : [];
+  return list.map((row) => ({
+    id: row.productId,
+    slug: row.slug,
+    title: row.title,
+    sku: row.sku,
+    itemNumber: row.itemNumber,
+    manufacturer: row.manufacturer ?? "—",
+    thumbnail: PLACEHOLDER_IMG,
+    price: row.price,
+    uom: row.uom,
+    status: mapVariantStatus(row.availability),
+    leadTime: "—",
+  }));
+}
+
 export async function getProductBySlug(slug: string): Promise<ProductDetailPageData | undefined> {
+  const tree = await getTaxonomyTree();
   const { data: list } = await catalogServerJsonList<ProductDoc[]>(
     `/products?status=published&limit=40&q=${encodeURIComponent(slug)}`,
   );
@@ -89,6 +178,33 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     product.categoryIds,
   );
 
+  const breadcrumbs = breadcrumbsForProduct(product.categoryIds, tree);
+  const images = normalizeProductImages(product);
+
+  const longDescription =
+    product.longDescription?.trim() ||
+    product.searchText?.trim() ||
+    `${product.title}. Industrial catalog item.`;
+
+  const shortDescription =
+    product.searchText?.trim() ||
+    (product.longDescription?.trim()
+      ? product.longDescription.trim().slice(0, 320)
+      : `${product.title}.`);
+
+  const attachments: ProductAttachmentDoc[] = (product.attachments ?? []).map((a, i) => ({
+    id: `att-${product._id}-${i}`,
+    title: a.title,
+    url: a.url.trim(),
+    docType: normalizeAttachmentDocType(a.docType),
+  }));
+
+  const [relatedProducts, compatibleProducts, recommendedProducts] = await Promise.all([
+    fetchOrderedProductCards(product.relatedProductIds),
+    fetchOrderedProductCards(product.compatibleProductIds),
+    fetchOrderedProductCards(product.recommendedProductIds),
+  ]);
+
   return {
     slug: product.slug,
     title: product.title,
@@ -97,15 +213,23 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     itemNumber: primary?.itemNumber ?? "—",
     manufacturerModel: primary?.mpn ?? primary?.manufacturer ?? "—",
     availability: primary?.availability ?? "—",
-    leadTime: "See availability",
+    leadTime: primary?.leadTime?.trim() || "Contact buyer services for lead time",
+    moq: primary?.moq ?? null,
+    packaging: primary?.packaging?.trim() || "—",
     price,
     uom: primary?.uom ?? "Each",
-    images: [PLACEHOLDER_IMG, PLACEHOLDER_IMG, PLACEHOLDER_IMG, PLACEHOLDER_IMG],
-    description: product.searchText?.trim() ? product.searchText : `${product.title}. Industrial catalog item.`,
+    breadcrumbs,
+    images,
+    shortDescription,
+    longDescription,
+    features: product.features ?? [],
+    applications: product.applications ?? [],
+    marketingBullets: product.marketingBullets ?? [],
     specificationRows,
-    documents: [],
-    relatedProducts: [],
-    accessories: [],
+    attachments,
+    relatedProducts,
+    compatibleProducts,
+    recommendedProducts,
   };
 }
 

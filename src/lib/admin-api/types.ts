@@ -61,6 +61,19 @@ export type SpecRowDoc = {
   sortOrder?: number;
 };
 
+export type ProductMediaItemDoc = {
+  url: string;
+  alt?: string;
+  sortOrder?: number;
+};
+
+export type ProductAttachmentRecordDoc = {
+  title: string;
+  url: string;
+  docType?: string;
+  sortOrder?: number;
+};
+
 export type ProductDoc = {
   _id: string;
   slug: string;
@@ -71,6 +84,15 @@ export type ProductDoc = {
   searchText?: string;
   sortOrder?: number;
   defaultVariantId?: string | null;
+  media?: ProductMediaItemDoc[];
+  longDescription?: string;
+  features?: string[];
+  applications?: string[];
+  marketingBullets?: string[];
+  attachments?: ProductAttachmentRecordDoc[];
+  relatedProductIds?: string[];
+  compatibleProductIds?: string[];
+  recommendedProductIds?: string[];
 };
 
 export type ProductVariantDoc = {
@@ -84,6 +106,9 @@ export type ProductVariantDoc = {
   currency?: string;
   availability?: string;
   uom?: string;
+  leadTime?: string;
+  moq?: number | null;
+  packaging?: string;
   status: PublishStatus;
   specRowId?: string | null;
   searchBlob?: string;

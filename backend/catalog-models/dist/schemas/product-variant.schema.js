@@ -19,6 +19,12 @@ const productVariantSchema = new Schema({
     currency: { type: String, default: "USD" },
     availability: { type: String, default: "" },
     uom: { type: String, trim: true },
+    /** Procurement messaging — ship/stock narrative. */
+    leadTime: { type: String, default: "", trim: true },
+    /** Minimum order quantity (units). */
+    moq: { type: Number, default: null, min: 1 },
+    /** Sell unit / pack description, e.g. "1 EA", "Box of 10". */
+    packaging: { type: String, default: "", trim: true },
     status: {
         type: String,
         enum: ["draft", "published", "archived"],
@@ -45,6 +51,8 @@ const productVariantSchema = new Schema({
 }, { timestamps: true });
 productVariantSchema.index({ tenantId: 1, sku: 1 }, { unique: true });
 productVariantSchema.index({ productId: 1, sortOrder: 1 });
+/** First published SKU per product (PDP relation batch + variant lists). */
+productVariantSchema.index({ productId: 1, status: 1, sortOrder: 1, sku: 1 });
 productVariantSchema.index({
     sku: "text",
     itemNumber: "text",

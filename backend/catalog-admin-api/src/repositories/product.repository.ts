@@ -12,6 +12,8 @@ export type ProductListFilter = {
   sort?: "title" | "-title" | "updatedAt" | "-updatedAt" | "sortOrder";
   /** Products whose categoryIds contains this id */
   categoryId?: Types.ObjectId;
+  /** Exact product ids (e.g. PDP cross-sell batch fetch). When set, full-text q is ignored. */
+  ids?: Types.ObjectId[];
 };
 
 export class ProductRepository {
@@ -43,6 +45,10 @@ export class ProductRepository {
   ): Promise<Record<string, unknown>> {
     const mongoFilter: Record<string, unknown> = { ...this.tq() };
     if (filter?.status) mongoFilter["status"] = filter.status;
+    if (filter?.ids && filter.ids.length > 0) {
+      mongoFilter["_id"] = { $in: filter.ids };
+      return mongoFilter;
+    }
     if (filter?.categoryId) mongoFilter["categoryIds"] = filter.categoryId;
     if (!filter?.q?.trim()) {
       return mongoFilter;
@@ -99,6 +105,20 @@ export class ProductRepository {
       categoryIds?: Types.ObjectId[];
       searchText?: string;
       sortOrder?: number;
+      media?: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      longDescription?: string;
+      features?: string[];
+      applications?: string[];
+      marketingBullets?: string[];
+      attachments?: Array<{
+        title: string;
+        url: string;
+        docType?: string;
+        sortOrder?: number;
+      }>;
+      relatedProductIds?: Types.ObjectId[];
+      compatibleProductIds?: Types.ObjectId[];
+      recommendedProductIds?: Types.ObjectId[];
     },
     opts?: ExecOpts,
   ) {
@@ -111,6 +131,15 @@ export class ProductRepository {
       categoryIds: data.categoryIds ?? [],
       searchText: data.searchText ?? "",
       sortOrder: data.sortOrder ?? 0,
+      media: data.media ?? [],
+      longDescription: data.longDescription ?? "",
+      features: data.features ?? [],
+      applications: data.applications ?? [],
+      marketingBullets: data.marketingBullets ?? [],
+      attachments: data.attachments ?? [],
+      relatedProductIds: data.relatedProductIds ?? [],
+      compatibleProductIds: data.compatibleProductIds ?? [],
+      recommendedProductIds: data.recommendedProductIds ?? [],
       documentVersion: 1,
       ...auditCreateFields(opts?.actorId),
     };
@@ -133,6 +162,20 @@ export class ProductRepository {
       sortOrder: number;
       defaultVariantId: Types.ObjectId | null;
       publishedAt: Date | null;
+      media: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      longDescription: string | null;
+      features: string[];
+      applications: string[];
+      marketingBullets: string[];
+      attachments: Array<{
+        title: string;
+        url: string;
+        docType?: string;
+        sortOrder?: number;
+      }>;
+      relatedProductIds: Types.ObjectId[];
+      compatibleProductIds: Types.ObjectId[];
+      recommendedProductIds: Types.ObjectId[];
     }>,
     opts?: ExecOpts,
   ) {

@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import type { PipelineStage, Types } from "mongoose";
 import type { CatalogModels } from "../db/connection.js";
 import { auditCreateFields, buildAuditedUpdate } from "../utils/audit.js";
 import { tenantMatch } from "../utils/mongo.js";
@@ -23,6 +23,35 @@ export class ProductVariantRepository {
   async findById(id: Types.ObjectId, opts?: ExecOpts) {
     const q = this.models.ProductVariant.findOne({ _id: id, ...this.tq() });
     return withSession(q, opts?.session).exec();
+  }
+
+  /**
+   * One published variant per product (lowest sortOrder, then SKU) for storefront cards.
+   */
+  async firstPublishedVariantPerProduct(
+    productIds: Types.ObjectId[],
+    opts?: ExecOpts,
+  ): Promise<Map<string, Record<string, unknown>>> {
+    const out = new Map<string, Record<string, unknown>>();
+    if (!productIds.length) return out;
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          productId: { $in: productIds },
+          status: "published",
+          ...this.tq(),
+        },
+      },
+      { $sort: { productId: 1, sortOrder: 1, sku: 1 } },
+      { $group: { _id: "$productId", v: { $first: "$$ROOT" } } },
+    ];
+    let agg = this.models.ProductVariant.aggregate(pipeline);
+    if (opts?.session) agg = agg.session(opts.session);
+    const rows = (await agg.exec()) as { _id: Types.ObjectId; v: Record<string, unknown> }[];
+    for (const row of rows) {
+      out.set(row._id.toString(), row.v);
+    }
+    return out;
   }
 
   async listByProduct(
@@ -68,6 +97,9 @@ export class ProductVariantRepository {
       currency?: string;
       availability?: string;
       uom?: string;
+      leadTime?: string;
+      moq?: number | null;
+      packaging?: string;
       status?: string;
       specRowId?: Types.ObjectId | null;
       searchBlob?: string;
@@ -86,6 +118,9 @@ export class ProductVariantRepository {
       currency: data.currency ?? "USD",
       availability: data.availability ?? "",
       uom: data.uom,
+      leadTime: data.leadTime ?? "",
+      moq: data.moq ?? null,
+      packaging: data.packaging ?? "",
       status: data.status ?? "draft",
       specRowId: data.specRowId ?? null,
       searchBlob: data.searchBlob ?? "",
@@ -111,6 +146,9 @@ export class ProductVariantRepository {
       currency: string;
       availability: string;
       uom: string | null;
+      leadTime: string | null;
+      moq: number | null;
+      packaging: string | null;
       status: string;
       specRowId: Types.ObjectId | null;
       searchBlob: string;

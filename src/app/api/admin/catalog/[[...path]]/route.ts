@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { getCatalogAdminApiBaseUrl } from "@/config/catalog-env";
 
 export const dynamic = "force-dynamic";
 
@@ -7,8 +8,7 @@ export const dynamic = "force-dynamic";
 const UPSTREAM_TIMEOUT_MS = 25_000;
 
 function upstreamBase(): string {
-  const raw = process.env["CATALOG_ADMIN_API_URL"] ?? "http://127.0.0.1:4040";
-  return raw.replace(/\/$/, "");
+  return getCatalogAdminApiBaseUrl();
 }
 
 function jsonError(

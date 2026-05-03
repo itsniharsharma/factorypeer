@@ -51,6 +51,52 @@ export class ProductService {
     return { items, total };
   }
 
+  /**
+   * Batch PDP relation cards: one product list + one aggregation for primary variants
+   * (avoids N+1 variant fetches from the storefront).
+   */
+  async summaryCardsForProductIds(ids: string[], ctx?: WriteContext) {
+    const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 48);
+    if (!unique.length) return [];
+    const oids = unique.map(toObjectId);
+    const { items } = await this.list(0, 48, { status: "published", ids: oids }, ctx);
+    const byId = new Map(items.map((p) => [p._id.toString(), p]));
+    const ordered = unique.map((id) => byId.get(id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
+    if (!ordered.length) return [];
+    const variantMap = await this.variants.firstPublishedVariantPerProduct(
+      ordered.map((p) => p._id),
+      eo(ctx),
+    );
+    return ordered.map((p) => {
+      const pid = p._id.toString();
+      const v = variantMap.get(pid) as
+        | {
+            sku?: string;
+            itemNumber?: string;
+            manufacturer?: string;
+            unitPrice?: string;
+            currency?: string;
+            uom?: string;
+            availability?: string;
+          }
+        | undefined;
+      const price =
+        v?.unitPrice && v?.currency ? `${v.unitPrice} ${v.currency}` : v?.unitPrice ?? "—";
+      return {
+        productId: pid,
+        slug: p.slug,
+        title: p.title,
+        brand: p.brand,
+        sku: v?.sku ?? "—",
+        itemNumber: v?.itemNumber,
+        manufacturer: v?.manufacturer ?? p.brand,
+        price,
+        uom: v?.uom ?? "Each",
+        availability: v?.availability ?? "—",
+      };
+    });
+  }
+
   /** Storefront: resolve a variant to its parent product (slug, title) for spec matrix links. */
   async getVariantWithProduct(variantId: string, ctx?: WriteContext) {
     const v = await this.variants.findById(toObjectId(variantId), eo(ctx));
@@ -78,6 +124,20 @@ export class ProductService {
       categoryIds?: string[];
       searchText?: string;
       sortOrder?: number;
+      media?: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      longDescription?: string;
+      features?: string[];
+      applications?: string[];
+      marketingBullets?: string[];
+      attachments?: Array<{
+        title: string;
+        url: string;
+        docType?: string;
+        sortOrder?: number;
+      }>;
+      relatedProductIds?: string[];
+      compatibleProductIds?: string[];
+      recommendedProductIds?: string[];
     },
     ctx?: WriteContext,
   ) {
@@ -95,6 +155,15 @@ export class ProductService {
           categoryIds: input.categoryIds?.map((x) => toObjectId(x)),
           searchText: input.searchText,
           sortOrder: input.sortOrder,
+          media: input.media,
+          longDescription: input.longDescription,
+          features: input.features,
+          applications: input.applications,
+          marketingBullets: input.marketingBullets,
+          attachments: input.attachments,
+          relatedProductIds: input.relatedProductIds?.map((x) => toObjectId(x)),
+          compatibleProductIds: input.compatibleProductIds?.map((x) => toObjectId(x)),
+          recommendedProductIds: input.recommendedProductIds?.map((x) => toObjectId(x)),
         },
         eo(ctx),
       );
@@ -116,6 +185,20 @@ export class ProductService {
       searchText?: string;
       sortOrder?: number;
       defaultVariantId?: string | null;
+      media?: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      longDescription?: string | null;
+      features?: string[];
+      applications?: string[];
+      marketingBullets?: string[];
+      attachments?: Array<{
+        title: string;
+        url: string;
+        docType?: string;
+        sortOrder?: number;
+      }>;
+      relatedProductIds?: string[];
+      compatibleProductIds?: string[];
+      recommendedProductIds?: string[];
     },
     ctx?: WriteContext,
   ) {
@@ -131,6 +214,9 @@ export class ProductService {
         {
           ...patch,
           categoryIds: patch.categoryIds?.map((x) => toObjectId(x)),
+          relatedProductIds: patch.relatedProductIds?.map((x) => toObjectId(x)),
+          compatibleProductIds: patch.compatibleProductIds?.map((x) => toObjectId(x)),
+          recommendedProductIds: patch.recommendedProductIds?.map((x) => toObjectId(x)),
           defaultVariantId:
             patch.defaultVariantId === undefined
               ? undefined
@@ -183,6 +269,9 @@ export class ProductService {
       currency?: string;
       availability?: string;
       uom?: string;
+      leadTime?: string;
+      moq?: number | null;
+      packaging?: string;
       status?: string;
       specRowId?: string | null;
       searchBlob?: string;
@@ -204,6 +293,9 @@ export class ProductService {
           currency: input.currency,
           availability: input.availability,
           uom: input.uom,
+          leadTime: input.leadTime,
+          moq: input.moq,
+          packaging: input.packaging,
           status: input.status,
           specRowId: input.specRowId ? toObjectId(input.specRowId) : input.specRowId === null ? null : undefined,
           searchBlob: input.searchBlob,
@@ -229,6 +321,9 @@ export class ProductService {
       currency?: string;
       availability?: string;
       uom?: string | null;
+      leadTime?: string | null;
+      moq?: number | null;
+      packaging?: string | null;
       status?: string;
       specRowId?: string | null;
       searchBlob?: string;

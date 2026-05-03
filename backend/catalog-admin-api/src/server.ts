@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./bootstrap-env.js";
 import { loadConfig } from "./config.js";
 import { connectMongo, disconnectMongo } from "./db/connection.js";
 import { createCatalogAdminServices } from "./composition-root.js";

@@ -1,6 +1,29 @@
 import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 import type { PublishStatus } from "../enums.js";
 
+const productMediaItemSchema = new Schema(
+  {
+    url: { type: String, required: true, trim: true },
+    alt: { type: String, trim: true },
+    sortOrder: { type: Number, default: 0 },
+  },
+  { _id: false },
+);
+
+const productAttachmentSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    url: { type: String, required: true, trim: true },
+    docType: {
+      type: String,
+      enum: ["manual", "datasheet", "sds", "certification", "drawing", "other"],
+      default: "other",
+    },
+    sortOrder: { type: Number, default: 0 },
+  },
+  { _id: false },
+);
+
 /**
  * Product shell — PDP slug and merchandising; variants carry SKUs.
  */
@@ -33,6 +56,29 @@ const productSchema = new Schema(
     /** Denormalized for MongoDB text index + autocomplete. */
     searchText: { type: String, default: "" },
 
+    /** PDP gallery — primary + alternates (sorted by sortOrder, then array order). */
+    media: { type: [productMediaItemSchema], default: [] },
+
+    /** Full PDP body HTML/markdown-friendly plain text. */
+    longDescription: { type: String, default: "" },
+
+    /** Structured bullets — features / differentiators. */
+    features: [{ type: String, trim: true }],
+
+    /** Typical applications / industries. */
+    applications: [{ type: String, trim: true }],
+
+    /** Short promo bullets (overview strip). */
+    marketingBullets: [{ type: String, trim: true }],
+
+    /** Manuals, SDS, certs — URLs managed in admin. */
+    attachments: { type: [productAttachmentSchema], default: [] },
+
+    /** Cross-sell blocks — published products only on storefront. */
+    relatedProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    compatibleProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    recommendedProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+
     sortOrder: { type: Number, default: 0 },
 
     publishedAt: { type: Date, default: null },
@@ -46,6 +92,8 @@ const productSchema = new Schema(
 
 productSchema.index({ tenantId: 1, slug: 1 }, { unique: true });
 productSchema.index({ status: 1, title: "text", searchText: "text" });
+/** Featured / recently updated listings (`sort=-updatedAt`). */
+productSchema.index({ status: 1, updatedAt: -1 });
 
 export type ProductDocument = InferSchemaType<typeof productSchema> & {
   _id: Types.ObjectId;

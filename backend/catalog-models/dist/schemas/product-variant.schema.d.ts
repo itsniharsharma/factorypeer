@@ -13,6 +13,8 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -22,6 +24,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     status: "draft" | "published" | "archived";
@@ -32,6 +35,8 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -41,6 +46,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
@@ -53,6 +59,8 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -62,6 +70,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {
     _id: Types.ObjectId;
@@ -83,6 +92,8 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -92,6 +103,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     status: "draft" | "published" | "archived";
@@ -102,6 +114,8 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -111,6 +125,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
@@ -123,6 +138,8 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     unitPrice: string;
     currency: string;
     availability: string;
+    leadTime: string;
+    packaging: string;
     searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
@@ -132,6 +149,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     mpn?: string | null | undefined;
     manufacturer?: string | null | undefined;
     uom?: string | null | undefined;
+    moq?: number | null | undefined;
     specRowId?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {
     _id: Types.ObjectId;

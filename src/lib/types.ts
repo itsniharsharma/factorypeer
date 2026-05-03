@@ -117,6 +117,14 @@ export interface ProductListingPageData {
   >;
 }
 
+/** PDP attachment row — sourced from product.attachments in catalog API. */
+export interface ProductAttachmentDoc {
+  id: string;
+  title: string;
+  url: string;
+  docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+}
+
 export interface ProductDetailPageData {
   slug: string;
   title: string;
@@ -128,12 +136,25 @@ export interface ProductDetailPageData {
   leadTime: string;
   price: string;
   uom: string;
-  images: string[];
-  description: string;
+  /** Minimum order qty when set on variant. */
+  moq: number | null;
+  /** Sell unit / pack line copy. */
+  packaging: string;
+  breadcrumbs: CatalogBreadcrumb[];
+  /** Primary first; zoom/lightbox uses full list. */
+  images: Array<{ url: string; alt: string }>;
+  /** Short merchandising blurb (overview). */
+  shortDescription: string;
+  /** Long-form PDP body. */
+  longDescription: string;
+  features: string[];
+  applications: string[];
+  marketingBullets: string[];
   specificationRows: SpecRow[];
-  documents: Array<{ id: string; name: string; type: string }>;
+  attachments: ProductAttachmentDoc[];
   relatedProducts: Product[];
-  accessories: Product[];
+  compatibleProducts: Product[];
+  recommendedProducts: Product[];
 }
 
 export interface SearchCatalogProduct {

@@ -11,7 +11,11 @@ import {
   updateVariantBodySchema,
   variantIdParamsSchema,
 } from "../validation/product.js";
-import { productListQuerySchema, variantListQuerySchema } from "../validation/list-queries.js";
+import {
+  productListQuerySchema,
+  productSummaryCardsQuerySchema,
+  variantListQuerySchema,
+} from "../validation/list-queries.js";
 import { toObjectId } from "../utils/mongo.js";
 
 const PREFIX = "/admin/catalog/products";
@@ -19,15 +23,23 @@ const PREFIX = "/admin/catalog/products";
 export async function registerProductRoutes(app: FastifyInstance, services: CatalogAdminServices) {
   const { products } = services;
 
+  app.get(`${PREFIX}/summary-cards`, async (req) => {
+    const q = parseQuery(productSummaryCardsQuerySchema, req.query as Record<string, string>);
+    const ids = q.ids as string[];
+    return products.summaryCardsForProductIds(ids, writeContext(req));
+  });
+
   app.get(PREFIX, async (req, reply) => {
     const q = parseQuery(productListQuerySchema, req.query as Record<string, string>);
     const skip = q.skip ?? 0;
     const limit = q.limit ?? 100;
+    const idStrings = q.ids as string[] | undefined;
     const filter = {
       status: q.status,
       q: q.q,
       sort: q.sort,
       categoryId: q.categoryId ? toObjectId(q.categoryId) : undefined,
+      ids: idStrings?.map((id) => toObjectId(id)),
     };
     const { items, total } = await products.list(skip, limit, filter, writeContext(req));
     reply.header("X-Total-Count", String(total));
