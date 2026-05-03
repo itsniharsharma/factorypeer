@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ProductCard } from "@/components/ui/product-card";
+import CategoryTileCard from "@/components/catalog/category-tile-card";
 import { CatalogCategoryPageData } from "@/lib/types";
 
 interface CategoryLandingTemplateProps {
@@ -39,14 +39,14 @@ export function CategoryLandingTemplate({ data }: CategoryLandingTemplateProps) 
         </h2>
         <div className="grid grid-cols-3 gap-1.5 md:grid-cols-4 xl:grid-cols-8">
           {data.featuredSubcategories.map((subcategory) => (
-            <article key={subcategory.id} className="border border-line bg-white p-1">
-              <div className="relative h-16 overflow-hidden border border-line bg-slate-50">
-                <Image src={subcategory.image} alt={subcategory.label} fill className="object-cover" />
-              </div>
-              <p className="mt-0.5 text-center text-[10px] font-semibold leading-snug text-slate-800">
-                {subcategory.label}
-              </p>
-            </article>
+            <CategoryTileCard
+              key={subcategory.id}
+              href={subcategory.href}
+              label={subcategory.label}
+              image={subcategory.image}
+              imageAlt={subcategory.imageAlt}
+              compact
+            />
           ))}
         </div>
       </section>
@@ -57,13 +57,11 @@ export function CategoryLandingTemplate({ data }: CategoryLandingTemplateProps) 
         </h2>
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
           {data.relatedCategories.map((category) => (
-            <a
+            <CategoryTileCard
               key={category.id}
               href={`/category/${category.slug}`}
-              className="border border-line bg-slate-50 px-2 py-1.5 text-[11px] font-semibold text-slate-800 hover:bg-slate-100"
-            >
-              {category.label}
-            </a>
+              label={category.label}
+            />
           ))}
         </div>
       </section>

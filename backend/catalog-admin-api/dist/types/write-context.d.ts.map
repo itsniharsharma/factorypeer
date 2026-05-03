@@ -1,0 +1,1 @@
+{"version":3,"file":"write-context.d.ts","sourceRoot":"","sources":["../../src/types/write-context.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,KAAK,EAAE,MAAM,UAAU,CAAC;AAEtC,0EAA0E;AAC1E,MAAM,MAAM,YAAY,GAAG;IACzB,WAAW,CAAC,EAAE,KAAK,CAAC,QAAQ,GAAG,IAAI,CAAC;CACrC,CAAC;AAEF,wBAAgB,kBAAkB,CAAC,GAAG,CAAC,EAAE,YAAY,GAAG,KAAK,CAAC,QAAQ,GAAG,IAAI,GAAG,SAAS,CAExF"}

@@ -1,15 +1,59 @@
- "use client";
+"use client";
 
-import { useRef, useState } from "react";
-import {
-  megaMenuCategoryColumns,
-  megaMenuUtilityLinks,
-} from "@/lib/mock-data";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import type { CatalogNavLinkItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+type MegaMenuPayload = {
+  columns: CatalogNavLinkItem[][];
+  previewLinks: CatalogNavLinkItem[];
+  utilityLinks: Array<{ label: string; href: string }>;
+};
+
+const megaMenuUtilityLinksFallback = [
+  { label: "Purchased Products", href: "/purchased-products" },
+  { label: "Custom Product Center", href: "/custom-product-center" },
+  { label: "Replacement Parts", href: "/replacement-parts" },
+  { label: "Digital Catalogs", href: "/digital-catalogs" },
+];
 
 export function CategoryNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [megaMenu, setMegaMenu] = useState<MegaMenuPayload | null>(null);
+  const [menuError, setMenuError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/catalog/mega-menu")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data: MegaMenuPayload) => {
+        if (!cancelled) {
+          setMegaMenu({
+            columns: data.columns ?? [],
+            previewLinks: data.previewLinks ?? [],
+            utilityLinks: data.utilityLinks ?? [],
+          });
+          setMenuError(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMegaMenu({ columns: [], previewLinks: [], utilityLinks: [] });
+          setMenuError(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const megaMenuColumns = megaMenu?.columns ?? [];
+  const previewLinks = megaMenu?.previewLinks ?? [];
+  const utilityLinks = megaMenu?.utilityLinks?.length
+    ? megaMenu.utilityLinks
+    : megaMenuUtilityLinksFallback;
 
   const clearCloseTimer = () => {
     if (closeTimer.current) {
@@ -18,7 +62,7 @@ export function CategoryNavigation() {
     }
   };
 
-  const handleOpen = () => {
+  const openFromTrigger = () => {
     clearCloseTimer();
     setIsOpen(true);
   };
@@ -35,16 +79,14 @@ export function CategoryNavigation() {
           <button
             type="button"
             aria-expanded={isOpen}
-            onMouseEnter={handleOpen}
+            onMouseEnter={openFromTrigger}
             className={cn(
               "inline-flex h-10 w-fit items-center justify-start gap-1 px-0 text-xs font-bold whitespace-nowrap",
-               isOpen ? "bg-white text-slate-900" : "bg-slate-800 text-slate-100",
+              isOpen ? "bg-white text-slate-900" : "bg-slate-800 text-slate-100",
             )}
           >
             All Products
-            <span className={cn("text-[10px] transition-transform", isOpen && "rotate-180")}>
-              ▼
-            </span>
+            <span className={cn("text-[10px] transition-transform", isOpen && "rotate-180")}>▼</span>
           </button>
 
           <div
@@ -52,7 +94,6 @@ export function CategoryNavigation() {
               "pointer-events-none absolute left-0 top-10 z-[80] pt-1 transition-all duration-150",
               isOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0",
             )}
-            onMouseEnter={handleOpen}
           >
             <section
               className={cn(
@@ -63,32 +104,38 @@ export function CategoryNavigation() {
               <div className="border-b border-line px-4 py-3">
                 <h2 className="text-[28px] leading-none font-bold text-slate-800">All Products</h2>
                 <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5">
-                  {megaMenuUtilityLinks.map((link) => (
+                  {utilityLinks.map((link) => (
                     <a
-                      key={link}
-                      href="#"
+                      key={link.label}
+                      href={link.href || "#"}
                       className="text-xs font-semibold text-slate-700 hover:text-brand hover:underline"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   ))}
                 </div>
+                {menuError ? (
+                  <p className="mt-2 text-xs text-amber-800">Catalog menu unavailable — check API connection.</p>
+                ) : null}
               </div>
 
               <div className="grid gap-0 md:grid-cols-3 xl:grid-cols-4">
-                {megaMenuCategoryColumns.map((column, index) => (
+                {megaMenuColumns.length === 0 && !menuError ? (
+                  <div className="col-span-full px-4 py-6 text-xs text-slate-500">Loading catalog…</div>
+                ) : null}
+                {megaMenuColumns.map((column, index) => (
                   <ul key={index} className="border-r border-line px-4 py-3 last:border-r-0">
-                    {column.map((item, itemIndex) => (
-                      <li key={item}>
-                        <a
-                          href="#"
+                    {column.map((item) => (
+                      <li key={item.id}>
+                        <Link
+                          href={item.href}
                           className={cn(
                             "block rounded-[2px] px-1 py-[3px] text-xs text-slate-700 hover:bg-slate-100 hover:text-slate-900",
-                            itemIndex === 0 && "font-semibold",
+                            item.isHeader && "font-semibold",
                           )}
                         >
-                          {item}
-                        </a>
+                          {item.label}
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -98,9 +145,18 @@ export function CategoryNavigation() {
           </div>
         </div>
 
-        <div />
+        <div className="flex items-center gap-4 overflow-x-auto">
+          {previewLinks.map((link) => (
+            <Link
+              key={link.id}
+              href={link.href}
+              className="whitespace-nowrap text-[11px] font-semibold text-slate-100 hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </div>
-
     </nav>
   );
 }

@@ -1,0 +1,103 @@
+import { AppError, ConflictError, NotFoundError } from "./app-error.js";
+
+/** Stable machine codes for clients; pair with HTTP status via AppError.statusCode. */
+export const CatalogErrorCodes = {
+  NOT_FOUND: "NOT_FOUND",
+  CONFLICT: "CONFLICT",
+  DUPLICATE_SLUG: "DUPLICATE_SLUG",
+  DUPLICATE_SKU: "DUPLICATE_SKU",
+  DUPLICATE_KEY: "DUPLICATE_KEY",
+  INVALID_MOVE: "INVALID_MOVE",
+  INVALID_REORDER: "INVALID_REORDER",
+  NOT_FAMILY: "NOT_FAMILY",
+  SPEC_MISMATCH: "SPEC_MISMATCH",
+  HAS_CHILDREN: "HAS_CHILDREN",
+  HAS_VARIANTS: "HAS_VARIANTS",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
+} as const;
+
+export function resourceNotFound(resource: string, id?: string): NotFoundError {
+  return new NotFoundError(resource, id);
+}
+
+export function slugTaken(slug: string, context = "category"): ConflictError {
+  return new ConflictError(
+    `The ${context} slug "${slug}" is already used at this level in the taxonomy. Choose a different slug.`,
+    CatalogErrorCodes.CONFLICT,
+  );
+}
+
+export function pathTaken(path: string): ConflictError {
+  return new ConflictError(
+    `The URL path "${path}" is already assigned to another category. Slugs must remain unique within the tree.`,
+    CatalogErrorCodes.CONFLICT,
+  );
+}
+
+export function productSlugTaken(slug: string): AppError {
+  return new AppError(
+    `A product with slug "${slug}" already exists. Product slugs must be globally unique.`,
+    409,
+    CatalogErrorCodes.DUPLICATE_SLUG,
+  );
+}
+
+export function skuTaken(sku: string): AppError {
+  return new AppError(
+    `SKU "${sku}" is already in use. Each variant SKU must be unique.`,
+    409,
+    CatalogErrorCodes.DUPLICATE_SKU,
+  );
+}
+
+export function cannotMoveUnderDescendant(): AppError {
+  return new AppError(
+    "A category cannot be moved under one of its own descendants (that would create a cycle).",
+    400,
+    CatalogErrorCodes.INVALID_MOVE,
+  );
+}
+
+export function cannotMoveUnderSelf(): AppError {
+  return new AppError("A category cannot be its own parent.", 400, CatalogErrorCodes.INVALID_MOVE);
+}
+
+export function reorderMismatch(): AppError {
+  return new AppError(
+    "Reorder failed: the orderedIds list must include every sibling under the same parent exactly once, with no extras.",
+    400,
+    CatalogErrorCodes.INVALID_REORDER,
+  );
+}
+
+export function familyRequiredForSpec(): AppError {
+  return new AppError(
+    "Spec schemas can only be attached to categories marked as family (leaf) nodes.",
+    400,
+    CatalogErrorCodes.NOT_FAMILY,
+  );
+}
+
+export function specSchemaWrongCategory(): AppError {
+  return new AppError(
+    "This spec schema belongs to a different category. Create or select the schema for this family node only.",
+    400,
+    CatalogErrorCodes.SPEC_MISMATCH,
+  );
+}
+
+export function categoryHasChildren(): AppError {
+  return new AppError(
+    "Delete or move child categories first before removing this node.",
+    400,
+    CatalogErrorCodes.HAS_CHILDREN,
+  );
+}
+
+export function productHasVariants(): AppError {
+  return new AppError(
+    "Remove all product variants before deleting the product record.",
+    400,
+    CatalogErrorCodes.HAS_VARIANTS,
+  );
+}

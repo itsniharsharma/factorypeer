@@ -1,5 +1,6 @@
-import Image from "next/image";
 import { CategoryTile } from "@/lib/types";
+import CategoryTileCard from "@/components/catalog/category-tile-card";
+import Link from "next/link";
 
 interface CategoryTileGridProps {
   tiles: CategoryTile[];
@@ -18,31 +19,26 @@ export function CategoryTileGrid({ tiles }: CategoryTileGridProps) {
               The One Item You Need + 1.5 Million More
             </h2>
           </div>
-          <a href="#" className="whitespace-nowrap text-xs font-semibold text-brand hover:text-brand-dark">
+          <Link href="/" className="whitespace-nowrap text-xs font-semibold text-brand hover:text-brand-dark">
             View All Product Categories →
-          </a>
+          </Link>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
-        {tiles.map((tile) => (
-          <article
-            key={tile.id}
-            className="flex min-h-[192px] flex-col items-center justify-start border-r border-b border-slate-300 bg-white px-3 py-4 text-center last:border-r-0"
-          >
-            <div className="relative h-[110px] w-full overflow-hidden bg-white">
-              <Image
-                src={tile.image}
-                alt={tile.label}
-                fill
-                className="object-contain object-center"
-                sizes="(max-width: 1280px) 20vw, 14vw"
-              />
-            </div>
-            <p className="mt-4 max-w-[132px] text-[14px] leading-tight text-slate-900">
-              {tile.label}
-            </p>
-          </article>
-        ))}
+        {tiles.map((tile) => {
+          const rawHref = tile.href?.trim();
+          const dest = rawHref && rawHref !== "#" ? rawHref : undefined;
+          return (
+            <CategoryTileCard
+              key={tile.id}
+              href={dest}
+              label={tile.label}
+              image={tile.image}
+              imageAlt={tile.imageAlt}
+              ctaLabel={tile.ctaLabel}
+            />
+          );
+        })}
       </div>
     </section>
   );

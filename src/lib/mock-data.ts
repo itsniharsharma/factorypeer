@@ -1,9 +1,7 @@
 import {
   Category,
-  CategoryTile,
   Department,
   Product,
-  PromoBanner,
   PromoStripItem,
   ServiceOffering,
   SpecRow,
@@ -11,25 +9,6 @@ import {
   TrustPoint,
 } from "@/lib/types";
 
-export const utilityLinks = [
-  "Contract Pricing",
-  "Bulk RFQ",
-  "Fleet Programs",
-  "Branch Pickup",
-  "Help Center",
-];
-
-export const topCategories = [
-  "Fasteners",
-  "Power Transmission",
-  "Hydraulics",
-  "Electrical",
-  "Safety",
-  "Facility",
-  "MRO",
-  "Pneumatics",
-  "Janitorial",
-];
 
 export const featuredCategories: Category[] = [
   { id: "cat-1", name: "Industrial Fasteners", segment: "Hardware", skuCount: 12480 },
@@ -260,50 +239,6 @@ export const procurementSupportCTAs: SupportCTA[] = [
   },
 ];
 
-export const homepagePromoBanners: PromoBanner[] = [
-  {
-    id: "home-banner-1",
-    title: "Electrical Essentials",
-    subtitle: "Switchgear and motor control inventory",
-    image: "/images/landing-top-1.jpg",
-  },
-  {
-    id: "home-banner-2",
-    title: "Plant Safety Readiness",
-    subtitle: "PPE and compliance products in stock",
-    image: "/images/landing-top-2.jpg",
-  },
-  {
-    id: "home-banner-3",
-    title: "Fastener Bulk Supply",
-    subtitle: "High-volume hardware replenishment",
-    image: "/images/landing-top-3.jpg",
-  },
-];
-
-export const homepageCategoryTiles: CategoryTile[] = [
-  { id: "tile-1", label: "Electrical", image: "/images/category-tile.svg" },
-  { id: "tile-2", label: "Mechanical", image: "/images/category-tile.svg" },
-  { id: "tile-3", label: "Safety", image: "/images/category-tile.svg" },
-  { id: "tile-4", label: "Fasteners", image: "/images/category-tile.svg" },
-  { id: "tile-5", label: "Pneumatics", image: "/images/category-tile.svg" },
-  { id: "tile-6", label: "Hydraulics", image: "/images/category-tile.svg" },
-  { id: "tile-7", label: "Automation", image: "/images/category-tile.svg" },
-  { id: "tile-8", label: "Material Handling", image: "/images/category-tile.svg" },
-  { id: "tile-9", label: "Power Transmission", image: "/images/category-tile.svg" },
-  { id: "tile-10", label: "Tools", image: "/images/category-tile.svg" },
-  { id: "tile-11", label: "Facility Maintenance", image: "/images/category-tile.svg" },
-  { id: "tile-12", label: "Welding", image: "/images/category-tile.svg" },
-  { id: "tile-13", label: "Bearings", image: "/images/category-tile.svg" },
-  { id: "tile-14", label: "Belts & Chains", image: "/images/category-tile.svg" },
-  { id: "tile-15", label: "Motors", image: "/images/category-tile.svg" },
-  { id: "tile-16", label: "Valves", image: "/images/category-tile.svg" },
-  { id: "tile-17", label: "Sensors", image: "/images/category-tile.svg" },
-  { id: "tile-18", label: "Controls", image: "/images/category-tile.svg" },
-  { id: "tile-19", label: "Lubrication", image: "/images/category-tile.svg" },
-  { id: "tile-20", label: "Safety Signs", image: "/images/category-tile.svg" },
-  { id: "tile-21", label: "Cleaning Supplies", image: "/images/category-tile.svg" },
-];
 
 export const homepageFeaturedProducts: Product[] = [
   {
@@ -368,83 +303,3 @@ export const homepageFeaturedProducts: Product[] = [
   },
 ];
 
-export const homepageSupportCards = [
-  {
-    id: "support-1",
-    title: "Bulk Ordering and RFQ",
-    detail: "Upload line-item lists and receive contract pricing support.",
-    cta: "Start RFQ",
-  },
-  {
-    id: "support-2",
-    title: "Inventory Management Programs",
-    detail: "Scheduled replenishment, min-max, and plant-level stocking plans.",
-    cta: "Explore Programs",
-  },
-  {
-    id: "support-3",
-    title: "Technical Product Support",
-    detail: "Cross-reference alternatives and sourcing help for downtime events.",
-    cta: "Contact Specialist",
-  },
-];
-
-export const megaMenuUtilityLinks = [
-  "Purchased Products",
-  "Custom Product Center",
-  "Replacement Parts",
-  "Digital Catalogs",
-];
-
-export const megaMenuCategoryColumns = [
-  [
-    "All Product Categories",
-    "Abrasives",
-    "Adhesives, Sealants and Tape",
-    "Cleaning and Janitorial",
-    "Electrical",
-    "Electronics and Batteries",
-    "Fasteners",
-    "Fleet and Vehicle Maintenance",
-    "HVAC and Refrigeration",
-    "Hardware",
-  ],
-  [
-    "Hydraulics",
-    "Lab Supplies",
-    "Lighting",
-    "Lubrication",
-    "Machining",
-    "Material Handling",
-    "Motors",
-    "Office Supplies",
-    "Outdoor Equipment",
-    "Packaging and Shipping",
-  ],
-  [
-    "Plumbing",
-    "Pneumatics",
-    "Power Transmission",
-    "Pumps",
-    "Raw Materials",
-    "Safety",
-    "Security",
-    "Test Instruments",
-    "Tools",
-    "Welding",
-  ],
-  [
-    "Automation and Control",
-    "Bearings",
-    "Conveyors",
-    "Drum Handling",
-    "Facility Maintenance",
-    "Filtration",
-    "Generators",
-    "Hoists and Cranes",
-    "Pipe, Hose, Tube and Fittings",
-    "Workbenches and Storage",
-  ],
-];
-
-export const navQuickLinks = ["Bulk Order", "My Account", "Cart (2)"];

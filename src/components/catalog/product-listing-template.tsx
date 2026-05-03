@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -79,7 +80,15 @@ export function ProductListingTemplate({ data }: ProductListingTemplateProps) {
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 leading-tight">{product.title}</h3>
+                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                    {product.slug ? (
+                      <Link href={`/product/${product.slug}`} className="hover:text-brand hover:underline">
+                        {product.title}
+                      </Link>
+                    ) : (
+                      product.title
+                    )}
+                  </h3>
                   <p className="mt-0.5 text-[10px] text-slate-600 leading-tight">
                     Item #: {product.itemNumber ?? product.sku} | SKU: {product.sku}
                   </p>

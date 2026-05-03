@@ -18,6 +18,8 @@ export interface Product {
   uom: string;
   status: InventoryStatus;
   leadTime: string;
+  /** Present when the row comes from the catalog API (PDP link). */
+  slug?: string;
 }
 
 export interface SpecRow {
@@ -55,6 +57,8 @@ export interface SupportCTA {
   title: string;
   description: string;
   action: string;
+  /** When set, primary CTA uses this target (from admin). */
+  href?: string;
 }
 
 export interface PromoBanner {
@@ -62,12 +66,21 @@ export interface PromoBanner {
   title: string;
   subtitle: string;
   image: string;
+  imageAlt?: string;
+  eyebrow?: string;
+  ctaLabel?: string;
+  href?: string;
+  openInNewTab?: boolean;
 }
 
 export interface CategoryTile {
   id: string;
   label: string;
   image: string;
+  /** Resolved from admin href, or /category/... from categoryId. */
+  href?: string;
+  imageAlt?: string;
+  ctaLabel?: string;
 }
 
 export interface CatalogLinkItem {
@@ -136,4 +149,85 @@ export interface SearchCatalogProduct {
   uom: string;
   thumbnail?: string;
   availability: string;
+}
+
+export interface CartLineItem {
+  id: string;
+  slug: string;
+  title: string;
+  sku: string;
+  itemNumber: string;
+  thumbnail?: string;
+  unitPrice: number;
+  uom: string;
+  quantity: number;
+}
+
+export interface CartPageData {
+  lineItems: CartLineItem[];
+  rfqNote: string;
+}
+
+export interface CatalogFilterGroup {
+  id: string;
+  label: string;
+  options: Array<{ id: string; label: string; count: number }>;
+}
+
+export interface CatalogTileLink {
+  id: string;
+  label: string;
+  description?: string;
+  slug: string;
+  productCount: number;
+  image?: string;
+}
+
+export interface CatalogTaxonomyNode {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  productCount: number;
+  children: CatalogTaxonomyNode[];
+  filters?: CatalogFilterGroup[];
+  matrix?: CatalogSpecMatrix;
+  /** From catalog API — drives spec matrix on family nodes */
+  kind?: "branch" | "family";
+  activeSpecSchemaId?: string | null;
+}
+
+export interface CatalogSpecColumn {
+  id: string;
+  label: string;
+  widthClass?: string;
+}
+
+export interface CatalogSpecRow {
+  id: string;
+  values: Record<string, string>;
+  productSlug: string;
+  productTitle: string;
+  sku: string;
+  itemNumber: string;
+  unitPrice: string;
+  availability: string;
+}
+
+export interface CatalogSpecMatrix {
+  familySummary: string;
+  columns: CatalogSpecColumn[];
+  rows: CatalogSpecRow[];
+}
+
+export interface CatalogBreadcrumb {
+  label: string;
+  href: string;
+}
+
+export interface CatalogNavLinkItem {
+  id: string;
+  label: string;
+  href: string;
+  isHeader?: boolean;
 }

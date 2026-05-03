@@ -1,12 +1,7 @@
-interface SupportCard {
-  id: string;
-  title: string;
-  detail: string;
-  cta: string;
-}
+import type { SupportCTA } from "@/lib/types";
 
 interface SupportCardsRowProps {
-  cards: SupportCard[];
+  cards: SupportCTA[];
 }
 
 export function SupportCardsRow({ cards }: SupportCardsRowProps) {
@@ -23,13 +18,14 @@ export function SupportCardsRow({ cards }: SupportCardsRowProps) {
           >
             <div className="max-w-[220px]">
               <h3 className="text-[17px] font-bold leading-tight text-slate-900">{card.title}</h3>
-              <p className="mt-2 text-[14px] leading-snug text-slate-800">{card.detail}</p>
-              <div className="mt-4 flex flex-wrap gap-2 text-[14px] leading-snug text-brand">
-                <a href="#" className="font-medium hover:underline">People</a>
-                <span className="text-slate-500">|</span>
-                <a href="#" className="font-medium hover:underline">Operations</a>
-                <span className="text-slate-500">|</span>
-                <a href="#" className="font-medium hover:underline">Safety and Health</a>
+              <p className="mt-2 text-[14px] leading-snug text-slate-800">{card.description}</p>
+              <div className="mt-4 text-[14px] leading-snug text-brand">
+                <a
+                  href={card.href?.trim() || "#"}
+                  className="font-semibold hover:underline"
+                >
+                  {card.action}
+                </a>
               </div>
             </div>
             <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded-sm bg-brand shadow-[4px_4px_0_rgba(0,0,0,0.12)]">

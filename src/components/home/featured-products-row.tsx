@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Product } from "@/lib/types";
@@ -39,7 +40,11 @@ export function FeaturedProductsRow({ products }: FeaturedProductsRowProps) {
                       {product.manufacturer || "Approved Vendor"}
                     </p>
                     <h3 className="mt-1 text-[14px] font-semibold leading-snug text-brand hover:underline">
-                      <a href="#">{product.title}</a>
+                      {product.slug ? (
+                        <Link href={`/product/${product.slug}`}>{product.title}</Link>
+                      ) : (
+                        <span>{product.title}</span>
+                      )}
                     </h3>
                     <p className="mt-1 text-[12px] text-slate-600">
                       Item # <span className="font-semibold text-slate-800">{product.itemNumber ?? product.sku}</span>
@@ -66,19 +71,19 @@ export function FeaturedProductsRow({ products }: FeaturedProductsRowProps) {
                 </div>
 
                 <div className="mt-auto border-t border-slate-300 px-3 py-3">
-                  <div className="grid grid-cols-[84px_1fr] items-end gap-2">
-                    <div>
-                      <label className="text-[11px] text-slate-500">Qty</label>
+                  <div className="grid grid-cols-[70px_1fr] items-end gap-3">
+                    <div className="flex flex-col">
+                      <label className="text-[11px] font-semibold text-slate-600 mb-1">Qty</label>
                       <Input
                         defaultValue="1"
                         aria-label="Qty"
-                        className="h-10 rounded-sm px-3 text-sm"
+                        className="h-10 rounded-sm px-3 text-sm text-center border border-slate-300"
                       />
                     </div>
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="h-11 w-full rounded-sm border-brand bg-white text-sm font-bold text-brand hover:bg-red-50"
+                      className="h-10 w-full rounded-sm border border-brand bg-white text-sm font-bold text-brand hover:bg-red-50"
                     >
                       Add to Cart
                     </Button>

@@ -1,19 +1,31 @@
 import { notFound } from "next/navigation";
 import { ProductDetailTemplate } from "@/components/catalog/product-detail-template";
 import { AppShell } from "@/components/layout/app-shell";
-import { getProductDetailBySlug, productDetailPages } from "@/lib/catalog-data";
+import { getProductBySlug, getProductSlugs } from "@/lib/catalog-service";
+
+export const revalidate = 60;
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return productDetailPages.map((page) => ({ slug: page.slug }));
+export async function generateStaticParams() {
+  try {
+    const slugs = await getProductSlugs();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductDetailBySlug(slug);
+  let product: Awaited<ReturnType<typeof getProductBySlug>>;
+  try {
+    product = await getProductBySlug(slug);
+  } catch {
+    notFound();
+  }
 
   if (!product) {
     notFound();

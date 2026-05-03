@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/backend/catalog-models/node_modules
+/backend/catalog-admin-api/node_modules
 /.pnp
 .pnp.*
 .yarn/*
