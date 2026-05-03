@@ -8,6 +8,8 @@ export type ProductListFilter = {
     sort?: "title" | "-title" | "updatedAt" | "-updatedAt" | "sortOrder";
     /** Products whose categoryIds contains this id */
     categoryId?: Types.ObjectId;
+    /** Exact product ids (e.g. PDP cross-sell batch fetch). When set, full-text q is ignored. */
+    ids?: Types.ObjectId[];
 };
 export declare class ProductRepository {
     private readonly models;
@@ -22,12 +24,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{
@@ -43,12 +105,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{
@@ -68,12 +190,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{
@@ -90,6 +272,30 @@ export declare class ProductRepository {
         categoryIds?: Types.ObjectId[];
         searchText?: string;
         sortOrder?: number;
+        media?: Array<{
+            url: string;
+            alt?: string;
+            sortOrder?: number;
+        }>;
+        longDescription?: string;
+        features?: string[];
+        applications?: string[];
+        marketingBullets?: string[];
+        attachments?: Array<{
+            title: string;
+            url: string;
+            docType?: string;
+            sortOrder?: number;
+        }>;
+        relatedProductIds?: Types.ObjectId[];
+        compatibleProductIds?: Types.ObjectId[];
+        recommendedProductIds?: Types.ObjectId[];
+        shippingWeight?: string;
+        branchAvailabilityPlaceholder?: string;
+        logisticsMeta?: Array<{
+            label: string;
+            value: string;
+        }>;
     }, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").ProductDocument, {}, {}> & {
         slug: string;
         title: string;
@@ -98,12 +304,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{
@@ -121,6 +387,30 @@ export declare class ProductRepository {
         sortOrder: number;
         defaultVariantId: Types.ObjectId | null;
         publishedAt: Date | null;
+        media: Array<{
+            url: string;
+            alt?: string;
+            sortOrder?: number;
+        }>;
+        longDescription: string | null;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Array<{
+            title: string;
+            url: string;
+            docType?: string;
+            sortOrder?: number;
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        shippingWeight?: string | null;
+        branchAvailabilityPlaceholder?: string | null;
+        logisticsMeta?: Array<{
+            label: string;
+            value: string;
+        }> | null;
     }>, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").ProductDocument, {}, {}> & {
         slug: string;
         title: string;
@@ -129,12 +419,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{
@@ -150,12 +500,72 @@ export declare class ProductRepository {
         documentVersion: number;
         categoryIds: Types.ObjectId[];
         searchText: string;
+        media: Types.DocumentArray<{
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }> & {
+            sortOrder: number;
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        }>;
+        longDescription: string;
+        features: string[];
+        applications: string[];
+        marketingBullets: string[];
+        attachments: Types.DocumentArray<{
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }> & {
+            title: string;
+            sortOrder: number;
+            url: string;
+            docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
+        }>;
+        relatedProductIds: Types.ObjectId[];
+        compatibleProductIds: Types.ObjectId[];
+        recommendedProductIds: Types.ObjectId[];
+        logisticsMeta: Types.DocumentArray<{
+            label: string;
+            value: string;
+        }, Types.Subdocument<import("bson").ObjectId, any, {
+            label: string;
+            value: string;
+        }> & {
+            label: string;
+            value: string;
+        }>;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
         updatedBy?: Types.ObjectId | null | undefined;
         brand?: string | null | undefined;
         defaultVariantId?: Types.ObjectId | null | undefined;
+        shippingWeight?: string | null | undefined;
+        branchAvailabilityPlaceholder?: string | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
     } & Required<{

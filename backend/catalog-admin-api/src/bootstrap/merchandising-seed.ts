@@ -1,13 +1,15 @@
+import type { z } from "zod";
 import type { CatalogAdminServices } from "../composition-root.js";
 import {
   footerContentSeed,
   footerLinkGroupSeeds,
-  homepageCategoryTileSeeds,
-  homepagePromoBannerSeeds,
+  getHomepageCategoryTileSeeds,
+  getHomepagePromoBannerSeeds,
   homepageSupportCardSeeds,
   megaMenuUtilityLinkGroupSeed,
   utilityLinkGroupSeed,
 } from "./merchandising-seed-data.js";
+import { createHomepageBannerBodySchema, createHomepageTileBodySchema } from "../validation/homepage-content.js";
 
 async function seedCollectionIfEmpty<T>(items: T[], seed: () => Promise<unknown>) {
   if (items.length === 0) {
@@ -31,11 +33,19 @@ function toMutableFooterContent<T extends { socialLinks?: readonly Record<string
 
 export async function seedMerchandisingContent(services: Pick<CatalogAdminServices, "homepage" | "navigation">) {
   await seedCollectionIfEmpty(await services.homepage.listBanners(), async () => {
-    await Promise.all(homepagePromoBannerSeeds.map((item) => services.homepage.createBanner(item)));
+    await Promise.all(
+      getHomepagePromoBannerSeeds().map((item) =>
+        services.homepage.createBanner(item as z.infer<typeof createHomepageBannerBodySchema>),
+      ),
+    );
   });
 
   await seedCollectionIfEmpty(await services.homepage.listCategoryTiles(), async () => {
-    await Promise.all(homepageCategoryTileSeeds.map((item) => services.homepage.createCategoryTile(item)));
+    await Promise.all(
+      getHomepageCategoryTileSeeds().map((item) =>
+        services.homepage.createCategoryTile(item as z.infer<typeof createHomepageTileBodySchema>),
+      ),
+    );
   });
 
   await seedCollectionIfEmpty(await services.homepage.listSupportCards(), async () => {

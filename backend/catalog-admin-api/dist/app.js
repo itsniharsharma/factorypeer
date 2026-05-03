@@ -1,12 +1,27 @@
+import multipart from "@fastify/multipart";
 import Fastify from "fastify";
+import { registerApiKeyGuard } from "./http/plugins/api-key-guard.js";
 import { registerCatalogAuthContext } from "./http/plugins/auth-context.js";
 import { registerErrorHandler } from "./http/plugins/error-handler.js";
+import { registerRequestObservability } from "./http/plugins/request-observability.js";
 import { registerCatalogAdminRoutes } from "./routes/index.js";
-export async function buildApp(services) {
-    const app = Fastify({ logger: true });
+import { registerMediaRoutes } from "./routes/media.routes.js";
+export async function buildApp(services, config) {
+    const app = Fastify({
+        logger: {
+            level: config.logLevel ?? (process.env.NODE_ENV === "production" ? "info" : "debug"),
+        },
+        requestIdHeader: "x-request-id",
+    });
+    registerRequestObservability(app);
     await registerCatalogAuthContext(app);
+    registerApiKeyGuard(app, config.adminApiKey);
     await registerErrorHandler(app);
+    await app.register(multipart, {
+        limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    });
     app.get("/health", async () => ({ ok: true }));
+    registerMediaRoutes(app, services.cloudinary);
     await registerCatalogAdminRoutes(app, services);
     return app;
 }

@@ -1,6 +1,7 @@
 export * from "@/components/home/category-tile-grid";
 export * from "@/components/home/featured-departments-section";
 export * from "@/components/home/featured-products-row";
+export * from "@/components/home/recently-viewed-products-section";
 export * from "@/components/home/hero-banner-section";
 export * from "@/components/home/industry-solutions-section";
 export * from "@/components/home/popular-categories-section";

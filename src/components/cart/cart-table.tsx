@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CartLineItem } from "@/lib/types";
 import { formatCurrency } from "@/lib/cart-data";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface CartTableProps {
   items: CartLineItem[];
@@ -36,6 +37,13 @@ export function CartTable({ items }: CartTableProps) {
           </tr>
         </thead>
         <tbody>
+          {items.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="px-2 py-6 text-center text-sm text-slate-500">
+                Your cart is empty.
+              </td>
+            </tr>
+          ) : null}
           {items.map((item) => {
             const extended = item.unitPrice * item.quantity;
             return (
@@ -44,7 +52,7 @@ export function CartTable({ items }: CartTableProps) {
                   <div className="grid grid-cols-[64px_1fr] gap-2">
                     <div className="relative h-14 overflow-hidden border border-line bg-slate-50">
                       <Image
-                        src={item.thumbnail ?? "/images/product-thumb.svg"}
+                        src={item.thumbnail ?? getDefaultCatalogImageUrl()}
                         alt={item.title}
                         fill
                         className="object-cover"

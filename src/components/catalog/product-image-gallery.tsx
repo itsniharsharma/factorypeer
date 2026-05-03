@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 export type GalleryImage = { url: string; alt: string };
 
@@ -10,7 +11,7 @@ interface ProductImageGalleryProps {
 }
 
 export function ProductImageGallery({ images, productTitle }: ProductImageGalleryProps) {
-  const safe = images.length > 0 ? images : [{ url: "/images/product-thumb.svg", alt: productTitle }];
+  const safe = images.length > 0 ? images : [{ url: getDefaultCatalogImageUrl(), alt: productTitle }];
   const [idx, setIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lbIdx, setLbIdx] = useState(0);

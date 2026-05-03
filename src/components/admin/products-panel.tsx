@@ -19,21 +19,12 @@ import {
   type ProductVariantDoc,
 } from "@/lib/admin-api";
 import { AdminModal } from "./modal";
+import { ProductMediaEditor, type ProductMediaRow } from "./product-media-editor";
 
 const PAGE_SIZE = 20;
 
 function linesToList(s: string): string[] {
   return s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
-}
-
-function formatMediaForSave(raw: string): Array<{ url: string; alt?: string; sortOrder: number }> {
-  return linesToList(raw)
-    .map((line, i) => {
-      const [urlPart, altPart] = line.split("|").map((x) => x.trim());
-      if (!urlPart) return null;
-      return { url: urlPart, alt: altPart || undefined, sortOrder: i };
-    })
-    .filter((x): x is NonNullable<typeof x> => x != null);
 }
 
 function formatAttachmentsForSave(raw: string): Array<{ title: string; url: string; docType: string }> {
@@ -50,12 +41,33 @@ function formatIds(raw: string): string[] {
   return raw.split(/[\s,]+/).map((x) => x.trim()).filter(Boolean);
 }
 
-function mediaToText(media?: ProductDoc["media"]) {
-  if (!media?.length) return "";
+function mediaToEditorRows(media?: ProductDoc["media"]): ProductMediaRow[] {
+  if (!media?.length) return [];
   return [...media]
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-    .map((m) => (m.alt ? `${m.url} | ${m.alt}` : m.url))
-    .join("\n");
+    .map((m, i) => ({
+      url: m.url,
+      alt: m.alt,
+      publicId: m.publicId,
+      width: m.width,
+      height: m.height,
+      format: m.format,
+      sortOrder: m.sortOrder ?? i,
+    }));
+}
+
+function formatMediaForApi(rows: ProductMediaRow[]): NonNullable<ProductDoc["media"]> {
+  return rows
+    .filter((m) => m.url?.trim())
+    .map((m, i) => ({
+      url: m.url!.trim(),
+      publicId: m.publicId,
+      alt: m.alt,
+      width: m.width,
+      height: m.height,
+      format: m.format,
+      sortOrder: i,
+    }));
 }
 
 function attachmentsToText(att?: ProductDoc["attachments"]) {
@@ -119,7 +131,7 @@ export function ProductsPanel() {
   const [featuresText, setFeaturesText] = useState("");
   const [applicationsText, setApplicationsText] = useState("");
   const [marketingBulletsText, setMarketingBulletsText] = useState("");
-  const [mediaLines, setMediaLines] = useState("");
+  const [mediaItems, setMediaItems] = useState<ProductMediaRow[]>([]);
   const [attachmentLines, setAttachmentLines] = useState("");
   const [relatedIds, setRelatedIds] = useState("");
   const [compatibleIds, setCompatibleIds] = useState("");
@@ -219,7 +231,7 @@ export function ProductsPanel() {
     setFeaturesText("");
     setApplicationsText("");
     setMarketingBulletsText("");
-    setMediaLines("");
+    setMediaItems([]);
     setAttachmentLines("");
     setRelatedIds("");
     setCompatibleIds("");
@@ -243,7 +255,7 @@ export function ProductsPanel() {
     setFeaturesText((p.features ?? []).join("\n"));
     setApplicationsText((p.applications ?? []).join("\n"));
     setMarketingBulletsText((p.marketingBullets ?? []).join("\n"));
-    setMediaLines(mediaToText(p.media));
+    setMediaItems(mediaToEditorRows(p.media));
     setAttachmentLines(attachmentsToText(p.attachments));
     setRelatedIds(idsToText(p.relatedProductIds));
     setCompatibleIds(idsToText(p.compatibleProductIds));
@@ -271,7 +283,7 @@ export function ProductsPanel() {
     }
     try {
       const ids = [...categoryIds];
-      const media = formatMediaForSave(mediaLines);
+      const media = formatMediaForApi(mediaItems);
       const attachments = formatAttachmentsForSave(attachmentLines);
       const rel = formatIds(relatedIds);
       const comp = formatIds(compatibleIds);
@@ -318,7 +330,7 @@ export function ProductsPanel() {
           features: feat,
           applications: apps,
           marketingBullets: bullets,
-          media,
+          media: media.length ? media : [],
           attachments,
           relatedProductIds: rel,
           compatibleProductIds: comp,
@@ -804,18 +816,9 @@ export function ProductsPanel() {
               onChange={(e) => setMarketingBulletsText(e.target.value)}
             />
           </label>
-          <label className="md:col-span-2">
-            <span className="text-slate-600">
-              Media URLs (one per line; optional “|” alt text)
-            </span>
-            <textarea
-              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
-              rows={4}
-              value={mediaLines}
-              onChange={(e) => setMediaLines(e.target.value)}
-              placeholder={"https://cdn.example.com/img.webp\nhttps://... | Front angle"}
-            />
-          </label>
+          <div className="md:col-span-2">
+            <ProductMediaEditor items={mediaItems} onChange={setMediaItems} />
+          </div>
           <label className="md:col-span-2">
             <span className="text-slate-600">
               Attachments: title | url | docType (manual, datasheet, sds, certification, drawing, other)

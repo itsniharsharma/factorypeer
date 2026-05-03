@@ -1,4 +1,4 @@
-import { footerContentSeed, footerLinkGroupSeeds, homepageCategoryTileSeeds, homepagePromoBannerSeeds, homepageSupportCardSeeds, megaMenuUtilityLinkGroupSeed, utilityLinkGroupSeed, } from "./merchandising-seed-data.js";
+import { footerContentSeed, footerLinkGroupSeeds, getHomepageCategoryTileSeeds, getHomepagePromoBannerSeeds, homepageSupportCardSeeds, megaMenuUtilityLinkGroupSeed, utilityLinkGroupSeed, } from "./merchandising-seed-data.js";
 async function seedCollectionIfEmpty(items, seed) {
     if (items.length === 0) {
         await seed();
@@ -18,10 +18,10 @@ function toMutableFooterContent(item) {
 }
 export async function seedMerchandisingContent(services) {
     await seedCollectionIfEmpty(await services.homepage.listBanners(), async () => {
-        await Promise.all(homepagePromoBannerSeeds.map((item) => services.homepage.createBanner(item)));
+        await Promise.all(getHomepagePromoBannerSeeds().map((item) => services.homepage.createBanner(item)));
     });
     await seedCollectionIfEmpty(await services.homepage.listCategoryTiles(), async () => {
-        await Promise.all(homepageCategoryTileSeeds.map((item) => services.homepage.createCategoryTile(item)));
+        await Promise.all(getHomepageCategoryTileSeeds().map((item) => services.homepage.createCategoryTile(item)));
     });
     await seedCollectionIfEmpty(await services.homepage.listSupportCards(), async () => {
         await Promise.all(homepageSupportCardSeeds.map((item) => services.homepage.createSupportCard(item)));

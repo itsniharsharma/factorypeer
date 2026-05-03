@@ -12,8 +12,7 @@ import type {
 import { catalogServerJson, catalogServerJsonList } from "./fetch";
 import { getTaxonomyTree } from "./taxonomy";
 import { buildSpecMatrixForCategory } from "./matrix";
-
-const PLACEHOLDER_IMG = "/images/product-thumb.svg";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 function findCategoryBySlug(
   nodes: CatalogTaxonomyNode[],
@@ -91,7 +90,7 @@ function breadcrumbsForProduct(
 function normalizeProductImages(product: ProductDoc): Array<{ url: string; alt: string }> {
   const media = product.media;
   if (!media?.length) {
-    return [{ url: PLACEHOLDER_IMG, alt: product.title }];
+    return [{ url: getDefaultCatalogImageUrl(), alt: product.title }];
   }
   const sorted = [...media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   return sorted.map((m, i) => ({
@@ -147,7 +146,7 @@ async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Prod
     itemNumber: row.itemNumber,
     manufacturer: row.manufacturer ?? "—",
     brand: row.brand,
-    thumbnail: PLACEHOLDER_IMG,
+    thumbnail: getDefaultCatalogImageUrl(),
     price: row.price,
     uom: row.uom,
     status: mapVariantStatus(row.availability),
@@ -155,16 +154,23 @@ async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Prod
   }));
 }
 
+/** Public helper for client-driven lists (e.g. recently viewed localStorage IDs). */
+export async function getProductsByIds(ids: string[] | undefined): Promise<Product[]> {
+  return fetchOrderedProductCards(ids);
+}
+
 export async function getProductBySlug(slug: string): Promise<ProductDetailPageData | undefined> {
   const tree = await getTaxonomyTree();
   const { data: list } = await catalogServerJsonList<ProductDoc[]>(
     `/products?status=published&limit=40&q=${encodeURIComponent(slug)}`,
+    { cache: "no-store" },
   );
   const product = list.find((p) => p.slug === slug);
   if (!product) return undefined;
 
   const { data: variants } = await catalogServerJsonList<ProductVariantDoc[]>(
     `/products/${product._id}/variants?status=published&limit=80`,
+    { cache: "no-store" },
   );
   const primary =
     variants.find((v) => v._id === product.defaultVariantId) ?? variants[0];
@@ -303,7 +309,7 @@ export async function searchCatalog(query: string): Promise<SearchCatalogProduct
       shortSpec: (p.searchText ?? p.title).slice(0, 160),
       price,
       uom: v?.uom ?? "Each",
-      thumbnail: PLACEHOLDER_IMG,
+      thumbnail: getDefaultCatalogImageUrl(),
       availability: v?.availability ?? "—",
     });
   }
@@ -342,7 +348,7 @@ export async function getProductListingBySlug(slug: string): Promise<ProductList
       sku: v?.sku ?? "—",
       itemNumber: v?.itemNumber ?? "—",
       manufacturer: v?.manufacturer ?? p.brand ?? "—",
-      thumbnail: PLACEHOLDER_IMG,
+      thumbnail: getDefaultCatalogImageUrl(),
       price,
       uom: v?.uom ?? "Each",
       status: mapVariantStatus(v?.availability),
@@ -394,7 +400,7 @@ export async function getFeaturedHomeProducts(limit = 6): Promise<Product[]> {
       sku: v?.sku ?? "—",
       itemNumber: v?.itemNumber,
       manufacturer: v?.manufacturer ?? p.brand ?? "—",
-      thumbnail: PLACEHOLDER_IMG,
+      thumbnail: getDefaultCatalogImageUrl(),
       price,
       uom: v?.uom ?? "Each",
       status: mapVariantStatus(v?.availability),

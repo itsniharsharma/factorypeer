@@ -1,18 +1,10 @@
 import { getUtilityLinkGroup } from "@/lib/catalog-service";
 
-const utilityLinksFallback = [
-  { label: "Contract Pricing", href: "/pricing" },
-  { label: "Bulk RFQ", href: "/rfq" },
-  { label: "Fleet Programs", href: "/programs/fleet" },
-  { label: "Branch Pickup", href: "/branch-pickup" },
-  { label: "Help Center", href: "/help" },
-];
-
 export async function UtilityTopBar() {
   const group = await getUtilityLinkGroup().catch(() => undefined);
   const links = group?.links?.length
     ? group.links.map((link) => ({ label: link.label, href: link.href }))
-    : utilityLinksFallback;
+    : [];
 
   return (
     <div className="bg-slate-800 text-slate-100">

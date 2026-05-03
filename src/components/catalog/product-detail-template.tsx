@@ -5,6 +5,7 @@ import { QuantitySelector } from "@/components/ui/quantity-selector";
 import { SpecTable } from "@/components/ui/spec-table";
 import type { ProductDetailPageData } from "@/lib/types";
 import { ProductImageGallery } from "./product-image-gallery";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface ProductDetailTemplateProps {
   data: ProductDetailPageData;
@@ -330,7 +331,7 @@ function ProductRelationSection({
               <article className="flex gap-2 border border-line bg-white p-1.5 transition-colors hover:border-slate-400">
                 <div className="relative h-14 w-14 shrink-0 border border-line bg-white">
                   <Image
-                    src={product.thumbnail ?? "/images/product-thumb.svg"}
+                    src={product.thumbnail ?? getDefaultCatalogImageUrl()}
                     alt={product.title}
                     fill
                     className="object-contain p-0.5"

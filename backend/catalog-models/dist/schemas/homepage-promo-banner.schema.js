@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 const homepagePromoBannerSchema = new Schema({
     tenantId: { type: Schema.Types.ObjectId, index: true },
     slug: { type: String, required: true, trim: true },
@@ -6,8 +7,7 @@ const homepagePromoBannerSchema = new Schema({
     title: { type: String, required: true, trim: true },
     subtitle: { type: String, trim: true },
     description: { type: String, trim: true },
-    imageUrl: { type: String, required: true, trim: true },
-    imageAlt: { type: String, trim: true },
+    image: { type: catalogMediaAssetSchema, required: false },
     ctaLabel: { type: String, trim: true },
     href: { type: String, trim: true },
     openInNewTab: { type: Boolean, default: false },

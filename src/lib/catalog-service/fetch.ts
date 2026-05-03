@@ -6,6 +6,12 @@ function catalogUpstreamBase(): string {
   return getCatalogAdminApiBaseUrl();
 }
 
+function catalogAdminAuthHeader(): Record<string, string> {
+  const key = process.env["CATALOG_ADMIN_API_KEY"]?.trim();
+  if (!key || key.length < 16) return {};
+  return { authorization: `Bearer ${key}` };
+}
+
 export const DEFAULT_REVALIDATE_SECONDS = 60;
 
 export class CatalogFetchError extends Error {
@@ -45,6 +51,7 @@ export async function catalogServerJson<T>(
     ...init,
     headers: {
       accept: "application/json",
+      ...catalogAdminAuthHeader(),
       ...(init?.headers ?? {}),
     },
     next: init?.next ?? { revalidate: DEFAULT_REVALIDATE_SECONDS, tags: ["catalog"] },
@@ -81,6 +88,7 @@ export async function catalogServerJsonList<T>(
     ...init,
     headers: {
       accept: "application/json",
+      ...catalogAdminAuthHeader(),
       ...(init?.headers ?? {}),
     },
     next: init?.next ?? { revalidate: DEFAULT_REVALIDATE_SECONDS, tags: ["catalog"] },

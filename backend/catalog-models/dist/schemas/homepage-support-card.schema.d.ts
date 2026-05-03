@@ -13,6 +13,14 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;
@@ -28,6 +36,14 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;
@@ -45,6 +61,14 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;
@@ -71,6 +95,14 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;
@@ -86,6 +118,14 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;
@@ -103,6 +143,14 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
     icon?: string | null | undefined;

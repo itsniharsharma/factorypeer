@@ -17,6 +17,12 @@
 const ADMIN_API_BASE = process.env.CATALOG_ADMIN_API_URL || 'http://127.0.0.1:4040/admin/catalog';
 const STOREFRONT_BASE = process.env.STOREFRONT_URL || 'http://127.0.0.1:3000';
 
+/** Cloudinary HTTPS demo default — override via CATALOG_SEED_DEFAULT_IMAGE_URL / NEXT_PUBLIC_CATALOG_DEFAULT_IMAGE_URL */
+const DEMO_CLOUDINARY_IMG =
+  process.env.CATALOG_SEED_DEFAULT_IMAGE_URL?.trim() ||
+  process.env.NEXT_PUBLIC_CATALOG_DEFAULT_IMAGE_URL?.trim() ||
+  'https://res.cloudinary.com/demo/image/upload/sample.jpg';
+
 const colors = {
   reset: '\x1b[0m',
   green: '\x1b[32m',
@@ -150,8 +156,7 @@ async function main() {
         title: 'Professional Machining Solutions',
         subtitle: 'Premium T-Slot cutters for precision milling',
         description: 'Engineered for industrial precision. Trusted by thousands of manufacturers.',
-        imageUrl: 'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=1200&h=400&fit=crop',
-        imageAlt: 'Industrial machining equipment',
+        image: { url: DEMO_CLOUDINARY_IMG, alt: 'Industrial machining equipment' },
         ctaLabel: 'Explore Cutters',
         href: '/catalog/machining/milling/milling-cutters/t-slot-milling-cutters',
         openInNewTab: false,
@@ -170,8 +175,7 @@ async function main() {
         title: 'New Inventory Alert',
         subtitle: 'Latest arrivals in T-Slot milling cutters',
         description: 'Just added 50+ SKUs in our premium T-Slot lineup.',
-        imageUrl: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=400&fit=crop',
-        imageAlt: 'New inventory',
+        image: { url: DEMO_CLOUDINARY_IMG, alt: 'New inventory' },
         ctaLabel: 'View New Items',
         href: '/search?q=new',
         status: 'published',
@@ -196,8 +200,7 @@ async function main() {
         slug: uniqueSlug('machining-tile'),
         label: 'Machining Solutions',
         description: 'Comprehensive range of precision machining tools and cutters.',
-        imageUrl: 'https://images.unsplash.com/photo-1581092916550-e323be2ae537?w=600&h=400&fit=crop',
-        imageAlt: 'Machining tools',
+        image: { url: DEMO_CLOUDINARY_IMG, alt: 'Machining tools' },
         ctaLabel: 'Browse Machining',
         status: 'published',
         sortOrder: 1,
@@ -213,8 +216,7 @@ async function main() {
         slug: uniqueSlug('industrial-supplies-tile'),
         label: 'Industrial Supplies',
         description: 'Premium supplies for industrial manufacturing.',
-        imageUrl: 'https://images.unsplash.com/photo-1581092162562-40038f56b657?w=600&h=400&fit=crop',
-        imageAlt: 'Industrial supplies',
+        image: { url: DEMO_CLOUDINARY_IMG, alt: 'Industrial supplies' },
         status: 'published',
         sortOrder: 2,
       },

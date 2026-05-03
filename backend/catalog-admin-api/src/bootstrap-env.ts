@@ -9,6 +9,10 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** Repository root: backend/catalog-admin-api/src -> ../../../ */
 const monorepoRoot = resolve(__dirname, "../../..");
+/** Package dir: backend/catalog-admin-api */
+const apiPackageRoot = resolve(__dirname, "..");
 
 config({ path: resolve(monorepoRoot, ".env") });
 config({ path: resolve(monorepoRoot, ".env.local"), override: true });
+/** Optional package-local overrides (e.g. Render clone with only backend checked out). */
+config({ path: resolve(apiPackageRoot, ".env"), override: true });

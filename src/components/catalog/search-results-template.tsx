@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchCatalogProduct } from "@/lib/types";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface SearchFacet {
   id: string;
@@ -78,7 +79,7 @@ export function SearchResultsTemplate({ query, results, facets }: SearchResultsT
                 <article key={product.id} className="grid grid-cols-[90px_1fr_180px] gap-1.5 border border-line bg-white p-1">
                   <div className="relative h-16 overflow-hidden border border-line bg-slate-50">
                     <Image
-                      src={product.thumbnail ?? "/images/product-thumb.svg"}
+                      src={product.thumbnail ?? getDefaultCatalogImageUrl()}
                       alt={product.title}
                       fill
                       className="object-cover"

@@ -23,9 +23,15 @@ export {
   searchCatalog,
   getProductListingBySlug,
   getProductListingSlugs,
+  getProductsByIds,
   getFeaturedHomeProducts,
 } from "./products";
-export { getHomepagePromoBanners, getHomepageCategoryTiles, getHomepageSupportCards } from "./homepage";
+export {
+  getHomepagePromoBanners,
+  getHomepageCategoryTiles,
+  getHomepageBrowseCategoryTiles,
+  getHomepageSupportCards,
+} from "./homepage";
 export {
   getNavigationLinkGroups,
   getUtilityLinkGroup,

@@ -15,15 +15,27 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];
@@ -77,15 +89,27 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];
@@ -141,15 +165,27 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];
@@ -214,15 +250,27 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];
@@ -276,15 +324,27 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];
@@ -340,15 +400,27 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     media: Types.DocumentArray<{
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }> & {
         sortOrder: number;
         url: string;
+        publicId?: string | null | undefined;
         alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
     }>;
     longDescription: string;
     features: string[];

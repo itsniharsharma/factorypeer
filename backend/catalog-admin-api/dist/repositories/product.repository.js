@@ -26,6 +26,10 @@ export class ProductRepository {
         const mongoFilter = { ...this.tq() };
         if (filter?.status)
             mongoFilter["status"] = filter.status;
+        if (filter?.ids && filter.ids.length > 0) {
+            mongoFilter["_id"] = { $in: filter.ids };
+            return mongoFilter;
+        }
         if (filter?.categoryId)
             mongoFilter["categoryIds"] = filter.categoryId;
         if (!filter?.q?.trim()) {
@@ -76,6 +80,18 @@ export class ProductRepository {
             categoryIds: data.categoryIds ?? [],
             searchText: data.searchText ?? "",
             sortOrder: data.sortOrder ?? 0,
+            media: data.media ?? [],
+            longDescription: data.longDescription ?? "",
+            features: data.features ?? [],
+            applications: data.applications ?? [],
+            marketingBullets: data.marketingBullets ?? [],
+            attachments: data.attachments ?? [],
+            relatedProductIds: data.relatedProductIds ?? [],
+            compatibleProductIds: data.compatibleProductIds ?? [],
+            recommendedProductIds: data.recommendedProductIds ?? [],
+            shippingWeight: data.shippingWeight,
+            branchAvailabilityPlaceholder: data.branchAvailabilityPlaceholder,
+            logisticsMeta: data.logisticsMeta ?? [],
             documentVersion: 1,
             ...auditCreateFields(opts?.actorId),
         };

@@ -15,6 +15,7 @@ import { SpecMatrixService } from "./services/spec-matrix.service.js";
 import { ProductService } from "./services/product.service.js";
 import { HomepageService } from "./services/homepage.service.js";
 import { NavigationService } from "./services/navigation.service.js";
+import { CloudinaryService } from "./services/cloudinary.service.js";
 
 export type CatalogAdminServices = {
   categories: CategoryService;
@@ -22,6 +23,7 @@ export type CatalogAdminServices = {
   products: ProductService;
   homepage: HomepageService;
   navigation: NavigationService;
+  cloudinary: CloudinaryService;
 };
 
 export function createCatalogAdminServices(
@@ -36,12 +38,14 @@ export function createCatalogAdminServices(
   const variantRepo = new ProductVariantRepository(models, tenantId);
   const homepageRepo = new HomepageRepository(models, tenantId);
   const navigationRepo = new NavigationRepository(models, tenantId);
+  const cloudinary = new CloudinaryService();
 
   return {
     categories: new CategoryService(categoryRepo, specSchemaRepo),
     specMatrix: new SpecMatrixService(categoryRepo, specSchemaRepo, specColumnRepo, specRowRepo),
-    products: new ProductService(productRepo, variantRepo, specRowRepo),
-    homepage: new HomepageService(homepageRepo),
+    products: new ProductService(productRepo, variantRepo, specRowRepo, cloudinary),
+    homepage: new HomepageService(homepageRepo, cloudinary),
     navigation: new NavigationService(navigationRepo),
+    cloudinary,
   };
 }

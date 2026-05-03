@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProductDetailTemplate } from "@/components/catalog/product-detail-template";
+import { RecentlyViewedTracker } from "@/components/catalog/recently-viewed-tracker";
 import { AppShell } from "@/components/layout/app-shell";
 import { getProductBySlug, getProductSlugs } from "@/lib/catalog-service";
 
@@ -33,6 +34,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <AppShell>
+      <RecentlyViewedTracker slug={product.slug} />
       <ProductDetailTemplate data={product} />
     </AppShell>
   );

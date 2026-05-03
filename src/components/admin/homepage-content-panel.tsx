@@ -13,6 +13,7 @@ import {
   listHomepageCategoryTiles,
   listHomepagePromoBanners,
   listHomepageSupportCards,
+  type CatalogMediaAssetDoc,
   type HomepageCategoryTileDoc,
   type HomepagePromoBannerDoc,
   type HomepageSupportCardDoc,
@@ -22,6 +23,11 @@ import {
   updateHomepageSupportCard,
 } from "@/lib/admin-api";
 import { AdminModal } from "./modal";
+import { CatalogMediaField } from "./catalog-media-field";
+
+function heroImageFromDoc(item: { image?: CatalogMediaAssetDoc | null }): CatalogMediaAssetDoc | null {
+  return item.image?.url ? item.image : null;
+}
 
 type BannerModalState = null | { mode: "create" } | { mode: "edit"; item: HomepagePromoBannerDoc };
 type TileModalState = null | { mode: "create" } | { mode: "edit"; item: HomepageCategoryTileDoc };
@@ -48,7 +54,7 @@ export function HomepageContentPanel() {
     title: "",
     subtitle: "",
     description: "",
-    imageUrl: "",
+    image: null as CatalogMediaAssetDoc | null,
     imageAlt: "",
     ctaLabel: "",
     href: "",
@@ -63,7 +69,7 @@ export function HomepageContentPanel() {
     description: "",
     categoryId: "",
     href: "",
-    imageUrl: "",
+    image: null as CatalogMediaAssetDoc | null,
     imageAlt: "",
     icon: "",
     ctaLabel: "",
@@ -75,6 +81,8 @@ export function HomepageContentPanel() {
     slug: "",
     title: "",
     description: "",
+    image: null as CatalogMediaAssetDoc | null,
+    imageAlt: "",
     icon: "",
     ctaLabel: "",
     href: "",
@@ -117,7 +125,7 @@ export function HomepageContentPanel() {
       title: "",
       subtitle: "",
       description: "",
-      imageUrl: "",
+      image: null,
       imageAlt: "",
       ctaLabel: "",
       href: "",
@@ -135,7 +143,7 @@ export function HomepageContentPanel() {
       title: item.title,
       subtitle: item.subtitle ?? "",
       description: item.description ?? "",
-      imageUrl: item.imageUrl,
+      image: heroImageFromDoc(item),
       imageAlt: item.imageAlt ?? "",
       ctaLabel: item.ctaLabel ?? "",
       href: item.href ?? "",
@@ -152,18 +160,26 @@ export function HomepageContentPanel() {
       toast.error("Banner sort order must be a number");
       return;
     }
-    if (!bannerForm.slug.trim() || !bannerForm.title.trim() || !bannerForm.imageUrl.trim()) {
-      toast.error("Banner slug, title, and image URL are required");
+    if (!bannerForm.slug.trim() || !bannerForm.title.trim() || !bannerForm.image?.url?.trim()) {
+      toast.error("Banner slug, title, and image are required");
       return;
     }
 
+    const img = bannerForm.image;
     const payload = {
       slug: bannerForm.slug.trim(),
       eyebrow: bannerForm.eyebrow.trim() || undefined,
       title: bannerForm.title.trim(),
       subtitle: bannerForm.subtitle.trim() || undefined,
       description: bannerForm.description.trim() || undefined,
-      imageUrl: bannerForm.imageUrl.trim(),
+      image: {
+        url: img.url,
+        publicId: img.publicId,
+        alt: bannerForm.imageAlt.trim() || undefined,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+      },
       imageAlt: bannerForm.imageAlt.trim() || undefined,
       ctaLabel: bannerForm.ctaLabel.trim() || undefined,
       href: bannerForm.href.trim() || undefined,
@@ -215,7 +231,7 @@ export function HomepageContentPanel() {
       description: "",
       categoryId: "",
       href: "",
-      imageUrl: "",
+      image: null,
       imageAlt: "",
       icon: "",
       ctaLabel: "",
@@ -232,7 +248,7 @@ export function HomepageContentPanel() {
       description: item.description ?? "",
       categoryId: item.categoryId ?? "",
       href: item.href ?? "",
-      imageUrl: item.imageUrl,
+      image: heroImageFromDoc(item),
       imageAlt: item.imageAlt ?? "",
       icon: item.icon ?? "",
       ctaLabel: item.ctaLabel ?? "",
@@ -248,19 +264,27 @@ export function HomepageContentPanel() {
       toast.error("Tile sort order must be a number");
       return;
     }
-    if (!tileForm.slug.trim() || !tileForm.label.trim() || !tileForm.imageUrl.trim()) {
-      toast.error("Tile slug, label, and image URL are required");
+    if (!tileForm.slug.trim() || !tileForm.label.trim() || !tileForm.image?.url?.trim()) {
+      toast.error("Tile slug, label, and image are required");
       return;
     }
 
     const categoryId = tileForm.categoryId.trim();
+    const img = tileForm.image;
     const payload = {
       slug: tileForm.slug.trim(),
       label: tileForm.label.trim(),
       description: tileForm.description.trim() || undefined,
       categoryId: categoryId ? categoryId : null,
       href: tileForm.href.trim() || undefined,
-      imageUrl: tileForm.imageUrl.trim(),
+      image: {
+        url: img.url,
+        publicId: img.publicId,
+        alt: tileForm.imageAlt.trim() || undefined,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+      },
       imageAlt: tileForm.imageAlt.trim() || undefined,
       icon: tileForm.icon.trim() || undefined,
       ctaLabel: tileForm.ctaLabel.trim() || undefined,
@@ -309,6 +333,8 @@ export function HomepageContentPanel() {
       slug: "",
       title: "",
       description: "",
+      image: null,
+      imageAlt: "",
       icon: "",
       ctaLabel: "",
       href: "",
@@ -323,6 +349,8 @@ export function HomepageContentPanel() {
       slug: item.slug,
       title: item.title,
       description: item.description ?? "",
+      image: item.image?.url ? item.image : null,
+      imageAlt: item.image?.alt ?? "",
       icon: item.icon ?? "",
       ctaLabel: item.ctaLabel ?? "",
       href: item.href ?? "",
@@ -343,7 +371,7 @@ export function HomepageContentPanel() {
       return;
     }
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       slug: cardForm.slug.trim(),
       title: cardForm.title.trim(),
       description: cardForm.description.trim() || undefined,
@@ -353,6 +381,17 @@ export function HomepageContentPanel() {
       status: cardForm.status,
       sortOrder,
     };
+    if (cardForm.image?.url?.trim()) {
+      const img = cardForm.image;
+      payload.image = {
+        url: img.url,
+        publicId: img.publicId,
+        alt: cardForm.imageAlt.trim() || undefined,
+        width: img.width,
+        height: img.height,
+        format: img.format,
+      };
+    }
 
     try {
       if (cardModal?.mode === "create") {
@@ -462,7 +501,7 @@ export function HomepageContentPanel() {
                   <th className="px-2 py-2">Slug</th>
                   <th className="px-2 py-2">Status</th>
                   <th className="px-2 py-2">Sort</th>
-                  <th className="px-2 py-2">Image URL</th>
+                  <th className="px-2 py-2">Preview</th>
                   <th className="px-2 py-2 text-right">Actions</th>
                 </tr>
               </thead>
@@ -473,7 +512,18 @@ export function HomepageContentPanel() {
                     <td className="px-2 py-2 font-mono text-xs">{item.slug}</td>
                     <td className="px-2 py-2 text-xs">{item.status}</td>
                     <td className="px-2 py-2 text-xs">{item.sortOrder ?? 0}</td>
-                    <td className="max-w-[220px] truncate px-2 py-2 text-xs text-slate-600">{item.imageUrl}</td>
+                    <td className="px-2 py-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {item.image?.url ? (
+                        <img
+                          src={item.image.url}
+                          alt=""
+                          className="h-10 w-16 rounded-sm border border-slate-200 object-cover"
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-2 py-2 text-right">
                       <button type="button" className="mr-2 text-xs text-brand underline" onClick={() => void toggleBannerPublish(item)}>
                         {item.status === "published" ? "Set Draft" : "Publish"}
@@ -507,7 +557,7 @@ export function HomepageContentPanel() {
                   <th className="px-2 py-2">Status</th>
                   <th className="px-2 py-2">Sort</th>
                   <th className="px-2 py-2">CategoryId</th>
-                  <th className="px-2 py-2">Image URL</th>
+                  <th className="px-2 py-2">Preview</th>
                   <th className="px-2 py-2 text-right">Actions</th>
                 </tr>
               </thead>
@@ -519,7 +569,18 @@ export function HomepageContentPanel() {
                     <td className="px-2 py-2 text-xs">{item.status}</td>
                     <td className="px-2 py-2 text-xs">{item.sortOrder ?? 0}</td>
                     <td className="px-2 py-2 font-mono text-xs text-slate-600">{item.categoryId ?? "—"}</td>
-                    <td className="max-w-[220px] truncate px-2 py-2 text-xs text-slate-600">{item.imageUrl}</td>
+                    <td className="px-2 py-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {item.image?.url ? (
+                        <img
+                          src={item.image.url}
+                          alt=""
+                          className="h-10 w-16 rounded-sm border border-slate-200 object-cover"
+                        />
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-2 py-2 text-right">
                       <button type="button" className="mr-2 text-xs text-brand underline" onClick={() => void toggleTilePublish(item)}>
                         {item.status === "published" ? "Set Draft" : "Publish"}
@@ -597,8 +658,16 @@ export function HomepageContentPanel() {
           <label><span className="text-slate-600">Eyebrow</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.eyebrow} onChange={(e) => setBannerForm((p) => ({ ...p, eyebrow: e.target.value }))} /></label>
           <label><span className="text-slate-600">Subtitle</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.subtitle} onChange={(e) => setBannerForm((p) => ({ ...p, subtitle: e.target.value }))} /></label>
           <label className="md:col-span-2"><span className="text-slate-600">Description</span><textarea className="mt-1 w-full rounded-sm border px-2 py-1" rows={2} value={bannerForm.description} onChange={(e) => setBannerForm((p) => ({ ...p, description: e.target.value }))} /></label>
-          <label className="md:col-span-2"><span className="text-slate-600">Image URL</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.imageUrl} onChange={(e) => setBannerForm((p) => ({ ...p, imageUrl: e.target.value }))} /></label>
-          <label><span className="text-slate-600">Image Alt</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.imageAlt} onChange={(e) => setBannerForm((p) => ({ ...p, imageAlt: e.target.value }))} /></label>
+          <div className="md:col-span-2">
+            <CatalogMediaField
+              label="Banner image"
+              folder="homepage/banners"
+              value={bannerForm.image}
+              onChange={(next) => setBannerForm((p) => ({ ...p, image: next }))}
+              altText={bannerForm.imageAlt}
+              onAltChange={(alt) => setBannerForm((p) => ({ ...p, imageAlt: alt }))}
+            />
+          </div>
           <label><span className="text-slate-600">CTA Label</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.ctaLabel} onChange={(e) => setBannerForm((p) => ({ ...p, ctaLabel: e.target.value }))} /></label>
           <label><span className="text-slate-600">Href</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.href} onChange={(e) => setBannerForm((p) => ({ ...p, href: e.target.value }))} /></label>
           <label><span className="text-slate-600">Status</span><select className="mt-1 w-full rounded-sm border px-2 py-1" value={bannerForm.status} onChange={(e) => setBannerForm((p) => ({ ...p, status: e.target.value as PublishStatus }))}><option value="draft">draft</option><option value="published">published</option><option value="archived">archived</option></select></label>
@@ -625,8 +694,16 @@ export function HomepageContentPanel() {
           <label className="md:col-span-2"><span className="text-slate-600">Description</span><textarea className="mt-1 w-full rounded-sm border px-2 py-1" rows={2} value={tileForm.description} onChange={(e) => setTileForm((p) => ({ ...p, description: e.target.value }))} /></label>
           <label><span className="text-slate-600">Category ID</span><input className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs" value={tileForm.categoryId} onChange={(e) => setTileForm((p) => ({ ...p, categoryId: e.target.value }))} /></label>
           <label><span className="text-slate-600">Href</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.href} onChange={(e) => setTileForm((p) => ({ ...p, href: e.target.value }))} /></label>
-          <label className="md:col-span-2"><span className="text-slate-600">Image URL</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.imageUrl} onChange={(e) => setTileForm((p) => ({ ...p, imageUrl: e.target.value }))} /></label>
-          <label><span className="text-slate-600">Image Alt</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.imageAlt} onChange={(e) => setTileForm((p) => ({ ...p, imageAlt: e.target.value }))} /></label>
+          <div className="md:col-span-2">
+            <CatalogMediaField
+              label="Tile image"
+              folder="homepage/category-tiles"
+              value={tileForm.image}
+              onChange={(next) => setTileForm((p) => ({ ...p, image: next }))}
+              altText={tileForm.imageAlt}
+              onAltChange={(alt) => setTileForm((p) => ({ ...p, imageAlt: alt }))}
+            />
+          </div>
           <label><span className="text-slate-600">Icon</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.icon} onChange={(e) => setTileForm((p) => ({ ...p, icon: e.target.value }))} /></label>
           <label><span className="text-slate-600">CTA Label</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.ctaLabel} onChange={(e) => setTileForm((p) => ({ ...p, ctaLabel: e.target.value }))} /></label>
           <label><span className="text-slate-600">Status</span><select className="mt-1 w-full rounded-sm border px-2 py-1" value={tileForm.status} onChange={(e) => setTileForm((p) => ({ ...p, status: e.target.value as PublishStatus }))}><option value="draft">draft</option><option value="published">published</option><option value="archived">archived</option></select></label>
@@ -638,6 +715,7 @@ export function HomepageContentPanel() {
         open={cardModal !== null}
         title={cardModal?.mode === "edit" ? "Edit Support Card" : "New Support Card"}
         onClose={() => setCardModal(null)}
+        wide
         footer={
           <div className="mt-6 flex justify-end gap-2 border-t pt-4">
             <button type="button" className="rounded-sm border px-3 py-2 text-sm" onClick={() => setCardModal(null)}>Cancel</button>
@@ -645,10 +723,20 @@ export function HomepageContentPanel() {
           </div>
         }
       >
-        <div className="grid gap-3 text-sm">
+        <div className="grid gap-3 text-sm md:grid-cols-2">
           <label><span className="text-slate-600">Slug</span><input className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs" value={cardForm.slug} onChange={(e) => setCardForm((p) => ({ ...p, slug: e.target.value }))} /></label>
           <label><span className="text-slate-600">Title</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={cardForm.title} onChange={(e) => setCardForm((p) => ({ ...p, title: e.target.value }))} /></label>
-          <label><span className="text-slate-600">Description</span><textarea className="mt-1 w-full rounded-sm border px-2 py-1" rows={3} value={cardForm.description} onChange={(e) => setCardForm((p) => ({ ...p, description: e.target.value }))} /></label>
+          <label className="md:col-span-2"><span className="text-slate-600">Description</span><textarea className="mt-1 w-full rounded-sm border px-2 py-1" rows={3} value={cardForm.description} onChange={(e) => setCardForm((p) => ({ ...p, description: e.target.value }))} /></label>
+          <div className="md:col-span-2">
+            <CatalogMediaField
+              label="Card image (optional)"
+              folder="homepage/support-cards"
+              value={cardForm.image}
+              onChange={(next) => setCardForm((p) => ({ ...p, image: next }))}
+              altText={cardForm.imageAlt}
+              onAltChange={(alt) => setCardForm((p) => ({ ...p, imageAlt: alt }))}
+            />
+          </div>
           <label><span className="text-slate-600">Icon</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={cardForm.icon} onChange={(e) => setCardForm((p) => ({ ...p, icon: e.target.value }))} /></label>
           <label><span className="text-slate-600">CTA Label</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={cardForm.ctaLabel} onChange={(e) => setCardForm((p) => ({ ...p, ctaLabel: e.target.value }))} /></label>
           <label><span className="text-slate-600">Href</span><input className="mt-1 w-full rounded-sm border px-2 py-1" value={cardForm.href} onChange={(e) => setCardForm((p) => ({ ...p, href: e.target.value }))} /></label>

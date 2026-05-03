@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProductListingPageData } from "@/lib/types";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface ProductListingTemplateProps {
   data: ProductListingPageData;
@@ -73,7 +74,7 @@ export function ProductListingTemplate({ data }: ProductListingTemplateProps) {
               <article key={product.id} className="grid grid-cols-[100px_1fr_200px] gap-2 border border-line bg-white p-1.5">
                 <div className="relative h-20 overflow-hidden border border-line bg-slate-50">
                   <Image
-                    src={product.thumbnail ?? "/images/product-thumb.svg"}
+                    src={product.thumbnail ?? getDefaultCatalogImageUrl()}
                     alt={product.title}
                     fill
                     className="object-cover"

@@ -7,7 +7,6 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -17,7 +16,14 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
@@ -26,7 +32,6 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -36,7 +41,14 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
@@ -47,7 +59,6 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -57,7 +68,14 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {
@@ -77,7 +95,6 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -87,7 +104,14 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
@@ -96,7 +120,6 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -106,7 +129,14 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
@@ -117,7 +147,6 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
-    imageUrl: string;
     openInNewTab: boolean;
     metadata: any;
     tenantId?: Types.ObjectId | null | undefined;
@@ -127,7 +156,14 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     updatedBy?: Types.ObjectId | null | undefined;
     eyebrow?: string | null | undefined;
     subtitle?: string | null | undefined;
-    imageAlt?: string | null | undefined;
+    image?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     ctaLabel?: string | null | undefined;
     href?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {

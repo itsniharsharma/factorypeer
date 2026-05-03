@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { SupportCTA } from "@/lib/types";
 
 interface SupportCardsRowProps {
@@ -28,8 +29,19 @@ export function SupportCardsRow({ cards }: SupportCardsRowProps) {
                 </a>
               </div>
             </div>
-            <div className="flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded-sm bg-brand shadow-[4px_4px_0_rgba(0,0,0,0.12)]">
-              <div className="h-7 w-7 rounded-[2px] border-2 border-white/85" />
+            <div className="relative flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center overflow-hidden rounded-sm bg-brand shadow-[4px_4px_0_rgba(0,0,0,0.12)]">
+              {card.image ? (
+                <Image
+                  src={card.image}
+                  alt={card.imageAlt ?? card.title}
+                  width={72}
+                  height={72}
+                  className="h-full w-full object-cover"
+                  sizes="72px"
+                />
+              ) : (
+                <div className="h-7 w-7 rounded-[2px] border-2 border-white/85" />
+              )}
             </div>
           </article>
         ))}

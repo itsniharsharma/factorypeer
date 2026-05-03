@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { CartItem } from "@/lib/mock-cart";
+import type { CartLineItem } from "@/lib/types";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
+import { formatCurrency } from "@/lib/cart-data";
 
 interface CartItemRowProps {
-  item: CartItem;
+  item: CartLineItem;
 }
 
 export function CartItemRow({ item }: CartItemRowProps) {
@@ -12,7 +14,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
     <div className="flex items-stretch gap-4 border-b border-slate-200 px-3 py-3">
       <div className="relative h-[72px] w-[72px] flex-shrink-0 overflow-hidden rounded-sm bg-slate-100">
         <Image
-          src={item.thumbnail ?? "/images/product-thumb.svg"}
+          src={item.thumbnail ?? getDefaultCatalogImageUrl()}
           alt={item.title}
           fill
           className="object-cover"
@@ -20,7 +22,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-slate-700">{item.manufacturer}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-slate-700">Catalog Item</p>
         <div className="mt-1 flex items-start gap-4 flex-1">
           <div className="min-w-0">
             <h3 className="text-[14px] font-semibold text-slate-900 leading-snug">
@@ -31,8 +33,8 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
           <div className="ml-auto text-right">
             <p className="text-[11px] text-slate-600">Unit Price</p>
-            <p className="text-[18px] font-bold text-emerald-700">{item.price} <span className="text-[12px] font-normal text-slate-600">/ {item.uom.toLowerCase()}</span></p>
-            <p className="mt-1 text-[12px] text-slate-500">Min qty of 1: <span className="font-semibold text-emerald-700">{item.price}</span></p>
+            <p className="text-[18px] font-bold text-emerald-700">{formatCurrency(item.unitPrice)} <span className="text-[12px] font-normal text-slate-600">/ {item.uom.toLowerCase()}</span></p>
+            <p className="mt-1 text-[12px] text-slate-500">Min qty of 1: <span className="font-semibold text-emerald-700">{formatCurrency(item.unitPrice)}</span></p>
           </div>
         </div>
 

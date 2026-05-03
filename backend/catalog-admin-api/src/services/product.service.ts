@@ -15,6 +15,16 @@ import {
 } from "../errors/domain.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
+import type { CloudinaryService } from "./cloudinary.service.js";
+
+function mediaPublicIds(media?: Array<{ publicId?: string | null }>): Set<string> {
+  const s = new Set<string>();
+  for (const m of media ?? []) {
+    const id = typeof m.publicId === "string" ? m.publicId.trim() : "";
+    if (id) s.add(id);
+  }
+  return s;
+}
 
 function eo(ctx?: WriteContext, session?: ClientSession): ExecOpts {
   return { actorId: ctx?.actorUserId ?? undefined, session };
@@ -41,6 +51,7 @@ export class ProductService {
     private readonly products: ProductRepository,
     private readonly variants: ProductVariantRepository,
     private readonly specRows: SpecRowRepository,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async list(skip = 0, limit = 100, filter?: ProductListFilter, ctx?: WriteContext) {
@@ -124,7 +135,15 @@ export class ProductService {
       categoryIds?: string[];
       searchText?: string;
       sortOrder?: number;
-      media?: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      media?: Array<{
+        url: string;
+        publicId?: string;
+        alt?: string;
+        width?: number;
+        height?: number;
+        format?: string;
+        sortOrder?: number;
+      }>;
       longDescription?: string;
       features?: string[];
       applications?: string[];
@@ -191,7 +210,15 @@ export class ProductService {
       searchText?: string;
       sortOrder?: number;
       defaultVariantId?: string | null;
-      media?: Array<{ url: string; alt?: string; sortOrder?: number }>;
+      media?: Array<{
+        url: string;
+        publicId?: string;
+        alt?: string;
+        width?: number;
+        height?: number;
+        format?: string;
+        sortOrder?: number;
+      }>;
       longDescription?: string | null;
       features?: string[];
       applications?: string[];
@@ -217,6 +244,15 @@ export class ProductService {
         throw productSlugTaken(patch.slug);
       }
     }
+    let orphanPublicIds: string[] = [];
+    if (patch.media !== undefined) {
+      const prev = await this.products.findById(toObjectId(id), eo(ctx));
+      if (!prev) throw resourceNotFound("Product", id);
+      const before = mediaPublicIds(prev.media as Array<{ publicId?: string | null }>);
+      const after = mediaPublicIds(patch.media);
+      orphanPublicIds = [...before].filter((x) => !after.has(x));
+    }
+
     try {
       const p = await this.products.updateById(
         toObjectId(id),
@@ -237,6 +273,7 @@ export class ProductService {
         eo(ctx),
       );
       if (!p) throw resourceNotFound("Product", id);
+      for (const pid of orphanPublicIds) await this.cloudinary.destroy(pid);
       return p;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -251,7 +288,13 @@ export class ProductService {
     if (vs.length > 0) {
       throw productHasVariants();
     }
-    return this.products.deleteById(oid, eo(ctx));
+    const existing = await this.products.findById(oid, eo(ctx));
+    const deleted = await this.products.deleteById(oid, eo(ctx));
+    for (const m of existing?.media ?? []) {
+      const pid = typeof m.publicId === "string" ? m.publicId.trim() : "";
+      if (pid) await this.cloudinary.destroy(pid);
+    }
+    return deleted;
   }
 
   async listVariants(

@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20 <23",
+    "npm": ">=10"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -15,10 +19,14 @@
     "pretypecheck": "npm run build --prefix ../catalog-models",
     "typecheck": "tsc --noEmit",
     "preseed:content": "npm run build --prefix ../catalog-models",
-    "seed:content": "tsx src/scripts/seed-merchandising-content.ts"
+    "seed:content": "tsx src/scripts/seed-merchandising-content.ts",
+    "migrate:media": "tsx src/scripts/migrate-legacy-media-to-cloudinary.ts",
+    "reset:electrical-showcase": "tsx src/scripts/reset-catalog-and-rebuild-electrical.ts"
   },
   "dependencies": {
     "@factorypeer/catalog-models": "file:../catalog-models",
+    "@fastify/multipart": "^10.0.0",
+    "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.2.1",
     "mongoose": "^8.8.0",

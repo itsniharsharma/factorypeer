@@ -61,9 +61,17 @@ export type SpecRowDoc = {
   sortOrder?: number;
 };
 
-export type ProductMediaItemDoc = {
+/** CDN image metadata (e.g. Cloudinary) — binaries not stored in Mongo. */
+export type CatalogMediaAssetDoc = {
   url: string;
+  publicId?: string;
   alt?: string;
+  width?: number;
+  height?: number;
+  format?: string;
+};
+
+export type ProductMediaItemDoc = CatalogMediaAssetDoc & {
   sortOrder?: number;
 };
 
@@ -128,7 +136,7 @@ export type HomepagePromoBannerDoc = {
   title: string;
   subtitle?: string;
   description?: string;
-  imageUrl: string;
+  image?: CatalogMediaAssetDoc;
   imageAlt?: string;
   ctaLabel?: string;
   href?: string;
@@ -148,7 +156,7 @@ export type HomepageCategoryTileDoc = {
   description?: string;
   categoryId?: string | null;
   href?: string;
-  imageUrl: string;
+  image?: CatalogMediaAssetDoc;
   imageAlt?: string;
   icon?: string;
   ctaLabel?: string;
@@ -165,6 +173,7 @@ export type HomepageSupportCardDoc = {
   slug: string;
   title: string;
   description?: string;
+  image?: CatalogMediaAssetDoc;
   icon?: string;
   ctaLabel?: string;
   href?: string;

@@ -1,5 +1,6 @@
 import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 import type { PublishStatus } from "../enums.js";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 
 const homepageCategoryTileSchema = new Schema(
   {
@@ -9,8 +10,7 @@ const homepageCategoryTileSchema = new Schema(
     description: { type: String, trim: true },
     categoryId: { type: Schema.Types.ObjectId, ref: "CatalogCategory", default: null },
     href: { type: String, trim: true },
-    imageUrl: { type: String, required: true, trim: true },
-    imageAlt: { type: String, trim: true },
+    image: { type: catalogMediaAssetSchema, required: false },
     icon: { type: String, trim: true },
     ctaLabel: { type: String, trim: true },
     status: {

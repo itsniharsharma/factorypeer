@@ -1,5 +1,6 @@
 import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 import type { PublishStatus } from "../enums.js";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 
 const homepagePromoBannerSchema = new Schema(
   {
@@ -9,8 +10,7 @@ const homepagePromoBannerSchema = new Schema(
     title: { type: String, required: true, trim: true },
     subtitle: { type: String, trim: true },
     description: { type: String, trim: true },
-    imageUrl: { type: String, required: true, trim: true },
-    imageAlt: { type: String, trim: true },
+    image: { type: catalogMediaAssetSchema, required: false },
     ctaLabel: { type: String, trim: true },
     href: { type: String, trim: true },
     openInNewTab: { type: Boolean, default: false },

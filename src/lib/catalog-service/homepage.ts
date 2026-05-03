@@ -1,12 +1,13 @@
 import type { PromoBanner, CategoryTile, SupportCTA, CatalogTaxonomyNode } from "@/lib/types";
 import { catalogServerJsonList } from "./fetch";
 import { getTaxonomyTree } from "./taxonomy";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 type HomepagePromoBannerDoc = {
   _id: string;
   title: string;
   subtitle?: string;
-  imageUrl: string;
+  image?: { url?: string; alt?: string };
   imageAlt?: string;
   eyebrow?: string;
   ctaLabel?: string;
@@ -17,7 +18,7 @@ type HomepagePromoBannerDoc = {
 type HomepageCategoryTileDoc = {
   _id: string;
   label: string;
-  imageUrl: string;
+  image?: { url?: string; alt?: string };
   imageAlt?: string;
   categoryId?: string | null;
   href?: string;
@@ -28,6 +29,7 @@ type HomepageSupportCardDoc = {
   _id: string;
   title: string;
   description?: string;
+  image?: { url?: string; alt?: string };
   ctaLabel?: string;
   href?: string;
 };
@@ -66,8 +68,8 @@ export async function getHomepagePromoBanners(): Promise<PromoBanner[]> {
     id: b._id,
     title: b.title,
     subtitle: b.subtitle ?? "",
-    image: b.imageUrl,
-    imageAlt: b.imageAlt,
+    image: b.image?.url ?? "",
+    imageAlt: b.image?.alt ?? b.imageAlt,
     eyebrow: b.eyebrow,
     ctaLabel: b.ctaLabel,
     href: b.href,
@@ -84,11 +86,34 @@ export async function getHomepageCategoryTiles(): Promise<CategoryTile[]> {
   return data.map((tile) => ({
     id: tile._id,
     label: tile.label,
-    image: tile.imageUrl,
+    image: tile.image?.url ?? "",
     href: resolveCategoryTileHref(tree, tile),
-    imageAlt: tile.imageAlt,
+    imageAlt: tile.image?.alt ?? tile.imageAlt,
     ctaLabel: tile.ctaLabel,
   }));
+}
+
+/** Home browse grid is taxonomy-driven only (no merchandising fallback content). */
+export async function getHomepageBrowseCategoryTiles(limit = 14): Promise<CategoryTile[]> {
+  const tree = await getTaxonomyTree();
+  const out: CategoryTile[] = [];
+  const visit = (nodes: CatalogTaxonomyNode[], prefix: string[]) => {
+    for (const node of nodes) {
+      if (out.length >= limit) return;
+      const href = `/category/${[...prefix, node.slug].join("/")}`;
+      out.push({
+        id: node.id,
+        label: node.title,
+        href,
+        image: getDefaultCatalogImageUrl(),
+        imageAlt: `${node.title} category`,
+      });
+      if (node.children.length) visit(node.children, [...prefix, node.slug]);
+      if (out.length >= limit) return;
+    }
+  };
+  visit(tree, []);
+  return out;
 }
 
 export async function getHomepageSupportCards(): Promise<SupportCTA[]> {
@@ -100,6 +125,8 @@ export async function getHomepageSupportCards(): Promise<SupportCTA[]> {
     description: card.description ?? "",
     action: card.ctaLabel ?? "Learn More",
     href: card.href,
+    image: card.image?.url,
+    imageAlt: card.image?.alt,
   }));
 }
 

@@ -60,6 +60,9 @@ export interface SupportCTA {
   action: string;
   /** When set, primary CTA uses this target (from admin). */
   href?: string;
+  /** Optional hero image — Cloudinary or other HTTPS CDN URL. */
+  image?: string;
+  imageAlt?: string;
 }
 
 export interface PromoBanner {

@@ -1,5 +1,6 @@
 import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 import type { PublishStatus } from "../enums.js";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 
 const homepageSupportCardSchema = new Schema(
   {
@@ -7,6 +8,7 @@ const homepageSupportCardSchema = new Schema(
     slug: { type: String, required: true, trim: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
+    image: { type: catalogMediaAssetSchema, required: false },
     icon: { type: String, trim: true },
     ctaLabel: { type: String, trim: true },
     href: { type: String, trim: true },

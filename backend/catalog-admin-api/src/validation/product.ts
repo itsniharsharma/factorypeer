@@ -5,7 +5,11 @@ const maxList = (n: number) => z.array(objectIdString).max(n).optional();
 
 const productMediaItemSchema = z.object({
   url: z.string().min(1).max(2000),
+  publicId: z.string().max(500).optional(),
   alt: z.string().max(500).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  format: z.string().max(32).optional(),
   sortOrder: z.number().int().optional(),
 });
 

@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { objectIdString, publishStatusSchema } from "./common.js";
 const metadataSchema = z.record(z.unknown()).optional().default({});
+export const catalogMediaAssetSchema = z.object({
+    url: z.string().min(1).max(2000),
+    publicId: z.string().max(500).optional(),
+    alt: z.string().max(500).optional(),
+    width: z.number().int().positive().optional(),
+    height: z.number().int().positive().optional(),
+    format: z.string().max(32).optional(),
+});
 const homepageListQuerySchema = z.object({
     status: publishStatusSchema.optional(),
 });
@@ -10,7 +18,7 @@ const homepageBannerBaseSchema = {
     title: z.string().min(1).max(500),
     subtitle: z.string().max(500).optional(),
     description: z.string().max(2000).optional(),
-    imageUrl: z.string().min(1).max(2000),
+    image: catalogMediaAssetSchema.optional(),
     imageAlt: z.string().max(500).optional(),
     ctaLabel: z.string().max(120).optional(),
     href: z.string().max(2000).optional(),
@@ -20,7 +28,12 @@ const homepageBannerBaseSchema = {
     metadata: metadataSchema,
 };
 export const homepageBannerListQuerySchema = homepageListQuerySchema;
-export const createHomepageBannerBodySchema = z.object(homepageBannerBaseSchema);
+export const createHomepageBannerBodySchema = z
+    .object(homepageBannerBaseSchema)
+    .refine((d) => Boolean(d.image?.url?.trim()), {
+    message: "Provide `image.url`",
+    path: ["image"],
+});
 export const updateHomepageBannerBodySchema = z
     .object({
     slug: z.string().min(1).max(200).optional(),
@@ -28,7 +41,7 @@ export const updateHomepageBannerBodySchema = z
     title: z.string().min(1).max(500).optional(),
     subtitle: z.string().max(500).optional(),
     description: z.string().max(2000).optional(),
-    imageUrl: z.string().min(1).max(2000).optional(),
+    image: catalogMediaAssetSchema.optional(),
     imageAlt: z.string().max(500).optional(),
     ctaLabel: z.string().max(120).optional(),
     href: z.string().max(2000).optional(),
@@ -44,7 +57,7 @@ const homepageTileBaseSchema = {
     description: z.string().max(2000).optional(),
     categoryId: objectIdString.optional().nullable(),
     href: z.string().max(2000).optional(),
-    imageUrl: z.string().min(1).max(2000),
+    image: catalogMediaAssetSchema.optional(),
     imageAlt: z.string().max(500).optional(),
     icon: z.string().max(120).optional(),
     ctaLabel: z.string().max(120).optional(),
@@ -53,7 +66,12 @@ const homepageTileBaseSchema = {
     metadata: metadataSchema,
 };
 export const homepageTileListQuerySchema = homepageListQuerySchema;
-export const createHomepageTileBodySchema = z.object(homepageTileBaseSchema);
+export const createHomepageTileBodySchema = z
+    .object(homepageTileBaseSchema)
+    .refine((d) => Boolean(d.image?.url?.trim()), {
+    message: "Provide `image.url`",
+    path: ["image"],
+});
 export const updateHomepageTileBodySchema = z
     .object({
     slug: z.string().min(1).max(200).optional(),
@@ -61,7 +79,7 @@ export const updateHomepageTileBodySchema = z
     description: z.string().max(2000).optional(),
     categoryId: objectIdString.optional().nullable(),
     href: z.string().max(2000).optional(),
-    imageUrl: z.string().min(1).max(2000).optional(),
+    image: catalogMediaAssetSchema.optional(),
     imageAlt: z.string().max(500).optional(),
     icon: z.string().max(120).optional(),
     ctaLabel: z.string().max(120).optional(),
@@ -74,6 +92,7 @@ const homepageSupportCardBaseSchema = {
     slug: z.string().min(1).max(200),
     title: z.string().min(1).max(300),
     description: z.string().max(2000).optional(),
+    image: catalogMediaAssetSchema.optional(),
     icon: z.string().max(120).optional(),
     ctaLabel: z.string().max(120).optional(),
     href: z.string().max(2000).optional(),
@@ -88,6 +107,7 @@ export const updateHomepageSupportCardBodySchema = z
     slug: z.string().min(1).max(200).optional(),
     title: z.string().min(1).max(300).optional(),
     description: z.string().max(2000).optional(),
+    image: catalogMediaAssetSchema.optional(),
     icon: z.string().max(120).optional(),
     ctaLabel: z.string().max(120).optional(),
     href: z.string().max(2000).optional(),

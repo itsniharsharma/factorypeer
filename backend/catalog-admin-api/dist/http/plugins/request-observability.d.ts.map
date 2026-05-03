@@ -1,0 +1,1 @@
+{"version":3,"file":"request-observability.d.ts","sourceRoot":"","sources":["../../../src/http/plugins/request-observability.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,SAAS,CAAC;AAE/C;;GAEG;AACH,wBAAgB,4BAA4B,CAAC,GAAG,EAAE,eAAe,QAWhE"}

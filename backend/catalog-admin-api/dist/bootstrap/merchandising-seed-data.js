@@ -1,55 +1,70 @@
-export const homepagePromoBannerSeeds = [
-    {
-        slug: "electrical-essentials",
-        eyebrow: "Industrial Supply",
-        title: "Electrical Essentials",
-        subtitle: "Switchgear and motor control inventory",
-        imageUrl: "/images/landing-top-1.jpg",
-        status: "published",
-        sortOrder: 0,
-    },
-    {
-        slug: "plant-safety-readiness",
-        eyebrow: "Industrial Supply",
-        title: "Plant Safety Readiness",
-        subtitle: "PPE and compliance products in stock",
-        imageUrl: "/images/landing-top-2.jpg",
-        status: "published",
-        sortOrder: 1,
-    },
-    {
-        slug: "fastener-bulk-supply",
-        eyebrow: "Industrial Supply",
-        title: "Fastener Bulk Supply",
-        subtitle: "High-volume hardware replenishment",
-        imageUrl: "/images/landing-top-3.jpg",
-        status: "published",
-        sortOrder: 2,
-    },
+import { catalogSeedDefaultImageUrl } from "../config/cdn-defaults.js";
+/** Cloudinary HTTPS URLs only — override via CATALOG_SEED_DEFAULT_IMAGE_URL for production branding. */
+export function getHomepagePromoBannerSeeds() {
+    const url = catalogSeedDefaultImageUrl();
+    return [
+        {
+            slug: "electrical-essentials",
+            eyebrow: "Industrial Supply",
+            title: "Electrical Essentials",
+            subtitle: "Switchgear and motor control inventory",
+            image: { url },
+            status: "published",
+            sortOrder: 0,
+        },
+        {
+            slug: "plant-safety-readiness",
+            eyebrow: "Industrial Supply",
+            title: "Plant Safety Readiness",
+            subtitle: "PPE and compliance products in stock",
+            image: { url },
+            status: "published",
+            sortOrder: 1,
+        },
+        {
+            slug: "fastener-bulk-supply",
+            eyebrow: "Industrial Supply",
+            title: "Fastener Bulk Supply",
+            subtitle: "High-volume hardware replenishment",
+            image: { url },
+            status: "published",
+            sortOrder: 2,
+        },
+    ];
+}
+const CATEGORY_TILE_SLUGS = [
+    ["electrical", "Electrical"],
+    ["mechanical", "Mechanical"],
+    ["safety", "Safety"],
+    ["fasteners", "Fasteners"],
+    ["pneumatics", "Pneumatics"],
+    ["hydraulics", "Hydraulics"],
+    ["automation", "Automation"],
+    ["material-handling", "Material Handling"],
+    ["power-transmission", "Power Transmission"],
+    ["tools", "Tools"],
+    ["facility-maintenance", "Facility Maintenance"],
+    ["welding", "Welding"],
+    ["bearings", "Bearings"],
+    ["belts-chains", "Belts & Chains"],
+    ["motors", "Motors"],
+    ["valves", "Valves"],
+    ["sensors", "Sensors"],
+    ["controls", "Controls"],
+    ["lubrication", "Lubrication"],
+    ["safety-signs", "Safety Signs"],
+    ["cleaning-supplies", "Cleaning Supplies"],
 ];
-export const homepageCategoryTileSeeds = [
-    { slug: "electrical", label: "Electrical", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 0 },
-    { slug: "mechanical", label: "Mechanical", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 1 },
-    { slug: "safety", label: "Safety", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 2 },
-    { slug: "fasteners", label: "Fasteners", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 3 },
-    { slug: "pneumatics", label: "Pneumatics", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 4 },
-    { slug: "hydraulics", label: "Hydraulics", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 5 },
-    { slug: "automation", label: "Automation", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 6 },
-    { slug: "material-handling", label: "Material Handling", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 7 },
-    { slug: "power-transmission", label: "Power Transmission", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 8 },
-    { slug: "tools", label: "Tools", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 9 },
-    { slug: "facility-maintenance", label: "Facility Maintenance", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 10 },
-    { slug: "welding", label: "Welding", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 11 },
-    { slug: "bearings", label: "Bearings", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 12 },
-    { slug: "belts-chains", label: "Belts & Chains", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 13 },
-    { slug: "motors", label: "Motors", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 14 },
-    { slug: "valves", label: "Valves", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 15 },
-    { slug: "sensors", label: "Sensors", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 16 },
-    { slug: "controls", label: "Controls", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 17 },
-    { slug: "lubrication", label: "Lubrication", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 18 },
-    { slug: "safety-signs", label: "Safety Signs", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 19 },
-    { slug: "cleaning-supplies", label: "Cleaning Supplies", imageUrl: "/images/category-tile.svg", status: "published", sortOrder: 20 },
-];
+export function getHomepageCategoryTileSeeds() {
+    const url = catalogSeedDefaultImageUrl();
+    return CATEGORY_TILE_SLUGS.map(([slug, label], i) => ({
+        slug,
+        label,
+        image: { url },
+        status: "published",
+        sortOrder: i,
+    }));
+}
 export const homepageSupportCardSeeds = [
     {
         slug: "bulk-ordering-and-rfq",

@@ -19,8 +19,8 @@ export declare const createCategoryBodySchema: z.ZodObject<{
     slug: string;
     title: string;
     kind: "family" | "branch";
-    description?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    description?: string | undefined;
     sortOrder?: number | undefined;
     parentId?: string | null | undefined;
 }>;
@@ -32,32 +32,32 @@ export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<["draft", "published", "archived"]>>;
     sortOrder: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
 }, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
 }>, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
 }, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
 }>;
 export declare const moveCategoryBodySchema: z.ZodObject<{

@@ -2,6 +2,7 @@
 /**
  * Electrical vertical E2E via catalog-admin-api — same HTTP routes the Admin Panel uses
  * (Categories → Spec schema & columns → Products & variants → Spec rows → link-row → publish schema → homepage tile).
+ * Footer: create in the app at **Admin → Navigation & Footer** (“Load Electrical showcase footer”).
  *
  * Usage:
  *   CATALOG_ADMIN_API_URL=http://127.0.0.1:4040 node scripts/electrical-vertical-admin-api.mjs
@@ -23,6 +24,14 @@ const ACTOR = process.env.CATALOG_ACTOR_ID ?? "507f1f77bcf86cd799439011";
 
 const PREFIX = `${BASE}/admin/catalog`;
 const API_KEY = process.env.CATALOG_ADMIN_API_KEY?.trim();
+
+function catalogSeedImageUrl() {
+  return (
+    process.env.CATALOG_SEED_DEFAULT_IMAGE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_CATALOG_DEFAULT_IMAGE_URL?.trim() ||
+    "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+  );
+}
 
 /** Uses node:http (not fetch) so PATCH bodies are delivered reliably on Windows + Node 18+. */
 async function api(method, path, json = undefined) {
@@ -119,7 +128,7 @@ const COLUMN_DEFS = [
   { key: "brand", label: "Brand", sortOrder: 7, widthClass: "w-[130px]" },
 ];
 
-const IMG = "https://placehold.co/480x480/1e293b/ffffff/png?text=MCB";
+const IMG = catalogSeedImageUrl();
 
 /** @type {Array<{ slug: string; title: string; brand: string; sku: string; itemNo: string; mpn: string; rowKey: string; values: Record<string,string>; searchExtra: string }>} */
 const PRODUCTS = [
@@ -181,6 +190,26 @@ const PRODUCTS = [
       mountingType: "DIN rail",
       width: "17.5 mm",
       brand: "Siemens",
+    },
+  },
+  {
+    slug: "legrand-dx3-c16-1p",
+    title: "Legrand DX3 1P 16A Curve-C Miniature Circuit Breaker",
+    brand: "Legrand",
+    sku: "LEG-DX3-C16-1P",
+    itemNo: "FP-ELEC-661204",
+    mpn: "DX3-C16-1P",
+    rowKey: "mcb-row-legrand-dx3-c16",
+    searchExtra: "DX3 DIN modular breaker",
+    values: {
+      poles: "1",
+      ratedCurrent: "16 A",
+      voltage: "230/400 V AC",
+      breakingCapacity: "6 kA",
+      tripCurve: "C",
+      mountingType: "DIN rail",
+      width: "17.5 mm",
+      brand: "Legrand",
     },
   },
 ];
@@ -397,8 +426,7 @@ async function main() {
       description: "MCBs, enclosures, and branch protection essentials.",
       categoryId: electrical._id,
       href: "/category/electrical/circuit-protection/circuit-breakers/miniature-circuit-breakers",
-      imageUrl: "https://placehold.co/640x400/0f172a/e2e8f0/png?text=Electrical",
-      imageAlt: "Electrical distribution products",
+      image: { url: catalogSeedImageUrl(), alt: "Electrical distribution products" },
       ctaLabel: "Browse MCBs",
       status: "published",
       sortOrder: 2,

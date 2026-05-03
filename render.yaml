@@ -1,0 +1,26 @@
+# Render Blueprint — catalog-admin-api Web Service
+# https://render.com/docs/blueprint-spec
+#
+# Deploy: connect repo → New Blueprint → select this file.
+# Set secrets in the Render dashboard (never commit): MONGODB_URI, CATALOG_ADMIN_API_KEY
+#
+# Root dir keeps catalog-models as file: dependency via npm install.
+
+version: "1"
+services:
+  - type: web
+    name: factorypeer-catalog-admin-api
+    runtime: node
+    region: oregon
+    plan: starter
+    rootDir: backend/catalog-admin-api
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.1"
+      - key: HOST
+        value: "0.0.0.0"
+      # Add in dashboard: CLOUDINARY_URL (or CLOUDINARY_*) for /admin/catalog/media/upload
+      # PORT is provided by Render — do not set unless debugging

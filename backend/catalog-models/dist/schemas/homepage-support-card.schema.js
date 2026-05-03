@@ -1,9 +1,11 @@
 import { Schema } from "mongoose";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 const homepageSupportCardSchema = new Schema({
     tenantId: { type: Schema.Types.ObjectId, index: true },
     slug: { type: String, required: true, trim: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
+    image: { type: catalogMediaAssetSchema, required: false },
     icon: { type: String, trim: true },
     ctaLabel: { type: String, trim: true },
     href: { type: String, trim: true },

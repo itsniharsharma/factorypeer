@@ -4,7 +4,11 @@ import type { PublishStatus } from "../enums.js";
 const productMediaItemSchema = new Schema(
   {
     url: { type: String, required: true, trim: true },
+    publicId: { type: String, trim: true },
     alt: { type: String, trim: true },
+    width: { type: Number },
+    height: { type: Number },
+    format: { type: String, trim: true },
     sortOrder: { type: Number, default: 0 },
   },
   { _id: false },

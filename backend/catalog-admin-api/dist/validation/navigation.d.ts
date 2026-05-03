@@ -31,8 +31,8 @@ export declare const createLinkGroupBodySchema: z.ZodObject<{
         label: string;
         metadata: Record<string, unknown>;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         openInNewTab?: boolean | undefined;
         external?: boolean | undefined;
@@ -40,8 +40,8 @@ export declare const createLinkGroupBodySchema: z.ZodObject<{
     }, {
         label: string;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         metadata?: Record<string, unknown> | undefined;
         openInNewTab?: boolean | undefined;
@@ -58,29 +58,29 @@ export declare const createLinkGroupBodySchema: z.ZodObject<{
         label: string;
         metadata: Record<string, unknown>;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         openInNewTab?: boolean | undefined;
         external?: boolean | undefined;
         icon?: string | undefined;
     }[];
-    description?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    description?: string | undefined;
     sortOrder?: number | undefined;
 }, {
     slug: string;
     title: string;
     placement: "utility" | "navigation" | "footer";
-    description?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    description?: string | undefined;
     sortOrder?: number | undefined;
     metadata?: Record<string, unknown> | undefined;
     links?: {
         label: string;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         metadata?: Record<string, unknown> | undefined;
         openInNewTab?: boolean | undefined;
@@ -109,8 +109,8 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
         label: string;
         metadata: Record<string, unknown>;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         openInNewTab?: boolean | undefined;
         external?: boolean | undefined;
@@ -118,8 +118,8 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
     }, {
         label: string;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         metadata?: Record<string, unknown> | undefined;
         openInNewTab?: boolean | undefined;
@@ -128,10 +128,10 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
     }>, "many">>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, "strip", z.ZodTypeAny, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
     placement?: "utility" | "navigation" | "footer" | undefined;
     metadata?: Record<string, unknown> | undefined;
@@ -139,26 +139,26 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
         label: string;
         metadata: Record<string, unknown>;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         openInNewTab?: boolean | undefined;
         external?: boolean | undefined;
         icon?: string | undefined;
     }[] | undefined;
 }, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
     placement?: "utility" | "navigation" | "footer" | undefined;
     metadata?: Record<string, unknown> | undefined;
     links?: {
         label: string;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         metadata?: Record<string, unknown> | undefined;
         openInNewTab?: boolean | undefined;
@@ -166,10 +166,10 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
         icon?: string | undefined;
     }[] | undefined;
 }>, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
     placement?: "utility" | "navigation" | "footer" | undefined;
     metadata?: Record<string, unknown> | undefined;
@@ -177,26 +177,26 @@ export declare const updateLinkGroupBodySchema: z.ZodEffects<z.ZodObject<{
         label: string;
         metadata: Record<string, unknown>;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         openInNewTab?: boolean | undefined;
         external?: boolean | undefined;
         icon?: string | undefined;
     }[] | undefined;
 }, {
+    status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
     slug?: string | undefined;
     title?: string | undefined;
-    status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
     placement?: "utility" | "navigation" | "footer" | undefined;
     metadata?: Record<string, unknown> | undefined;
     links?: {
         label: string;
         href: string;
-        description?: string | undefined;
         status?: "draft" | "published" | "archived" | undefined;
+        description?: string | undefined;
         sortOrder?: number | undefined;
         metadata?: Record<string, unknown> | undefined;
         openInNewTab?: boolean | undefined;
@@ -313,8 +313,8 @@ export declare const updateFooterContentBodySchema: z.ZodEffects<z.ZodObject<{
     }>, "many">>;
     metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, "strip", z.ZodTypeAny, {
-    slug?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    slug?: string | undefined;
     sortOrder?: number | undefined;
     metadata?: Record<string, unknown> | undefined;
     socialLinks?: {
@@ -333,8 +333,8 @@ export declare const updateFooterContentBodySchema: z.ZodEffects<z.ZodObject<{
     feedbackCtaHref?: string | undefined;
     copyrightText?: string | undefined;
 }, {
-    slug?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    slug?: string | undefined;
     sortOrder?: number | undefined;
     metadata?: Record<string, unknown> | undefined;
     socialLinks?: {
@@ -353,8 +353,8 @@ export declare const updateFooterContentBodySchema: z.ZodEffects<z.ZodObject<{
     feedbackCtaHref?: string | undefined;
     copyrightText?: string | undefined;
 }>, {
-    slug?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    slug?: string | undefined;
     sortOrder?: number | undefined;
     metadata?: Record<string, unknown> | undefined;
     socialLinks?: {
@@ -373,8 +373,8 @@ export declare const updateFooterContentBodySchema: z.ZodEffects<z.ZodObject<{
     feedbackCtaHref?: string | undefined;
     copyrightText?: string | undefined;
 }, {
-    slug?: string | undefined;
     status?: "draft" | "published" | "archived" | undefined;
+    slug?: string | undefined;
     sortOrder?: number | undefined;
     metadata?: Record<string, unknown> | undefined;
     socialLinks?: {

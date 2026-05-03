@@ -1,20 +1,28 @@
+import { AppError } from "../errors/app-error.js";
 import { writeContext } from "../http/write-context.js";
 import { parseBody, parseParams, parseQuery } from "../validation/helpers.js";
 import { createProductBodySchema, createVariantBodySchema, linkVariantToRowBodySchema, productIdParamsSchema, updateProductBodySchema, updateVariantBodySchema, variantIdParamsSchema, } from "../validation/product.js";
-import { productListQuerySchema, variantListQuerySchema } from "../validation/list-queries.js";
+import { productListQuerySchema, productSummaryCardsQuerySchema, variantListQuerySchema, } from "../validation/list-queries.js";
 import { toObjectId } from "../utils/mongo.js";
 const PREFIX = "/admin/catalog/products";
 export async function registerProductRoutes(app, services) {
     const { products } = services;
+    app.get(`${PREFIX}/summary-cards`, async (req) => {
+        const q = parseQuery(productSummaryCardsQuerySchema, req.query);
+        const ids = q.ids;
+        return products.summaryCardsForProductIds(ids, writeContext(req));
+    });
     app.get(PREFIX, async (req, reply) => {
         const q = parseQuery(productListQuerySchema, req.query);
         const skip = q.skip ?? 0;
         const limit = q.limit ?? 100;
+        const idStrings = q.ids;
         const filter = {
             status: q.status,
             q: q.q,
             sort: q.sort,
             categoryId: q.categoryId ? toObjectId(q.categoryId) : undefined,
+            ids: idStrings?.map((id) => toObjectId(id)),
         };
         const { items, total } = await products.list(skip, limit, filter, writeContext(req));
         reply.header("X-Total-Count", String(total));
@@ -54,6 +62,9 @@ export async function registerProductRoutes(app, services) {
     app.patch(`${PREFIX}/:id`, async (req) => {
         const { id } = parseParams(productIdParamsSchema, req.params);
         const body = parseBody(updateProductBodySchema, req.body);
+        if (Object.keys(body).length === 0) {
+            throw new AppError("At least one field is required to update a product", 422, "VALIDATION_ERROR");
+        }
         return products.updateProduct(id, body, writeContext(req));
     });
     app.delete(`${PREFIX}/:id`, async (req) => {
@@ -63,6 +74,9 @@ export async function registerProductRoutes(app, services) {
     app.patch(`${PREFIX}/variants/:id`, async (req) => {
         const { id } = parseParams(variantIdParamsSchema, req.params);
         const body = parseBody(updateVariantBodySchema, req.body);
+        if (Object.keys(body).length === 0) {
+            throw new AppError("At least one field is required to update a variant", 422, "VALIDATION_ERROR");
+        }
         return products.updateVariant(id, body, writeContext(req));
     });
     app.delete(`${PREFIX}/variants/:id`, async (req) => {

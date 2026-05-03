@@ -69,6 +69,7 @@ export interface CatalogRegisteredModels {
 
 export * from "./contracts.js";
 export * from "./enums.js";
+export * from "./schemas/catalog-media-asset.schema.js";
 export * from "./schemas/catalog-category.schema.js";
 export * from "./schemas/catalog-spec-schema.schema.js";
 export * from "./schemas/catalog-spec-column.schema.js";

@@ -15,6 +15,33 @@ export class ProductVariantRepository {
         const q = this.models.ProductVariant.findOne({ _id: id, ...this.tq() });
         return withSession(q, opts?.session).exec();
     }
+    /**
+     * One published variant per product (lowest sortOrder, then SKU) for storefront cards.
+     */
+    async firstPublishedVariantPerProduct(productIds, opts) {
+        const out = new Map();
+        if (!productIds.length)
+            return out;
+        const pipeline = [
+            {
+                $match: {
+                    productId: { $in: productIds },
+                    status: "published",
+                    ...this.tq(),
+                },
+            },
+            { $sort: { productId: 1, sortOrder: 1, sku: 1 } },
+            { $group: { _id: "$productId", v: { $first: "$$ROOT" } } },
+        ];
+        let agg = this.models.ProductVariant.aggregate(pipeline);
+        if (opts?.session)
+            agg = agg.session(opts.session);
+        const rows = (await agg.exec());
+        for (const row of rows) {
+            out.set(row._id.toString(), row.v);
+        }
+        return out;
+    }
     async listByProduct(productId, opts) {
         const filter = { productId, ...this.tq() };
         if (opts?.status)
@@ -55,6 +82,9 @@ export class ProductVariantRepository {
             currency: data.currency ?? "USD",
             availability: data.availability ?? "",
             uom: data.uom,
+            leadTime: data.leadTime ?? "",
+            moq: data.moq ?? null,
+            packaging: data.packaging ?? "",
             status: data.status ?? "draft",
             specRowId: data.specRowId ?? null,
             searchBlob: data.searchBlob ?? "",

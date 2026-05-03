@@ -70,3 +70,13 @@ export interface CatalogSearchProductDTO {
 
 /** Draft vs published at API boundary (subset of DB PublishStatus). */
 export type CatalogPublishFilter = PublishStatus;
+
+/** CDN image metadata — binaries hosted externally (e.g. Cloudinary). */
+export interface CatalogMediaAssetDTO {
+  url: string;
+  publicId?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  format?: string;
+}

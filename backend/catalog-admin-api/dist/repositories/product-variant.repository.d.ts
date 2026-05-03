@@ -19,6 +19,8 @@ export declare class ProductVariantRepository {
         unitPrice: string;
         currency: string;
         availability: string;
+        leadTime: string;
+        packaging: string;
         searchBlob: string;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
@@ -28,6 +30,7 @@ export declare class ProductVariantRepository {
         mpn?: string | null | undefined;
         manufacturer?: string | null | undefined;
         uom?: string | null | undefined;
+        moq?: number | null | undefined;
         specRowId?: Types.ObjectId | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
@@ -36,6 +39,10 @@ export declare class ProductVariantRepository {
     }> & {
         __v: number;
     }) | null>;
+    /**
+     * One published variant per product (lowest sortOrder, then SKU) for storefront cards.
+     */
+    firstPublishedVariantPerProduct(productIds: Types.ObjectId[], opts?: ExecOpts): Promise<Map<string, Record<string, unknown>>>;
     listByProduct(productId: Types.ObjectId, opts?: ExecOpts & VariantListFilter & {
         skip?: number;
         limit?: number;
@@ -48,6 +55,8 @@ export declare class ProductVariantRepository {
         unitPrice: string;
         currency: string;
         availability: string;
+        leadTime: string;
+        packaging: string;
         searchBlob: string;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
@@ -57,6 +66,7 @@ export declare class ProductVariantRepository {
         mpn?: string | null | undefined;
         manufacturer?: string | null | undefined;
         uom?: string | null | undefined;
+        moq?: number | null | undefined;
         specRowId?: Types.ObjectId | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
@@ -76,6 +86,9 @@ export declare class ProductVariantRepository {
         currency?: string;
         availability?: string;
         uom?: string;
+        leadTime?: string;
+        moq?: number | null;
+        packaging?: string;
         status?: string;
         specRowId?: Types.ObjectId | null;
         searchBlob?: string;
@@ -89,6 +102,8 @@ export declare class ProductVariantRepository {
         unitPrice: string;
         currency: string;
         availability: string;
+        leadTime: string;
+        packaging: string;
         searchBlob: string;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
@@ -98,6 +113,7 @@ export declare class ProductVariantRepository {
         mpn?: string | null | undefined;
         manufacturer?: string | null | undefined;
         uom?: string | null | undefined;
+        moq?: number | null | undefined;
         specRowId?: Types.ObjectId | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
@@ -115,6 +131,9 @@ export declare class ProductVariantRepository {
         currency: string;
         availability: string;
         uom: string | null;
+        leadTime: string | null;
+        moq: number | null;
+        packaging: string | null;
         status: string;
         specRowId: Types.ObjectId | null;
         searchBlob: string;
@@ -129,6 +148,8 @@ export declare class ProductVariantRepository {
         unitPrice: string;
         currency: string;
         availability: string;
+        leadTime: string;
+        packaging: string;
         searchBlob: string;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
@@ -138,6 +159,7 @@ export declare class ProductVariantRepository {
         mpn?: string | null | undefined;
         manufacturer?: string | null | undefined;
         uom?: string | null | undefined;
+        moq?: number | null | undefined;
         specRowId?: Types.ObjectId | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;
@@ -155,6 +177,8 @@ export declare class ProductVariantRepository {
         unitPrice: string;
         currency: string;
         availability: string;
+        leadTime: string;
+        packaging: string;
         searchBlob: string;
         tenantId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
@@ -164,6 +188,7 @@ export declare class ProductVariantRepository {
         mpn?: string | null | undefined;
         manufacturer?: string | null | undefined;
         uom?: string | null | undefined;
+        moq?: number | null | undefined;
         specRowId?: Types.ObjectId | null | undefined;
     } & import("mongoose").DefaultTimestampProps & {
         _id: Types.ObjectId;

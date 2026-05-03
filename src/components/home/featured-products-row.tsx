@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Product } from "@/lib/types";
+import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface FeaturedProductsRowProps {
   products: Product[];
@@ -28,7 +29,7 @@ export function FeaturedProductsRow({ products }: FeaturedProductsRowProps) {
                 <div className="flex gap-3 px-3 pt-3">
                   <div className="relative h-[86px] w-[86px] flex-shrink-0 overflow-hidden bg-slate-100">
                     <Image
-                      src={product.thumbnail ?? "/images/product-thumb.svg"}
+                      src={product.thumbnail ?? getDefaultCatalogImageUrl()}
                       alt={product.title}
                       fill
                       className="object-cover"

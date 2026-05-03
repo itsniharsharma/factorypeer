@@ -1,9 +1,11 @@
+import type { HomepageCategoryTileDocument, HomepagePromoBannerDocument, HomepageSupportCardDocument } from "@factorypeer/catalog-models";
 import { HomepageRepository } from "../repositories/homepage.repository.js";
 import type { WriteContext } from "../types/write-context.js";
-import type { HomepageCategoryTileDocument, HomepagePromoBannerDocument, HomepageSupportCardDocument } from "@factorypeer/catalog-models";
+import type { CloudinaryService } from "./cloudinary.service.js";
 export declare class HomepageService {
     private readonly repo;
-    constructor(repo: HomepageRepository);
+    private readonly cloudinary;
+    constructor(repo: HomepageRepository, cloudinary: CloudinaryService);
     listBanners(ctx?: WriteContext, status?: string): Promise<HomepagePromoBannerDocument[]>;
     getBanner(id: string, ctx?: WriteContext): Promise<HomepagePromoBannerDocument>;
     createBanner(body: {
@@ -12,7 +14,14 @@ export declare class HomepageService {
         title: string;
         subtitle?: string;
         description?: string;
-        imageUrl: string;
+        image?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         imageAlt?: string;
         ctaLabel?: string;
         href?: string;
@@ -27,7 +36,14 @@ export declare class HomepageService {
         title: string;
         subtitle: string;
         description: string;
-        imageUrl: string;
+        image: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         imageAlt: string;
         ctaLabel: string;
         href: string;
@@ -45,7 +61,14 @@ export declare class HomepageService {
         description?: string;
         categoryId?: string | null;
         href?: string;
-        imageUrl: string;
+        image?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         imageAlt?: string;
         icon?: string;
         ctaLabel?: string;
@@ -59,7 +82,14 @@ export declare class HomepageService {
         description: string;
         categoryId: string | null;
         href: string;
-        imageUrl: string;
+        image: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         imageAlt: string;
         icon: string;
         ctaLabel: string;
@@ -74,6 +104,14 @@ export declare class HomepageService {
         slug: string;
         title: string;
         description?: string;
+        image?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         icon?: string;
         ctaLabel?: string;
         href?: string;
@@ -85,6 +123,14 @@ export declare class HomepageService {
         slug: string;
         title: string;
         description: string;
+        image: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         icon: string;
         ctaLabel: string;
         href: string;
