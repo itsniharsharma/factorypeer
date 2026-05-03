@@ -67,6 +67,22 @@ function idsToText(ids?: string[]) {
   return ids?.length ? ids.join(", ") : "";
 }
 
+function formatLogisticsMetaForSave(raw: string): Array<{ label: string; value: string }> {
+  return linesToList(raw)
+    .map((line) => {
+      const [label, ...rest] = line.split("|").map((x) => x.trim());
+      const value = rest.join("|").trim();
+      if (!label || !value) return null;
+      return { label, value };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+}
+
+function logisticsMetaToText(meta?: ProductDoc["logisticsMeta"]) {
+  if (!meta?.length) return "";
+  return meta.map((m) => `${m.label} | ${m.value}`).join("\n");
+}
+
 function flattenCategories(nodes: CategoryDoc[], out: { id: string; label: string }[] = [], prefix = ""): { id: string; label: string }[] {
   for (const n of nodes) {
     out.push({ id: n._id, label: `${prefix}${n.title} (${n.slug})` });
@@ -108,6 +124,9 @@ export function ProductsPanel() {
   const [relatedIds, setRelatedIds] = useState("");
   const [compatibleIds, setCompatibleIds] = useState("");
   const [recommendedIds, setRecommendedIds] = useState("");
+  const [shippingWeight, setShippingWeight] = useState("");
+  const [branchAvailability, setBranchAvailability] = useState("");
+  const [logisticsMetaLines, setLogisticsMetaLines] = useState("");
 
   const [variantModal, setVariantModal] = useState<
     null | { mode: "create"; productId: string } | { mode: "edit"; v: ProductVariantDoc }
@@ -205,6 +224,9 @@ export function ProductsPanel() {
     setRelatedIds("");
     setCompatibleIds("");
     setRecommendedIds("");
+    setShippingWeight("");
+    setBranchAvailability("");
+    setLogisticsMetaLines("");
     setProductModal({ mode: "create" });
   }
 
@@ -226,6 +248,9 @@ export function ProductsPanel() {
     setRelatedIds(idsToText(p.relatedProductIds));
     setCompatibleIds(idsToText(p.compatibleProductIds));
     setRecommendedIds(idsToText(p.recommendedProductIds));
+    setShippingWeight(p.shippingWeight ?? "");
+    setBranchAvailability(p.branchAvailabilityPlaceholder ?? "");
+    setLogisticsMetaLines(logisticsMetaToText(p.logisticsMeta));
     setProductModal({ mode: "edit", p });
   }
 
@@ -251,6 +276,7 @@ export function ProductsPanel() {
       const rel = formatIds(relatedIds);
       const comp = formatIds(compatibleIds);
       const rec = formatIds(recommendedIds);
+      const logisticsMeta = formatLogisticsMetaForSave(logisticsMetaLines);
       const feat = linesToList(featuresText);
       const apps = linesToList(applicationsText);
       const bullets = linesToList(marketingBulletsText);
@@ -272,6 +298,9 @@ export function ProductsPanel() {
           relatedProductIds: rel.length ? rel : undefined,
           compatibleProductIds: comp.length ? comp : undefined,
           recommendedProductIds: rec.length ? rec : undefined,
+          shippingWeight: shippingWeight.trim() || undefined,
+          branchAvailabilityPlaceholder: branchAvailability.trim() || undefined,
+          logisticsMeta: logisticsMeta.length ? logisticsMeta : undefined,
         });
         toast.success("Product created");
       } else if (productModal?.mode === "edit") {
@@ -294,6 +323,9 @@ export function ProductsPanel() {
           relatedProductIds: rel,
           compatibleProductIds: comp,
           recommendedProductIds: rec,
+          shippingWeight: shippingWeight.trim() || null,
+          branchAvailabilityPlaceholder: branchAvailability.trim() || null,
+          logisticsMeta: logisticsMeta.length ? logisticsMeta : null,
         });
         toast.success("Product updated");
       }
@@ -820,6 +852,39 @@ export function ProductsPanel() {
               onChange={(e) => setRecommendedIds(e.target.value)}
             />
           </label>
+          <div className="md:col-span-2 border-t border-slate-200 pt-3">
+            <p className="mb-2 text-xs font-semibold text-slate-800">PDP procurement / logistics</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="md:col-span-1">
+                <span className="text-slate-600">Shipping weight (display)</span>
+                <input
+                  className="mt-1 w-full rounded-sm border px-2 py-1 text-xs"
+                  value={shippingWeight}
+                  onChange={(e) => setShippingWeight(e.target.value)}
+                  placeholder='e.g. 0.85 lb (1-pole module)'
+                />
+              </label>
+              <label className="md:col-span-1">
+                <span className="text-slate-600">Branch availability message</span>
+                <input
+                  className="mt-1 w-full rounded-sm border px-2 py-1 text-xs"
+                  value={branchAvailability}
+                  onChange={(e) => setBranchAvailability(e.target.value)}
+                  placeholder="DC stock / will-call — optional override"
+                />
+              </label>
+              <label className="md:col-span-2">
+                <span className="text-slate-600">Logistics meta (one “label | value” per line)</span>
+                <textarea
+                  className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+                  rows={4}
+                  value={logisticsMetaLines}
+                  onChange={(e) => setLogisticsMetaLines(e.target.value)}
+                  placeholder={"Freight class | 55\nHazmat | No"}
+                />
+              </label>
+            </div>
+          </div>
         </div>
       </AdminModal>
 

@@ -12,6 +12,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(4040),
   HOST: z.string().min(1).default("0.0.0.0"),
   CATALOG_TENANT_ID: z.string().optional(),
+  /** When set, all `/admin/catalog` routes require `Authorization: Bearer <key>`. */
+  CATALOG_ADMIN_API_KEY: z.string().min(16).optional(),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).optional(),
 });
 
 export function loadConfig() {
@@ -21,6 +24,8 @@ export function loadConfig() {
     port: e.PORT,
     host: e.HOST,
     defaultTenantId: parseOptionalObjectId(e.CATALOG_TENANT_ID),
+    adminApiKey: e.CATALOG_ADMIN_API_KEY?.trim() || undefined,
+    logLevel: e.LOG_LEVEL,
   };
 }
 

@@ -8,7 +8,7 @@ async function main() {
   const config = loadConfig();
   const models = await connectMongo(config);
   const services = createCatalogAdminServices(models, config.defaultTenantId ?? null);
-  const app = await buildApp(services);
+  const app = await buildApp(services, config);
 
   try {
     await app.listen({ port: config.port, host: config.host });

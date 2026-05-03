@@ -93,6 +93,12 @@ export type ProductDoc = {
   relatedProductIds?: string[];
   compatibleProductIds?: string[];
   recommendedProductIds?: string[];
+  /** PDP — shipping weight display (e.g. "2.4 lb") */
+  shippingWeight?: string;
+  /** PDP — branch pick-up / stock messaging */
+  branchAvailabilityPlaceholder?: string;
+  /** PDP — extra logistics rows (hazmat, freight class, etc.) */
+  logisticsMeta?: Array<{ label: string; value: string }>;
 };
 
 export type ProductVariantDoc = {

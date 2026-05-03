@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { CatalogAdminServices } from "../composition-root.js";
+import { AppError } from "../errors/app-error.js";
 import { writeContext } from "../http/write-context.js";
 import { parseBody, parseParams, parseQuery } from "../validation/helpers.js";
 import {
@@ -85,6 +86,9 @@ export async function registerProductRoutes(app: FastifyInstance, services: Cata
   app.patch(`${PREFIX}/:id`, async (req) => {
     const { id } = parseParams(productIdParamsSchema, req.params as Record<string, string>);
     const body = parseBody(updateProductBodySchema, req.body);
+    if (Object.keys(body as Record<string, unknown>).length === 0) {
+      throw new AppError("At least one field is required to update a product", 422, "VALIDATION_ERROR");
+    }
     return products.updateProduct(id, body, writeContext(req));
   });
 
@@ -96,6 +100,9 @@ export async function registerProductRoutes(app: FastifyInstance, services: Cata
   app.patch(`${PREFIX}/variants/:id`, async (req) => {
     const { id } = parseParams(variantIdParamsSchema, req.params as Record<string, string>);
     const body = parseBody(updateVariantBodySchema, req.body);
+    if (Object.keys(body as Record<string, unknown>).length === 0) {
+      throw new AppError("At least one field is required to update a variant", 422, "VALIDATION_ERROR");
+    }
     return products.updateVariant(id, body, writeContext(req));
   });
 

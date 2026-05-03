@@ -146,6 +146,7 @@ async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Prod
     sku: row.sku,
     itemNumber: row.itemNumber,
     manufacturer: row.manufacturer ?? "—",
+    brand: row.brand,
     thumbnail: PLACEHOLDER_IMG,
     price: row.price,
     uom: row.uom,
@@ -205,6 +206,29 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     fetchOrderedProductCards(product.recommendedProductIds),
   ]);
 
+  const shippingWeight =
+    product.shippingWeight?.trim() ||
+    "Shipping weight — request dimensional weight / freight class from buyer services.";
+  const branchAvailability =
+    product.branchAvailabilityPlaceholder?.trim() ||
+    "Branch / DC availability: sign in to view local stock, transfer times, and will-call pickup.";
+  const logisticsAdmin = (product.logisticsMeta ?? []).filter(
+    (x) => x.label?.trim() && x.value?.trim(),
+  );
+  const logisticsLines =
+    logisticsAdmin.length > 0
+      ? logisticsAdmin.map((x) => ({ label: x.label.trim(), value: x.value.trim() }))
+      : [
+          {
+            label: "Shipping terms",
+            value: "Standard parcel — motor freight / LTL quoted separately when applicable.",
+          },
+          {
+            label: "Pickup / drop ship",
+            value: "Fulfillment source confirmed at order entry — expedite requests via RFQ.",
+          },
+        ];
+
   return {
     slug: product.slug,
     title: product.title,
@@ -230,6 +254,9 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     relatedProducts,
     compatibleProducts,
     recommendedProducts,
+    shippingWeight,
+    branchAvailability,
+    logisticsLines,
   };
 }
 

@@ -11,6 +11,7 @@
 
 const BASE = (process.env.CATALOG_ADMIN_API_URL ?? "http://127.0.0.1:4040").replace(/\/$/, "");
 const ACTOR = process.env.CATALOG_ACTOR_ID ?? "507f1f77bcf86cd799439011";
+const API_KEY = process.env.CATALOG_ADMIN_API_KEY?.trim();
 
 const PREFIX = `${BASE}/admin/catalog`;
 
@@ -19,6 +20,7 @@ async function api(method, path, json = undefined) {
   const headers = {
     accept: "application/json",
     "x-catalog-actor-id": ACTOR,
+    ...(API_KEY && API_KEY.length >= 16 ? { authorization: `Bearer ${API_KEY}` } : {}),
   };
   if (json !== undefined) {
     headers["content-type"] = "application/json";

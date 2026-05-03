@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getCatalogAdminApiBaseUrl } from "@/config/catalog-env";
@@ -6,6 +7,11 @@ export const dynamic = "force-dynamic";
 
 /** Abort hung upstream calls so the admin UI fails fast instead of hanging → opaque 500s. */
 const UPSTREAM_TIMEOUT_MS = 25_000;
+
+function upstreamApiKey(): string | undefined {
+  const k = process.env["CATALOG_ADMIN_API_KEY"]?.trim();
+  return k && k.length >= 16 ? k : undefined;
+}
 
 function upstreamBase(): string {
   return getCatalogAdminApiBaseUrl();
@@ -38,8 +44,15 @@ async function proxy(
   if (ct) headers.set("content-type", ct);
   const actor = req.headers.get("x-catalog-actor-id");
   if (actor) headers.set("x-catalog-actor-id", actor);
-  const auth = req.headers.get("authorization");
-  if (auth) headers.set("authorization", auth);
+  const incomingAuth = req.headers.get("authorization");
+  const apiKey = upstreamApiKey();
+  if (apiKey) {
+    headers.set("authorization", `Bearer ${apiKey}`);
+  } else if (incomingAuth) {
+    headers.set("authorization", incomingAuth);
+  }
+  const rid = req.headers.get("x-request-id")?.trim() || randomUUID();
+  headers.set("x-request-id", rid);
 
   let body: ArrayBuffer | undefined;
   try {
@@ -73,6 +86,7 @@ async function proxy(
     if (total) outHeaders.set("x-total-count", total);
 
     const buf = await res.arrayBuffer();
+    outHeaders.set("x-request-id", rid);
     return new NextResponse(buf, {
       status: res.status,
       headers: outHeaders,

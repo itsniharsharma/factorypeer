@@ -138,6 +138,9 @@ export class ProductService {
       relatedProductIds?: string[];
       compatibleProductIds?: string[];
       recommendedProductIds?: string[];
+      shippingWeight?: string;
+      branchAvailabilityPlaceholder?: string;
+      logisticsMeta?: Array<{ label: string; value: string }>;
     },
     ctx?: WriteContext,
   ) {
@@ -164,6 +167,9 @@ export class ProductService {
           relatedProductIds: input.relatedProductIds?.map((x) => toObjectId(x)),
           compatibleProductIds: input.compatibleProductIds?.map((x) => toObjectId(x)),
           recommendedProductIds: input.recommendedProductIds?.map((x) => toObjectId(x)),
+          shippingWeight: input.shippingWeight,
+          branchAvailabilityPlaceholder: input.branchAvailabilityPlaceholder,
+          logisticsMeta: input.logisticsMeta,
         },
         eo(ctx),
       );
@@ -199,6 +205,9 @@ export class ProductService {
       relatedProductIds?: string[];
       compatibleProductIds?: string[];
       recommendedProductIds?: string[];
+      shippingWeight?: string | null;
+      branchAvailabilityPlaceholder?: string | null;
+      logisticsMeta?: Array<{ label: string; value: string }> | null;
     },
     ctx?: WriteContext,
   ) {

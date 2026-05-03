@@ -14,6 +14,11 @@ const productAttachmentSchema = new Schema({
     },
     sortOrder: { type: Number, default: 0 },
 }, { _id: false });
+/** PDP logistics rows — shipping terms, hazmat flags, etc. */
+const logisticsMetaPairSchema = new Schema({
+    label: { type: String, required: true, trim: true },
+    value: { type: String, required: true, trim: true },
+}, { _id: false });
 /**
  * Product shell — PDP slug and merchandising; variants carry SKUs.
  */
@@ -54,6 +59,10 @@ const productSchema = new Schema({
     relatedProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     compatibleProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     recommendedProductIds: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    /** PDP — shipping / procurement (optional; storefront shows placeholders when empty). */
+    shippingWeight: { type: String, trim: true },
+    branchAvailabilityPlaceholder: { type: String, trim: true },
+    logisticsMeta: { type: [logisticsMetaPairSchema], default: [] },
     sortOrder: { type: Number, default: 0 },
     publishedAt: { type: Date, default: null },
     createdBy: { type: Schema.Types.ObjectId, default: null },

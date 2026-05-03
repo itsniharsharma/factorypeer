@@ -13,6 +13,7 @@ export interface Product {
   sku: string;
   itemNumber?: string;
   manufacturer: string;
+  brand?: string;
   thumbnail?: string;
   price: string;
   uom: string;
@@ -155,6 +156,12 @@ export interface ProductDetailPageData {
   relatedProducts: Product[];
   compatibleProducts: Product[];
   recommendedProducts: Product[];
+  /** Shipping weight line — from catalog or default placeholder. */
+  shippingWeight: string;
+  /** Branch / DC availability copy — admin or procurement placeholder. */
+  branchAvailability: string;
+  /** Hazmat, freight, carrier terms — from admin `logisticsMeta` plus defaults. */
+  logisticsLines: Array<{ label: string; value: string }>;
 }
 
 export interface SearchCatalogProduct {

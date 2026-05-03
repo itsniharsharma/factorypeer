@@ -16,6 +16,11 @@ const productAttachmentSchema = z.object({
   sortOrder: z.number().int().optional(),
 });
 
+const logisticsMetaPairSchema = z.object({
+  label: z.string().min(1).max(200),
+  value: z.string().min(1).max(500),
+});
+
 export const createProductBodySchema = z.object({
   slug: z.string().min(1).max(300).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/i),
   title: z.string().min(1).max(500),
@@ -33,6 +38,9 @@ export const createProductBodySchema = z.object({
   relatedProductIds: maxList(48),
   compatibleProductIds: maxList(48),
   recommendedProductIds: maxList(48),
+  shippingWeight: z.string().max(120).optional(),
+  branchAvailabilityPlaceholder: z.string().max(500).optional(),
+  logisticsMeta: z.array(logisticsMetaPairSchema).max(24).optional(),
 });
 
 export const updateProductBodySchema = z
@@ -54,8 +62,10 @@ export const updateProductBodySchema = z
     relatedProductIds: maxList(48),
     compatibleProductIds: maxList(48),
     recommendedProductIds: maxList(48),
-  })
-  .refine((o) => Object.keys(o).length > 0, { message: "At least one field required" });
+    shippingWeight: z.string().max(120).optional().nullable(),
+    branchAvailabilityPlaceholder: z.string().max(500).optional().nullable(),
+    logisticsMeta: z.array(logisticsMetaPairSchema).max(24).optional().nullable(),
+  });
 
 export const createVariantBodySchema = z.object({
   sku: z.string().min(1).max(120),
@@ -75,25 +85,23 @@ export const createVariantBodySchema = z.object({
   sortOrder: z.number().int().optional(),
 });
 
-export const updateVariantBodySchema = z
-  .object({
-    sku: z.string().min(1).max(120).optional(),
-    itemNumber: z.string().max(120).optional().nullable(),
-    mpn: z.string().max(120).optional().nullable(),
-    manufacturer: z.string().max(200).optional().nullable(),
-    unitPrice: z.string().max(50).optional(),
-    currency: z.string().max(10).optional(),
-    availability: z.string().max(200).optional(),
-    uom: z.string().max(50).optional().nullable(),
-    leadTime: z.string().max(500).optional().nullable(),
-    moq: z.number().int().min(1).max(1_000_000).optional().nullable(),
-    packaging: z.string().max(200).optional().nullable(),
-    status: publishStatusSchema.optional(),
-    specRowId: objectIdString.optional().nullable(),
-    searchBlob: z.string().max(5000).optional(),
-    sortOrder: z.number().int().optional(),
-  })
-  .refine((o) => Object.keys(o).length > 0, { message: "At least one field required" });
+export const updateVariantBodySchema = z.object({
+  sku: z.string().min(1).max(120).optional(),
+  itemNumber: z.string().max(120).optional().nullable(),
+  mpn: z.string().max(120).optional().nullable(),
+  manufacturer: z.string().max(200).optional().nullable(),
+  unitPrice: z.string().max(50).optional(),
+  currency: z.string().max(10).optional(),
+  availability: z.string().max(200).optional(),
+  uom: z.string().max(50).optional().nullable(),
+  leadTime: z.string().max(500).optional().nullable(),
+  moq: z.number().int().min(1).max(1_000_000).optional().nullable(),
+  packaging: z.string().max(200).optional().nullable(),
+  status: publishStatusSchema.optional(),
+  specRowId: objectIdString.optional().nullable(),
+  searchBlob: z.string().max(5000).optional(),
+  sortOrder: z.number().int().optional(),
+});
 
 export const linkVariantToRowBodySchema = z.object({
   specRowId: objectIdString,

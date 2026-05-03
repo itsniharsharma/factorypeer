@@ -119,6 +119,9 @@ export class ProductRepository {
       relatedProductIds?: Types.ObjectId[];
       compatibleProductIds?: Types.ObjectId[];
       recommendedProductIds?: Types.ObjectId[];
+      shippingWeight?: string;
+      branchAvailabilityPlaceholder?: string;
+      logisticsMeta?: Array<{ label: string; value: string }>;
     },
     opts?: ExecOpts,
   ) {
@@ -140,6 +143,9 @@ export class ProductRepository {
       relatedProductIds: data.relatedProductIds ?? [],
       compatibleProductIds: data.compatibleProductIds ?? [],
       recommendedProductIds: data.recommendedProductIds ?? [],
+      shippingWeight: data.shippingWeight,
+      branchAvailabilityPlaceholder: data.branchAvailabilityPlaceholder,
+      logisticsMeta: data.logisticsMeta ?? [],
       documentVersion: 1,
       ...auditCreateFields(opts?.actorId),
     };
@@ -176,6 +182,9 @@ export class ProductRepository {
       relatedProductIds: Types.ObjectId[];
       compatibleProductIds: Types.ObjectId[];
       recommendedProductIds: Types.ObjectId[];
+      shippingWeight?: string | null;
+      branchAvailabilityPlaceholder?: string | null;
+      logisticsMeta?: Array<{ label: string; value: string }> | null;
     }>,
     opts?: ExecOpts,
   ) {

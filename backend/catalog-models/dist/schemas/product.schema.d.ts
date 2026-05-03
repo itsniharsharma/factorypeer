@@ -48,12 +48,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     slug: string;
     title: string;
@@ -98,12 +110,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
 }>> & import("mongoose").FlatRecord<{
@@ -150,12 +174,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {
     _id: Types.ObjectId;
 } & {
@@ -211,12 +247,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     slug: string;
     title: string;
@@ -261,12 +309,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
 }>> & import("mongoose").FlatRecord<{
@@ -313,12 +373,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     relatedProductIds: Types.ObjectId[];
     compatibleProductIds: Types.ObjectId[];
     recommendedProductIds: Types.ObjectId[];
+    logisticsMeta: Types.DocumentArray<{
+        label: string;
+        value: string;
+    }, Types.Subdocument<import("bson").ObjectId, any, {
+        label: string;
+        value: string;
+    }> & {
+        label: string;
+        value: string;
+    }>;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
     brand?: string | null | undefined;
     defaultVariantId?: Types.ObjectId | null | undefined;
+    shippingWeight?: string | null | undefined;
+    branchAvailabilityPlaceholder?: string | null | undefined;
 } & import("mongoose").DefaultTimestampProps> & {
     _id: Types.ObjectId;
 } & {

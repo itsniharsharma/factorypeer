@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { AdminSignOut } from "./admin-sign-out";
 
 export function AdminSidebar() {
   return (
@@ -14,6 +15,7 @@ export function AdminSidebar() {
           <Link href="/admin/homepage-content" className="block rounded-sm px-3 py-2 hover:bg-slate-50">Homepage Content</Link>
           <Link href="/admin/navigation-content" className="block rounded-sm px-3 py-2 hover:bg-slate-50">Navigation & Footer</Link>
         </nav>
+        <AdminSignOut />
       </div>
     </aside>
   );

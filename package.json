@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:catalog": "node scripts/seed-machining-t-slot.mjs"
+    "seed:catalog": "node scripts/seed-machining-t-slot.mjs",
+    "catalog:e2e-electrical": "node scripts/electrical-vertical-admin-api.mjs"
   },
   "dependencies": {
     "next": "^15.5.15",
