@@ -1,6 +1,11 @@
 import { cache } from "react";
 import type { CategoryDoc } from "@/lib/admin-api/types";
-import type { CatalogBreadcrumb, CatalogNavLinkItem, CatalogTaxonomyNode } from "@/lib/types";
+import type {
+  CatalogBreadcrumb,
+  CatalogNavLinkItem,
+  CatalogTaxonomyNode,
+  MegaMenuRootGroup,
+} from "@/lib/types";
 import { catalogServerJson } from "./fetch";
 import { buildSpecMatrixForCategory } from "./matrix";
 
@@ -31,7 +36,68 @@ function categoryToTaxonomyNode(doc: CategoryDoc): CatalogTaxonomyNode {
     matrix: undefined,
     kind: doc.kind,
     activeSpecSchemaId: doc.activeSpecSchemaId ?? null,
+    sortOrder: doc.sortOrder ?? 0,
   };
+}
+
+/** Deterministic sibling order from admin `sortOrder`. */
+export function sortTaxonomySiblings(nodes: CatalogTaxonomyNode[]): CatalogTaxonomyNode[] {
+  return [...nodes].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+}
+
+function sortTreeRecursive(nodes: CatalogTaxonomyNode[]): CatalogTaxonomyNode[] {
+  const sorted = sortTaxonomySiblings(nodes);
+  return sorted.map((n) => ({ ...n, children: sortTreeRecursive(n.children) }));
+}
+
+/**
+ * First “browse” URL under a category: walk first child by sort order until a family node
+ * (matrix / PLP) or a leaf — matches homepage + mega-menu root click targets.
+ */
+export function firstBrowsePathSegments(node: CatalogTaxonomyNode): string[] {
+  const segments = [node.slug];
+  let cur = node;
+  while (cur.children.length > 0) {
+    const sorted = sortTaxonomySiblings(cur.children);
+    const next = sorted[0];
+    segments.push(next.slug);
+    if (next.kind === "family") break;
+    cur = next;
+  }
+  return segments;
+}
+
+export function pathHrefFromSegments(segments: string[]): string {
+  return `/category/${segments.join("/")}`;
+}
+
+export function buildMegaMenuGroups(tree: CatalogTaxonomyNode[]): MegaMenuRootGroup[] {
+  const roots = sortTaxonomySiblings(tree);
+  return roots.map((root) => {
+    const rootHref = pathHrefFromSegments(firstBrowsePathSegments(root));
+    const children = sortTaxonomySiblings(root.children).map((child) => ({
+      id: child.id,
+      label: child.title,
+      href: pathHrefFromSegments([root.slug, child.slug]),
+    }));
+    return {
+      root: {
+        id: root.id,
+        label: root.title,
+        href: rootHref,
+      },
+      children,
+    };
+  });
+}
+
+function previewLinksFromRoots(tree: CatalogTaxonomyNode[], limit: number): CatalogNavLinkItem[] {
+  const roots = sortTaxonomySiblings(tree).slice(0, limit);
+  return roots.map((root) => ({
+    id: root.id,
+    label: root.title,
+    href: pathHrefFromSegments(firstBrowsePathSegments(root)),
+  }));
 }
 
 function findNodeAtPath(
@@ -67,7 +133,7 @@ function buildBreadcrumbTrail(
 
 export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> => {
   const raw = await catalogServerJson<CategoryDoc[]>("/categories/tree");
-  return filterPublished(raw).map(categoryToTaxonomyNode);
+  return sortTreeRecursive(filterPublished(raw).map(categoryToTaxonomyNode));
 });
 
 export const getRouteContext = cache(
@@ -98,58 +164,10 @@ export const getRouteContext = cache(
   },
 );
 
-function collectNavItems(
-  nodes: CatalogTaxonomyNode[],
-  depth: number,
-  parentPath: string[],
-  out: CatalogNavLinkItem[],
-  previewOut: CatalogNavLinkItem[],
-) {
-  for (const node of nodes) {
-    const pathSegments = [...parentPath, node.slug];
-    const href = `/category/${pathSegments.join("/")}`;
-    out.push({
-      id: node.id,
-      label: node.title,
-      href,
-      isHeader: depth === 0,
-    });
-    if (depth <= 1) {
-      previewOut.push({
-        id: `preview-${node.id}`,
-        label: node.title,
-        href,
-      });
-    }
-    if (node.children.length) {
-      collectNavItems(node.children, depth + 1, pathSegments, out, previewOut);
-    }
-  }
-}
-
-export function getMegaMenuLinkColumns(tree: CatalogTaxonomyNode[], columnCount = 4): CatalogNavLinkItem[][] {
-  const navItems: CatalogNavLinkItem[] = [];
-  const previewLinks: CatalogNavLinkItem[] = [];
-  collectNavItems(tree, 0, [], navItems, previewLinks);
-  if (navItems.length === 0) return [];
-  const safeColumnCount = Math.max(1, columnCount);
-  const size = Math.ceil(navItems.length / safeColumnCount);
-  return Array.from({ length: safeColumnCount }, (_, index) =>
-    navItems.slice(index * size, (index + 1) * size),
-  ).filter((column) => column.length > 0);
-}
-
-export function getTopNavPreviewLinksFromTree(tree: CatalogTaxonomyNode[], limit = 6): CatalogNavLinkItem[] {
-  const previewLinks: CatalogNavLinkItem[] = [];
-  const navItems: CatalogNavLinkItem[] = [];
-  collectNavItems(tree, 0, [], navItems, previewLinks);
-  return previewLinks.slice(0, limit);
-}
-
 export const getMegaMenuNavigation = cache(async () => {
   const tree = await getTaxonomyTree();
   return {
-    columns: getMegaMenuLinkColumns(tree, 4),
-    previewLinks: getTopNavPreviewLinksFromTree(tree, 6),
+    groups: buildMegaMenuGroups(tree),
+    previewLinks: previewLinksFromRoots(tree, 8),
   };
 });

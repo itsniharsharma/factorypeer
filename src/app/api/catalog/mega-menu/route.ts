@@ -8,13 +8,14 @@ export async function GET() {
       getMegaMenuUtilityLinks(),
     ]);
     return NextResponse.json({
-      ...nav,
+      groups: nav.groups,
+      previewLinks: nav.previewLinks,
       utilityLinks: utilityLinks.map((link) => ({
         label: link.label,
         href: link.href,
       })),
     });
   } catch {
-    return NextResponse.json({ columns: [], previewLinks: [], utilityLinks: [] });
+    return NextResponse.json({ groups: [], previewLinks: [], utilityLinks: [] });
   }
 }

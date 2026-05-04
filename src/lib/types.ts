@@ -156,9 +156,6 @@ export interface ProductDetailPageData {
   marketingBullets: string[];
   specificationRows: SpecRow[];
   attachments: ProductAttachmentDoc[];
-  relatedProducts: Product[];
-  compatibleProducts: Product[];
-  recommendedProducts: Product[];
   /** Shipping weight line — from catalog or default placeholder. */
   shippingWeight: string;
   /** Branch / DC availability copy — admin or procurement placeholder. */
@@ -226,6 +223,8 @@ export interface CatalogTaxonomyNode {
   /** From catalog API — drives spec matrix on family nodes */
   kind?: "branch" | "family";
   activeSpecSchemaId?: string | null;
+  /** Mirrors category `sortOrder` from admin API — sibling ordering. */
+  sortOrder?: number;
 }
 
 export interface CatalogSpecColumn {
@@ -261,4 +260,10 @@ export interface CatalogNavLinkItem {
   label: string;
   href: string;
   isHeader?: boolean;
+}
+
+/** Mega menu: one root heading + immediate children only (taxonomy-driven). */
+export interface MegaMenuRootGroup {
+  root: CatalogNavLinkItem;
+  children: CatalogNavLinkItem[];
 }

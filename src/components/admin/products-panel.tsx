@@ -830,31 +830,38 @@ export function ProductsPanel() {
               onChange={(e) => setAttachmentLines(e.target.value)}
             />
           </label>
-          <label className="md:col-span-2">
-            <span className="text-slate-600">Related product IDs</span>
-            <input
-              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
-              value={relatedIds}
-              onChange={(e) => setRelatedIds(e.target.value)}
-              placeholder="comma or space separated ObjectIds"
-            />
-          </label>
-          <label className="md:col-span-1">
-            <span className="text-slate-600">Compatible product IDs</span>
-            <input
-              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
-              value={compatibleIds}
-              onChange={(e) => setCompatibleIds(e.target.value)}
-            />
-          </label>
-          <label className="md:col-span-1">
-            <span className="text-slate-600">Recommended product IDs</span>
-            <input
-              className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
-              value={recommendedIds}
-              onChange={(e) => setRecommendedIds(e.target.value)}
-            />
-          </label>
+          <details className="md:col-span-2 rounded-sm border border-slate-200 bg-slate-50/80 p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-slate-800">
+              Product relations (dormant — not shown on storefront PDP; API fields retained for future use)
+            </summary>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label className="md:col-span-2">
+                <span className="text-slate-600">Related product IDs</span>
+                <input
+                  className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+                  value={relatedIds}
+                  onChange={(e) => setRelatedIds(e.target.value)}
+                  placeholder="comma or space separated ObjectIds"
+                />
+              </label>
+              <label>
+                <span className="text-slate-600">Compatible product IDs</span>
+                <input
+                  className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+                  value={compatibleIds}
+                  onChange={(e) => setCompatibleIds(e.target.value)}
+                />
+              </label>
+              <label>
+                <span className="text-slate-600">Recommended product IDs</span>
+                <input
+                  className="mt-1 w-full rounded-sm border px-2 py-1 font-mono text-xs"
+                  value={recommendedIds}
+                  onChange={(e) => setRecommendedIds(e.target.value)}
+                />
+              </label>
+            </div>
+          </details>
           <div className="md:col-span-2 border-t border-slate-200 pt-3">
             <p className="mb-2 text-xs font-semibold text-slate-800">PDP procurement / logistics</p>
             <div className="grid gap-3 md:grid-cols-2">

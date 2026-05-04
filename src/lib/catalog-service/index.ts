@@ -12,8 +12,10 @@ export {
   getTaxonomyTree,
   getRouteContext,
   getMegaMenuNavigation,
-  getMegaMenuLinkColumns,
-  getTopNavPreviewLinksFromTree,
+  buildMegaMenuGroups,
+  firstBrowsePathSegments,
+  pathHrefFromSegments,
+  sortTaxonomySiblings,
 } from "./taxonomy";
 export { getSpecMatrix, buildSpecMatrixForCategory } from "./matrix";
 export type { GetSpecMatrixParams } from "./matrix";

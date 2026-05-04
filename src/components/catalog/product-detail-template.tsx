@@ -1,11 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { QuantitySelector } from "@/components/ui/quantity-selector";
 import { SpecTable } from "@/components/ui/spec-table";
 import type { ProductDetailPageData } from "@/lib/types";
 import { ProductImageGallery } from "./product-image-gallery";
-import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 interface ProductDetailTemplateProps {
   data: ProductDetailPageData;
@@ -285,84 +283,6 @@ export function ProductDetailTemplate({ data }: ProductDetailTemplateProps) {
           </div>
         )}
       </section>
-
-      <ProductRelationSection
-        title="Related products"
-        products={data.relatedProducts}
-        empty="No alternate items configured."
-      />
-      <ProductRelationSection
-        title="Compatible items"
-        products={data.compatibleProducts}
-        empty="No compatible accessories or mates listed."
-      />
-      <ProductRelationSection
-        title="Recommended"
-        products={data.recommendedProducts}
-        empty="No recommendations for this item."
-      />
     </div>
-  );
-}
-
-function ProductRelationSection({
-  title,
-  products,
-  empty,
-}: {
-  title: string;
-  products: ProductDetailPageData["relatedProducts"];
-  empty: string;
-}) {
-  return (
-    <section className="border border-line bg-slate-50 p-2">
-      <div className="mb-1.5 flex items-baseline justify-between gap-2 border-b border-line pb-1">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-800">{title}</h2>
-        <span className="text-[9px] font-medium uppercase tracking-wide text-slate-500">
-          {products.length} item{products.length === 1 ? "" : "s"}
-        </span>
-      </div>
-      {products.length === 0 ? (
-        <p className="text-[11px] text-slate-600">{empty}</p>
-      ) : (
-        <ul className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
-            <li key={product.id}>
-              <article className="flex gap-2 border border-line bg-white p-1.5 transition-colors hover:border-slate-400">
-                <div className="relative h-14 w-14 shrink-0 border border-line bg-white">
-                  <Image
-                    src={product.thumbnail ?? getDefaultCatalogImageUrl()}
-                    alt={product.title}
-                    fill
-                    className="object-contain p-0.5"
-                    sizes="56px"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  {product.brand ? (
-                    <p className="truncate text-[9px] font-semibold uppercase tracking-wide text-slate-500">
-                      {product.brand}
-                    </p>
-                  ) : null}
-                  <Link
-                    href={product.slug ? `/product/${product.slug}` : "#"}
-                    className="line-clamp-2 text-[11px] font-semibold leading-snug text-brand hover:underline"
-                  >
-                    {product.title}
-                  </Link>
-                  <p className="mt-0.5 font-mono text-[10px] text-slate-600">
-                    {product.itemNumber ?? product.sku}
-                  </p>
-                  <p className="mt-1 text-sm font-bold tabular-nums text-slate-900">
-                    {product.price}{" "}
-                    <span className="text-[10px] font-medium text-slate-600">/ {product.uom}</span>
-                  </p>
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   );
 }

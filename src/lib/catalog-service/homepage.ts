@@ -1,6 +1,11 @@
 import type { PromoBanner, CategoryTile, SupportCTA, CatalogTaxonomyNode } from "@/lib/types";
 import { catalogServerJsonList } from "./fetch";
-import { getTaxonomyTree } from "./taxonomy";
+import {
+  firstBrowsePathSegments,
+  getTaxonomyTree,
+  pathHrefFromSegments,
+  sortTaxonomySiblings,
+} from "./taxonomy";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 type HomepagePromoBannerDoc = {
@@ -93,27 +98,17 @@ export async function getHomepageCategoryTiles(): Promise<CategoryTile[]> {
   }));
 }
 
-/** Home browse grid is taxonomy-driven only (no merchandising fallback content). */
+/** Top-level (root) categories only; card links to first browseable path under each root (taxonomy sortOrder). */
 export async function getHomepageBrowseCategoryTiles(limit = 14): Promise<CategoryTile[]> {
   const tree = await getTaxonomyTree();
-  const out: CategoryTile[] = [];
-  const visit = (nodes: CatalogTaxonomyNode[], prefix: string[]) => {
-    for (const node of nodes) {
-      if (out.length >= limit) return;
-      const href = `/category/${[...prefix, node.slug].join("/")}`;
-      out.push({
-        id: node.id,
-        label: node.title,
-        href,
-        image: getDefaultCatalogImageUrl(),
-        imageAlt: `${node.title} category`,
-      });
-      if (node.children.length) visit(node.children, [...prefix, node.slug]);
-      if (out.length >= limit) return;
-    }
-  };
-  visit(tree, []);
-  return out;
+  const roots = sortTaxonomySiblings(tree).slice(0, limit);
+  return roots.map((node) => ({
+    id: node.id,
+    label: node.title,
+    href: pathHrefFromSegments(firstBrowsePathSegments(node)),
+    image: getDefaultCatalogImageUrl(),
+    imageAlt: `${node.title} category`,
+  }));
 }
 
 export async function getHomepageSupportCards(): Promise<SupportCTA[]> {

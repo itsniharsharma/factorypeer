@@ -206,12 +206,6 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     docType: normalizeAttachmentDocType(a.docType),
   }));
 
-  const [relatedProducts, compatibleProducts, recommendedProducts] = await Promise.all([
-    fetchOrderedProductCards(product.relatedProductIds),
-    fetchOrderedProductCards(product.compatibleProductIds),
-    fetchOrderedProductCards(product.recommendedProductIds),
-  ]);
-
   const shippingWeight =
     product.shippingWeight?.trim() ||
     "Shipping weight — request dimensional weight / freight class from buyer services.";
@@ -257,9 +251,6 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
     marketingBullets: product.marketingBullets ?? [],
     specificationRows,
     attachments,
-    relatedProducts,
-    compatibleProducts,
-    recommendedProducts,
     shippingWeight,
     branchAvailability,
     logisticsLines,

@@ -2,21 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { CatalogNavLinkItem } from "@/lib/types";
+import type { CatalogNavLinkItem, MegaMenuRootGroup } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type MegaMenuPayload = {
-  columns: CatalogNavLinkItem[][];
+  groups: MegaMenuRootGroup[];
   previewLinks: CatalogNavLinkItem[];
   utilityLinks: Array<{ label: string; href: string }>;
 };
-
-const megaMenuUtilityLinksFallback = [
-  { label: "Purchased Products", href: "/purchased-products" },
-  { label: "Custom Product Center", href: "/custom-product-center" },
-  { label: "Replacement Parts", href: "/replacement-parts" },
-  { label: "Digital Catalogs", href: "/digital-catalogs" },
-];
 
 export function CategoryNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,16 +24,16 @@ export function CategoryNavigation() {
       .then((data: MegaMenuPayload) => {
         if (!cancelled) {
           setMegaMenu({
-            columns: data.columns ?? [],
-            previewLinks: data.previewLinks ?? [],
-            utilityLinks: data.utilityLinks ?? [],
+            groups: Array.isArray(data.groups) ? data.groups : [],
+            previewLinks: Array.isArray(data.previewLinks) ? data.previewLinks : [],
+            utilityLinks: Array.isArray(data.utilityLinks) ? data.utilityLinks : [],
           });
           setMenuError(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setMegaMenu({ columns: [], previewLinks: [], utilityLinks: [] });
+          setMegaMenu({ groups: [], previewLinks: [], utilityLinks: [] });
           setMenuError(true);
         }
       });
@@ -49,11 +42,9 @@ export function CategoryNavigation() {
     };
   }, []);
 
-  const megaMenuColumns = megaMenu?.columns ?? [];
+  const groups = megaMenu?.groups ?? [];
   const previewLinks = megaMenu?.previewLinks ?? [];
-  const utilityLinks = megaMenu?.utilityLinks?.length
-    ? megaMenu.utilityLinks
-    : megaMenuUtilityLinksFallback;
+  const utilityLinks = megaMenu?.utilityLinks ?? [];
 
   const clearCloseTimer = () => {
     if (closeTimer.current) {
@@ -97,49 +88,65 @@ export function CategoryNavigation() {
           >
             <section
               className={cn(
-                "pointer-events-auto w-[980px] max-w-[calc(100vw-28px)] border border-line bg-white shadow-[0_10px_28px_rgba(15,23,42,0.16)]",
-                "max-h-[520px] overflow-auto",
+                "pointer-events-auto w-[min(100vw-28px,1200px)] max-w-[calc(100vw-28px)] border border-line bg-white shadow-[0_10px_28px_rgba(15,23,42,0.16)]",
+                "max-h-[min(100vh-120px,560px)] overflow-y-auto",
               )}
             >
               <div className="border-b border-line px-4 py-3">
                 <h2 className="text-[28px] leading-none font-bold text-slate-800">All Products</h2>
-                <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5">
-                  {utilityLinks.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href || "#"}
-                      className="text-xs font-semibold text-slate-700 hover:text-brand hover:underline"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
+                {utilityLinks.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1.5">
+                    {utilityLinks.map((link) => (
+                      <a
+                        key={link.label + link.href}
+                        href={link.href || "#"}
+                        className="text-xs font-semibold text-slate-700 hover:text-brand hover:underline"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
                 {menuError ? (
                   <p className="mt-2 text-xs text-amber-800">Catalog menu unavailable — check API connection.</p>
                 ) : null}
               </div>
 
-              <div className="grid gap-0 md:grid-cols-3 xl:grid-cols-4">
-                {megaMenuColumns.length === 0 && !menuError ? (
-                  <div className="col-span-full px-4 py-6 text-xs text-slate-500">Loading catalog…</div>
+              <div className="px-3 py-4">
+                {groups.length === 0 && !menuError ? (
+                  <p className="px-1 text-xs text-slate-500">Loading catalog…</p>
                 ) : null}
-                {megaMenuColumns.map((column, index) => (
-                  <ul key={index} className="border-r border-line px-4 py-3 last:border-r-0">
-                    {column.map((item) => (
-                      <li key={item.id}>
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            "block rounded-[2px] px-1 py-[3px] text-xs text-slate-700 hover:bg-slate-100 hover:text-slate-900",
-                            item.isHeader && "font-semibold",
-                          )}
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ))}
+                {groups.length === 0 && menuError ? (
+                  <p className="px-1 text-xs text-slate-500">No category menu to display.</p>
+                ) : null}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {groups.map((g) => (
+                    <div key={g.root.id} className="min-w-0">
+                      <Link
+                        href={g.root.href}
+                        className="block text-sm font-bold leading-tight text-slate-900 hover:text-brand hover:underline"
+                      >
+                        {g.root.label}
+                      </Link>
+                      <ul className="mt-2 space-y-1.5 border-t border-slate-100 pt-2">
+                        {g.children.length === 0 ? (
+                          <li className="text-[10px] text-slate-400">No subcategories</li>
+                        ) : (
+                          g.children.map((c) => (
+                            <li key={c.id}>
+                              <Link
+                                href={c.href}
+                                className="text-xs leading-snug text-slate-700 hover:text-brand hover:underline"
+                              >
+                                {c.label}
+                              </Link>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
           </div>
