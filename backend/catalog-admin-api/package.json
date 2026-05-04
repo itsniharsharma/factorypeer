@@ -21,7 +21,8 @@
     "preseed:content": "npm run build --prefix ../catalog-models",
     "seed:content": "tsx src/scripts/seed-merchandising-content.ts",
     "migrate:media": "tsx src/scripts/migrate-legacy-media-to-cloudinary.ts",
-    "reset:electrical-showcase": "tsx src/scripts/reset-catalog-and-rebuild-electrical.ts"
+    "reset:electrical-showcase": "tsx src/scripts/reset-catalog-and-rebuild-electrical.ts",
+    "repair:spec-linkage": "tsx src/scripts/repair-spec-linkage.ts"
   },
   "dependencies": {
     "@factorypeer/catalog-models": "file:../catalog-models",

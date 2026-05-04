@@ -31,6 +31,13 @@ export class ProductRepository {
     return withSession(q, opts?.session).exec();
   }
 
+  /** Batch load by id (storefront spec matrix — avoids N product lookups). */
+  async findByIds(ids: Types.ObjectId[], opts?: ExecOpts) {
+    if (!ids.length) return [];
+    const q = this.models.Product.find({ _id: { $in: ids }, ...this.tq() });
+    return withSession(q, opts?.session).exec();
+  }
+
   async findBySlug(slug: string, opts?: ExecOpts) {
     const q = this.models.Product.findOne({ slug, ...this.tq() });
     return withSession(q, opts?.session).exec();

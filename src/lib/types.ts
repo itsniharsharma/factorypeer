@@ -248,6 +248,11 @@ export interface CatalogSpecMatrix {
   familySummary: string;
   columns: CatalogSpecColumn[];
   rows: CatalogSpecRow[];
+  /** Published rows in schema (stable when matrix rows are paginated). */
+  totalRowCount: number;
+  /** Set when the matrix is loaded as a paged slice (family category UI). */
+  matrixPage?: number;
+  matrixPageSize?: number;
 }
 
 export interface CatalogBreadcrumb {

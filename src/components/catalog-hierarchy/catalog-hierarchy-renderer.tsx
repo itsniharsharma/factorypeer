@@ -14,7 +14,13 @@ export function CatalogHierarchyRenderer({
   pathSegments,
 }: CatalogHierarchyRendererProps) {
   if (node.matrix) {
-    return <SpecMatrixRenderer node={node} breadcrumbs={breadcrumbs} />;
+    return (
+      <SpecMatrixRenderer
+        node={node}
+        breadcrumbs={breadcrumbs}
+        pathSegments={pathSegments}
+      />
+    );
   }
 
   return (

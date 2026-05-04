@@ -15,6 +15,7 @@ import {
 import {
   productListQuerySchema,
   productSummaryCardsQuerySchema,
+  variantBundlesQuerySchema,
   variantListQuerySchema,
 } from "../validation/list-queries.js";
 import { toObjectId } from "../utils/mongo.js";
@@ -28,6 +29,11 @@ export async function registerProductRoutes(app: FastifyInstance, services: Cata
     const q = parseQuery(productSummaryCardsQuerySchema, req.query as Record<string, string>);
     const ids = q.ids as string[];
     return products.summaryCardsForProductIds(ids, writeContext(req));
+  });
+
+  app.get(`${PREFIX}/variant-bundles`, async (req) => {
+    const q = parseQuery(variantBundlesQuerySchema, req.query as Record<string, string>);
+    return products.getVariantsWithProductsByIds(q.ids as string[], writeContext(req));
   });
 
   app.get(PREFIX, async (req, reply) => {

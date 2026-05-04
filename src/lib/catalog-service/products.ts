@@ -10,8 +10,8 @@ import type {
   ProductAttachmentDoc,
 } from "@/lib/types";
 import { catalogServerJson, catalogServerJsonList } from "./fetch";
-import { getTaxonomyTree } from "./taxonomy";
-import { buildSpecMatrixForCategory } from "./matrix";
+import { findTaxonomyNodeById, getTaxonomyTree } from "./taxonomy";
+import { buildSpecMatrixForCategory, specRowsForLinkedVariant } from "./matrix";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 function findCategoryBySlug(
@@ -47,13 +47,34 @@ function mapVariantStatus(avail?: string): Product["status"] {
   return "in-stock";
 }
 
-/** PDP spec table: use the matrix row bound to this SKU in any of the product's categories. */
-async function specificationRowsForPublishedVariant(
-  sku: string | undefined,
+/** Prefer `family` categories first so we usually load one matrix, not N branch misses. */
+function categoryIdsOrderedForSpecMatrix(
+  tree: CatalogTaxonomyNode[],
   categoryIds: string[] | undefined,
+): string[] {
+  if (!categoryIds?.length) return [];
+  return [...categoryIds].sort((a, b) => {
+    const na = findTaxonomyNodeById(tree, a);
+    const nb = findTaxonomyNodeById(tree, b);
+    const fa = na?.kind === "family" ? 0 : 1;
+    const fb = nb?.kind === "family" ? 0 : 1;
+    return fa - fb;
+  });
+}
+
+/** PDP spec table: prefer variant.specRowId; else scan family matrices by SKU (legacy / unlinked). */
+async function specificationRowsForPublishedVariant(
+  primary: ProductVariantDoc | undefined,
+  categoryIds: string[] | undefined,
+  tree: CatalogTaxonomyNode[],
 ): Promise<SpecRow[]> {
-  if (!sku || !categoryIds?.length) return [];
-  for (const catId of categoryIds) {
+  if (!primary?.sku || !categoryIds?.length) return [];
+
+  const linked = await specRowsForLinkedVariant(primary, categoryIds);
+  if (linked?.length) return linked;
+
+  const sku = primary.sku;
+  for (const catId of categoryIdsOrderedForSpecMatrix(tree, categoryIds)) {
     const matrix = await buildSpecMatrixForCategory(catId);
     if (!matrix?.rows?.length) continue;
     const match = matrix.rows.find((r) => r.sku === sku);
@@ -119,11 +140,40 @@ type ProductSummaryCardDto = {
   brand?: string;
   sku: string;
   itemNumber?: string;
+  mpn?: string;
   manufacturer?: string;
   price: string;
   uom: string;
   availability: string;
 };
+
+const SUMMARY_CARD_CHUNK = 100;
+
+/** Batched primary-variant pricing for listings — replaces per-product variant GET storms. */
+async function summaryCardsMapForProducts(
+  products: ProductDoc[],
+  fetchInit?: RequestInit & { next?: { revalidate?: number; tags?: string[] } },
+): Promise<Map<string, ProductSummaryCardDto>> {
+  const ids = products.map((p) => String(p._id));
+  if (!ids.length) return new Map();
+  const map = new Map<string, ProductSummaryCardDto>();
+  const init =
+    fetchInit ??
+    ({
+      next: { revalidate: 60, tags: ["catalog", "summary-cards"] },
+    } as const);
+  for (let i = 0; i < ids.length; i += SUMMARY_CARD_CHUNK) {
+    const chunk = ids.slice(i, i + SUMMARY_CARD_CHUNK);
+    const rows = await catalogServerJson<ProductSummaryCardDto[]>(
+      `/products/summary-cards?ids=${chunk.join(",")}`,
+      init,
+    );
+    for (const r of Array.isArray(rows) ? rows : []) {
+      map.set(r.productId, r);
+    }
+  }
+  return map;
+}
 
 /** Single batched API — avoids N+1 variant fetches per related SKU. */
 async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Product[]> {
@@ -180,10 +230,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailPageD
       ? `${primary.unitPrice} ${primary.currency}`
       : primary?.unitPrice ?? "—";
 
-  const specificationRows = await specificationRowsForPublishedVariant(
-    primary?.sku,
-    product.categoryIds,
-  );
+  const specificationRows = await specificationRowsForPublishedVariant(primary, product.categoryIds, tree);
 
   const breadcrumbs = breadcrumbsForProduct(product.categoryIds, tree);
   const images = normalizeProductImages(product);
@@ -280,31 +327,28 @@ export async function searchCatalog(query: string): Promise<SearchCatalogProduct
   const { data: products } = await catalogServerJsonList<ProductDoc[]>(
     `/products?status=published&limit=60&q=${encodeURIComponent(q)}`,
   );
-  const out: SearchCatalogProduct[] = [];
+  const cards = await summaryCardsMapForProducts(products, {
+    next: { revalidate: 60, tags: ["catalog", "search-summary-cards"] },
+  });
 
-  for (const p of products) {
-    const { data: variants } = await catalogServerJsonList<ProductVariantDoc[]>(
-      `/products/${p._id}/variants?limit=10&status=published`,
-    );
-    const v = variants[0];
-    const price =
-      v?.unitPrice && v?.currency ? `${v.unitPrice} ${v.currency}` : v?.unitPrice ?? "—";
-    out.push({
+  return products.map((p) => {
+    const row = cards.get(String(p._id));
+    const price = row?.price ?? "—";
+    return {
       id: p._id,
       slug: p.slug,
       title: p.title,
-      sku: v?.sku ?? "—",
-      itemNumber: v?.itemNumber ?? "—",
-      manufacturer: v?.manufacturer ?? p.brand ?? "—",
-      mpn: v?.mpn ?? "—",
+      sku: row?.sku ?? "—",
+      itemNumber: row?.itemNumber ?? "—",
+      manufacturer: row?.manufacturer ?? p.brand ?? "—",
+      mpn: row?.mpn ?? "—",
       shortSpec: (p.searchText ?? p.title).slice(0, 160),
       price,
-      uom: v?.uom ?? "Each",
+      uom: row?.uom ?? "Each",
       thumbnail: getDefaultCatalogImageUrl(),
-      availability: v?.availability ?? "—",
-    });
-  }
-  return out;
+      availability: row?.availability ?? "—",
+    };
+  });
 }
 
 export async function getProductListingBySlug(slug: string): Promise<ProductListingPageData | undefined> {
@@ -319,6 +363,10 @@ export async function getProductListingBySlug(slug: string): Promise<ProductList
     `/products?status=published&categoryId=${encodeURIComponent(cat.id)}&limit=100`,
   );
 
+  const cards = await summaryCardsMapForProducts(products, {
+    next: { revalidate: 60, tags: ["catalog", "plp-summary-cards", `category-${cat.id}`] },
+  });
+
   const grid: Array<
     Product & {
       shortSpec: string;
@@ -326,23 +374,19 @@ export async function getProductListingBySlug(slug: string): Promise<ProductList
   > = [];
 
   for (const p of products) {
-    const { data: vars } = await catalogServerJsonList<ProductVariantDoc[]>(
-      `/products/${p._id}/variants?limit=3&status=published`,
-    );
-    const v = vars[0];
-    const price =
-      v?.unitPrice && v?.currency ? `${v.unitPrice} ${v.currency}` : v?.unitPrice ?? "—";
+    const row = cards.get(String(p._id));
+    const price = row?.price ?? "—";
     grid.push({
       id: p._id,
       slug: p.slug,
       title: p.title,
-      sku: v?.sku ?? "—",
-      itemNumber: v?.itemNumber ?? "—",
-      manufacturer: v?.manufacturer ?? p.brand ?? "—",
+      sku: row?.sku ?? "—",
+      itemNumber: row?.itemNumber ?? "—",
+      manufacturer: row?.manufacturer ?? p.brand ?? "—",
       thumbnail: getDefaultCatalogImageUrl(),
       price,
-      uom: v?.uom ?? "Each",
-      status: mapVariantStatus(v?.availability),
+      uom: row?.uom ?? "Each",
+      status: mapVariantStatus(row?.availability),
       leadTime: "—",
       shortSpec: (p.searchText ?? "").slice(0, 80),
     });
@@ -376,27 +420,24 @@ export async function getFeaturedHomeProducts(limit = 6): Promise<Product[]> {
   const { data: products } = await catalogServerJsonList<ProductDoc[]>(
     `/products?status=published&limit=${limit}&sort=-updatedAt`,
   );
-  const out: Product[] = [];
-  for (const p of products) {
-    const { data: vars } = await catalogServerJsonList<ProductVariantDoc[]>(
-      `/products/${p._id}/variants?status=published&limit=1`,
-    );
-    const v = vars[0];
-    const price =
-      v?.unitPrice && v?.currency ? `${v.unitPrice} ${v.currency}` : v?.unitPrice ?? "—";
-    out.push({
+  const cards = await summaryCardsMapForProducts(products, {
+    next: { revalidate: 60, tags: ["catalog", "featured-summary-cards"] },
+  });
+  return products.map((p) => {
+    const row = cards.get(String(p._id));
+    const price = row?.price ?? "—";
+    return {
       id: p._id,
       slug: p.slug,
       title: p.title,
-      sku: v?.sku ?? "—",
-      itemNumber: v?.itemNumber,
-      manufacturer: v?.manufacturer ?? p.brand ?? "—",
+      sku: row?.sku ?? "—",
+      itemNumber: row?.itemNumber,
+      manufacturer: row?.manufacturer ?? p.brand ?? "—",
       thumbnail: getDefaultCatalogImageUrl(),
       price,
-      uom: v?.uom ?? "Each",
-      status: mapVariantStatus(v?.availability),
+      uom: row?.uom ?? "Each",
+      status: mapVariantStatus(row?.availability),
       leadTime: "—",
-    });
-  }
-  return out;
+    };
+  });
 }

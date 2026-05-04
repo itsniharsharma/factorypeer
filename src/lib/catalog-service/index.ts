@@ -16,8 +16,15 @@ export {
   firstBrowsePathSegments,
   pathHrefFromSegments,
   sortTaxonomySiblings,
+  findTaxonomyNodeById,
 } from "./taxonomy";
-export { getSpecMatrix, buildSpecMatrixForCategory } from "./matrix";
+export {
+  getSpecMatrix,
+  buildSpecMatrixForCategory,
+  buildSpecMatrixPage,
+  DEFAULT_MATRIX_PAGE_SIZE,
+  specRowsForLinkedVariant,
+} from "./matrix";
 export type { GetSpecMatrixParams } from "./matrix";
 export {
   getProductBySlug,

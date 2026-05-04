@@ -7,7 +7,11 @@ import type { VariantBindingInput } from "../repositories/spec-row.repository.js
 import type { ExecOpts } from "../repositories/exec-opts.js";
 import { withTransaction } from "../db/with-transaction.js";
 import { AppError } from "../errors/app-error.js";
-import { familyRequiredForSpec, resourceNotFound } from "../errors/domain.js";
+import {
+  familyRequiredForSpec,
+  publishedSpecRowRequiresBindings,
+  resourceNotFound,
+} from "../errors/domain.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
 
@@ -148,6 +152,12 @@ export class SpecMatrixService {
     return { items, total };
   }
 
+  async getRow(rowId: string, ctx?: WriteContext) {
+    const row = await this.rows.findById(toObjectId(rowId), eo(ctx));
+    if (!row) throw resourceNotFound("CatalogSpecRow", rowId);
+    return this.serializeRow(row);
+  }
+
   async addRow(
     schemaId: string,
     input: {
@@ -170,6 +180,11 @@ export class SpecMatrixService {
       role: b.role ?? "primary",
       sortOrder: b.sortOrder ?? i,
     }));
+
+    const nextRowStatus = input.status ?? "draft";
+    if (nextRowStatus === "published" && bindings.length === 0) {
+      throw publishedSpecRowRequiresBindings();
+    }
 
     const hasBindings = bindings.length > 0;
     if (hasBindings) {
@@ -233,6 +248,15 @@ export class SpecMatrixService {
         }))
       : undefined;
 
+    const nextStatus = (patch.status ?? existing.status) as string;
+    const bindingCount =
+      variantBindings !== undefined
+        ? variantBindings.length
+        : ((existing.variantBindings ?? []) as unknown[]).length;
+    if (nextStatus === "published" && bindingCount === 0) {
+      throw publishedSpecRowRequiresBindings();
+    }
+
     const run = async (session?: ClientSession) => {
       const opt = eo(ctx, session);
       const row = await this.rows.updateById(
@@ -271,6 +295,10 @@ export class SpecMatrixService {
         role: b.role ?? "primary",
         sortOrder: b.sortOrder ?? i,
       }));
+      const prior = await this.rows.findById(toObjectId(rowId), opt);
+      if (prior && String(prior.status) === "published" && mapped.length === 0) {
+        throw publishedSpecRowRequiresBindings();
+      }
       const row = await this.rows.updateById(toObjectId(rowId), { variantBindings: mapped }, opt);
       if (!row) throw resourceNotFound("CatalogSpecRow", rowId);
       return this.serializeRow(row);

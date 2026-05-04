@@ -1,13 +1,25 @@
-import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
 import { SpecMatrixTable } from "@/components/catalog-hierarchy/spec-matrix-table";
+import { DEFAULT_MATRIX_PAGE_SIZE } from "@/lib/catalog-service";
+import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
+import Link from "next/link";
 
 interface SpecMatrixRendererProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
+  pathSegments: string[];
 }
 
-export function SpecMatrixRenderer({ node, breadcrumbs }: SpecMatrixRendererProps) {
+export function SpecMatrixRenderer({ node, breadcrumbs, pathSegments }: SpecMatrixRendererProps) {
   if (!node.matrix) return null;
+
+  const matrix = node.matrix;
+  const pageSize = matrix.matrixPageSize ?? DEFAULT_MATRIX_PAGE_SIZE;
+  const pageIndex = matrix.matrixPage ?? 0;
+  const total = matrix.totalRowCount;
+  const totalPages = Math.max(1, Math.ceil(total / Math.max(1, pageSize)));
+  const showPaging = total > pageSize;
+  const basePath = `/category/${pathSegments.join("/")}`;
+  const pageHref = (p: number) => (p <= 0 ? basePath : `${basePath}?m=${p}`);
 
   return (
     <div className="space-y-2">
@@ -44,7 +56,42 @@ export function SpecMatrixRenderer({ node, breadcrumbs }: SpecMatrixRendererProp
               {node.productCount.toLocaleString()} variant products
             </p>
           </section>
-          <SpecMatrixTable matrix={node.matrix} />
+          {showPaging ? (
+            <nav
+              className="flex flex-wrap items-center justify-between gap-2 border border-line bg-white px-2.5 py-1.5 text-[11px] text-slate-700"
+              aria-label="Spec matrix pages"
+            >
+              <span className="font-semibold text-slate-800">
+                Page {pageIndex + 1} of {totalPages}
+                <span className="ml-2 font-normal text-slate-600">
+                  (showing {matrix.rows.length.toLocaleString()} of {total.toLocaleString()} rows)
+                </span>
+              </span>
+              <span className="flex flex-wrap items-center gap-1.5">
+                {pageIndex > 0 ? (
+                  <Link
+                    href={pageHref(pageIndex - 1)}
+                    className="rounded border border-line bg-white px-2 py-0.5 font-semibold hover:bg-slate-50"
+                  >
+                    Previous
+                  </Link>
+                ) : (
+                  <span className="rounded border border-transparent px-2 py-0.5 text-slate-400">Previous</span>
+                )}
+                {pageIndex < totalPages - 1 ? (
+                  <Link
+                    href={pageHref(pageIndex + 1)}
+                    className="rounded border border-line bg-white px-2 py-0.5 font-semibold hover:bg-slate-50"
+                  >
+                    Next
+                  </Link>
+                ) : (
+                  <span className="rounded border border-transparent px-2 py-0.5 text-slate-400">Next</span>
+                )}
+              </span>
+            </nav>
+          ) : null}
+          <SpecMatrixTable matrix={matrix} />
         </div>
       </section>
     </div>

@@ -8,6 +8,7 @@ export const revalidate = 60;
 
 interface CategoryHierarchyPageProps {
   params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ m?: string }>;
 }
 
 export async function generateStaticParams() {
@@ -25,14 +26,13 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function CategoryHierarchyPage({ params }: CategoryHierarchyPageProps) {
+export default async function CategoryHierarchyPage({ params, searchParams }: CategoryHierarchyPageProps) {
   const { slug = [] } = await params;
-  let routeContext: Awaited<ReturnType<typeof getRouteContext>>;
-  try {
-    routeContext = await getRouteContext(slug);
-  } catch {
-    notFound();
-  }
+  const sp = await searchParams;
+  const matrixPageRaw = sp.m != null ? Number.parseInt(sp.m, 10) : 0;
+  const matrixPage = Number.isFinite(matrixPageRaw) && matrixPageRaw >= 0 ? matrixPageRaw : 0;
+
+  const routeContext = await getRouteContext(slug.join("/"), matrixPage);
 
   if (!routeContext) {
     notFound();

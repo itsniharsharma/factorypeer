@@ -25,6 +25,13 @@ export class ProductVariantRepository {
     return withSession(q, opts?.session).exec();
   }
 
+  /** Batch by variant id (spec matrix row bindings — single query vs N findById). */
+  async findByIds(ids: Types.ObjectId[], opts?: ExecOpts) {
+    if (!ids.length) return [];
+    const q = this.models.ProductVariant.find({ _id: { $in: ids }, ...this.tq() });
+    return withSession(q, opts?.session).exec();
+  }
+
   /**
    * One published variant per product (lowest sortOrder, then SKU) for storefront cards.
    */

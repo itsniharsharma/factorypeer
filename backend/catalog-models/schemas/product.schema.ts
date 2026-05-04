@@ -112,6 +112,8 @@ productSchema.index({ tenantId: 1, slug: 1 }, { unique: true });
 productSchema.index({ status: 1, title: "text", searchText: "text" });
 /** Featured / recently updated listings (`sort=-updatedAt`). */
 productSchema.index({ status: 1, updatedAt: -1 });
+/** Category browse / PLP (`categoryId` + published filter). */
+productSchema.index({ status: 1, categoryIds: 1 });
 
 export type ProductDocument = InferSchemaType<typeof productSchema> & {
   _id: Types.ObjectId;

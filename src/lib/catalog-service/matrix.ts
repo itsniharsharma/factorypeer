@@ -1,5 +1,5 @@
 import type { SpecColumnDoc, SpecRowDoc } from "@/lib/admin-api/types";
-import type { CatalogSpecColumn, CatalogSpecMatrix, CatalogSpecRow } from "@/lib/types";
+import type { CatalogSpecColumn, CatalogSpecMatrix, CatalogSpecRow, SpecRow } from "@/lib/types";
 import { catalogServerJson, catalogServerJsonList } from "./fetch";
 
 export interface GetSpecMatrixParams {
@@ -8,6 +8,11 @@ export interface GetSpecMatrixParams {
   sort?: string;
   page?: number;
 }
+
+export const DEFAULT_MATRIX_PAGE_SIZE = 50;
+
+/** PDP / SKU scan: read published rows in chunks (Mongo + API limit aligned). */
+const FULL_MATRIX_ROW_CHUNK = 2000;
 
 type VariantWithProduct = {
   variant: {
@@ -26,6 +31,39 @@ type VariantWithProduct = {
   };
 };
 
+/** Backend caps variant-bundles query at 500 ids; chunk to support very large families. */
+const VARIANT_BUNDLE_CHUNK = 500;
+
+async function variantBundlesMapByIds(
+  variantIds: string[],
+  categoryId: string,
+): Promise<Map<string, VariantWithProduct>> {
+  const unique = [...new Set(variantIds.filter(Boolean))];
+  const map = new Map<string, VariantWithProduct>();
+  if (!unique.length) return map;
+
+  const fetchInit = {
+    next: {
+      revalidate: 60,
+      tags: ["catalog", "variant-bundles", `spec-matrix-${categoryId}`] as string[],
+    },
+  };
+
+  for (let i = 0; i < unique.length; i += VARIANT_BUNDLE_CHUNK) {
+    const chunk = unique.slice(i, i + VARIANT_BUNDLE_CHUNK);
+    const bundles = await catalogServerJson<VariantWithProduct[]>(
+      `/products/variant-bundles?ids=${chunk.join(",")}`,
+      fetchInit,
+    );
+    const list = Array.isArray(bundles) ? bundles : [];
+    for (const b of list) {
+      const id = String(b.variant._id);
+      map.set(id, b);
+    }
+  }
+  return map;
+}
+
 function primaryBindingId(row: SpecRowDoc): string | undefined {
   const bs = row.variantBindings ?? [];
   if (bs.length === 0) return undefined;
@@ -35,23 +73,17 @@ function primaryBindingId(row: SpecRowDoc): string | undefined {
   return vid != null ? String(vid) : undefined;
 }
 
-/** Full matrix for a family category (published schema + published rows). */
-export async function buildSpecMatrixForCategory(categoryId: string): Promise<CatalogSpecMatrix | undefined> {
-  const schema = await catalogServerJson<
-    { _id: string; familySummary?: string; status: string } | null
-  >(`/taxonomy/${categoryId}/spec-schema`);
+function normalizeRowsPublished(rows: SpecRowDoc[]): SpecRowDoc[] {
+  return rows
+    .filter((r) => r.status === "published")
+    .sort((a, b) => {
+      const d = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      return d !== 0 ? d : String(a._id).localeCompare(String(b._id));
+    });
+}
 
-  if (!schema || schema.status !== "published") return undefined;
-
-  const schemaId = schema._id;
-  const [columns, rowsRes] = await Promise.all([
-    catalogServerJson<SpecColumnDoc[]>(`/spec-schemas/${schemaId}/columns`),
-    catalogServerJsonList<SpecRowDoc[]>(`/spec-schemas/${schemaId}/rows?status=published`),
-  ]);
-
-  const rowsPublished = rowsRes.data.filter((r) => r.status === "published");
-
-  const catalogColumns: CatalogSpecColumn[] = columns
+function mapColumns(columns: SpecColumnDoc[]): CatalogSpecColumn[] {
+  return columns
     .slice()
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
     .map((c) => ({
@@ -59,23 +91,13 @@ export async function buildSpecMatrixForCategory(categoryId: string): Promise<Ca
       label: c.label,
       widthClass: c.widthClass,
     }));
+}
 
-  const variantCache = new Map<string, VariantWithProduct | undefined>();
-
-  async function resolveVariant(id: string): Promise<VariantWithProduct | undefined> {
-    if (variantCache.has(id)) return variantCache.get(id);
-    try {
-      const bundle = await catalogServerJson<VariantWithProduct>(`/products/variants/${id}`, {
-        next: { revalidate: 60, tags: ["catalog", `variant-${id}`] },
-      });
-      variantCache.set(id, bundle);
-      return bundle;
-    } catch {
-      variantCache.set(id, undefined);
-      return undefined;
-    }
-  }
-
+function assembleMatrixRows(
+  rowsPublished: SpecRowDoc[],
+  catalogColumns: CatalogSpecColumn[],
+  variantById: Map<string, VariantWithProduct>,
+): CatalogSpecRow[] {
   const matrixRows: CatalogSpecRow[] = [];
 
   for (const row of rowsPublished) {
@@ -88,7 +110,7 @@ export async function buildSpecMatrixForCategory(categoryId: string): Promise<Ca
     let availability = "—";
 
     if (vid) {
-      const bundle = await resolveVariant(vid);
+      const bundle = variantById.get(vid);
       if (bundle) {
         productSlug = bundle.product.slug;
         productTitle = bundle.product.title;
@@ -118,25 +140,176 @@ export async function buildSpecMatrixForCategory(categoryId: string): Promise<Ca
     });
   }
 
+  return matrixRows;
+}
+
+type SchemaMeta = {
+  schemaId: string;
+  familySummary: string;
+  catalogColumns: CatalogSpecColumn[];
+};
+
+async function loadPublishedSchemaAndColumns(categoryId: string): Promise<SchemaMeta | undefined> {
+  const schema = await catalogServerJson<
+    { _id: string; familySummary?: string; status: string } | null
+  >(`/taxonomy/${categoryId}/spec-schema`);
+
+  if (!schema || schema.status !== "published") return undefined;
+
+  const columns = await catalogServerJson<SpecColumnDoc[]>(`/spec-schemas/${schema._id}/columns`);
+
   return {
+    schemaId: schema._id,
     familySummary: schema.familySummary ?? "Configured variants for this family.",
-    columns: catalogColumns,
+    catalogColumns: mapColumns(columns),
+  };
+}
+
+/**
+ * One page of the family spec matrix — DB paginates rows; only visible bindings are batch-resolved.
+ */
+export async function buildSpecMatrixPage(
+  categoryId: string,
+  page: number,
+  pageSize: number,
+): Promise<CatalogSpecMatrix | undefined> {
+  const meta = await loadPublishedSchemaAndColumns(categoryId);
+  if (!meta) return undefined;
+
+  let pageIndex = Math.max(0, Math.floor(page));
+  const size = Math.max(1, pageSize);
+  let skip = pageIndex * size;
+
+  const rowsPath = (s: number, lim: number) =>
+    `/spec-schemas/${meta.schemaId}/rows?status=published&skip=${s}&limit=${lim}`;
+
+  let rowsRes = await catalogServerJsonList<SpecRowDoc[]>(rowsPath(skip, size), {
+    next: { revalidate: 60, tags: ["catalog", `spec-rows-${meta.schemaId}`] as string[] },
+  });
+
+  const totalPublished = rowsRes.total ?? 0;
+  if (totalPublished > 0) {
+    const maxPage = Math.max(0, Math.ceil(totalPublished / size) - 1);
+    if (pageIndex > maxPage) {
+      pageIndex = maxPage;
+      skip = pageIndex * size;
+      rowsRes = await catalogServerJsonList<SpecRowDoc[]>(rowsPath(skip, size), {
+        next: { revalidate: 60, tags: ["catalog", `spec-rows-${meta.schemaId}`] as string[] },
+      });
+    }
+  }
+
+  const rowsPublished = normalizeRowsPublished(rowsRes.data);
+
+  const bindingIds: string[] = [];
+  for (const row of rowsPublished) {
+    const vid = primaryBindingId(row);
+    if (vid) bindingIds.push(vid);
+  }
+  const variantById = await variantBundlesMapByIds(bindingIds, categoryId);
+  const matrixRows = assembleMatrixRows(rowsPublished, meta.catalogColumns, variantById);
+
+  return {
+    familySummary: meta.familySummary,
+    columns: meta.catalogColumns,
     rows: matrixRows,
+    totalRowCount: totalPublished,
+    matrixPage: pageIndex,
+    matrixPageSize: size,
+  };
+}
+
+/**
+ * Full published matrix for PDP SKU lookup — loads all row docs in chunks, **one batched** variant resolve.
+ */
+export async function buildSpecMatrixForCategory(categoryId: string): Promise<CatalogSpecMatrix | undefined> {
+  const meta = await loadPublishedSchemaAndColumns(categoryId);
+  if (!meta) return undefined;
+
+  const allRows: SpecRowDoc[] = [];
+  let totalPublished = 0;
+  let skip = 0;
+
+  while (true) {
+    const rowsRes = await catalogServerJsonList<SpecRowDoc[]>(
+      `/spec-schemas/${meta.schemaId}/rows?status=published&skip=${skip}&limit=${FULL_MATRIX_ROW_CHUNK}`,
+      {
+        next: { revalidate: 60, tags: ["catalog", `spec-rows-${meta.schemaId}`] as string[] },
+      },
+    );
+
+    const batch = normalizeRowsPublished(rowsRes.data);
+    totalPublished = rowsRes.total ?? totalPublished;
+    allRows.push(...batch);
+
+    if (batch.length < FULL_MATRIX_ROW_CHUNK) break;
+    if (totalPublished > 0 && allRows.length >= totalPublished) break;
+    skip += FULL_MATRIX_ROW_CHUNK;
+  }
+
+  const bindingIds: string[] = [];
+  for (const row of allRows) {
+    const vid = primaryBindingId(row);
+    if (vid) bindingIds.push(vid);
+  }
+  const variantById = await variantBundlesMapByIds(bindingIds, categoryId);
+  const matrixRows = assembleMatrixRows(allRows, meta.catalogColumns, variantById);
+
+  return {
+    familySummary: meta.familySummary,
+    columns: meta.catalogColumns,
+    rows: matrixRows,
+    totalRowCount: totalPublished || allRows.length,
   };
 }
 
 export async function getSpecMatrix(params: GetSpecMatrixParams): Promise<CatalogSpecMatrix | undefined> {
-  const full = await buildSpecMatrixForCategory(params.nodeId);
-  if (!full) return undefined;
-
-  let { rows } = full;
   const page = params.page ?? 0;
-  const pageSize = 50;
-  const start = page * pageSize;
-  rows = rows.slice(start, start + pageSize);
+  return buildSpecMatrixPage(params.nodeId, page, DEFAULT_MATRIX_PAGE_SIZE);
+}
 
-  return {
-    ...full,
-    rows,
-  };
+/** When row has no bindings, accept linked variant.specRowId (legacy rows). */
+function rowBindsVariant(row: SpecRowDoc, variantId: string): boolean {
+  const bs = row.variantBindings ?? [];
+  if (bs.length === 0) return true;
+  return bs.some((b) => String(b.productVariantId) === String(variantId));
+}
+
+/**
+ * PDP fast path: load one published spec row + schema columns (no full family matrix).
+ * Returns null when linkage is missing, invalid, or unpublished — caller falls back to matrix scan by SKU.
+ */
+export async function specRowsForLinkedVariant(
+  primary: { _id: string; sku: string; specRowId?: string | null },
+  categoryIds: string[] | undefined,
+): Promise<SpecRow[] | null> {
+  const specRowId = primary.specRowId?.trim();
+  if (!specRowId) return null;
+
+  let row: SpecRowDoc;
+  try {
+    row = await catalogServerJson<SpecRowDoc>(`/spec-rows/${specRowId}`, {
+      next: { revalidate: 60, tags: ["catalog", "pdp-spec", `spec-row-${specRowId}`] as string[] },
+    });
+  } catch {
+    return null;
+  }
+
+  if (row.status !== "published") return null;
+
+  const taxId = row.taxonomyNodeId != null ? String(row.taxonomyNodeId) : "";
+  if (categoryIds?.length && taxId && !categoryIds.includes(taxId)) return null;
+
+  if (!rowBindsVariant(row, primary._id)) return null;
+
+  const schemaId = row.specSchemaId;
+  const columns = await catalogServerJson<SpecColumnDoc[]>(`/spec-schemas/${schemaId}/columns`, {
+    next: { revalidate: 60, tags: ["catalog", "pdp-spec", `spec-schema-${schemaId}`] as string[] },
+  });
+
+  const sorted = [...columns].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  return sorted.map((c) => ({
+    label: c.label,
+    value: row.values[c.key] ?? "—",
+  }));
 }

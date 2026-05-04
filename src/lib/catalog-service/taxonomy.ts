@@ -7,7 +7,7 @@ import type {
   MegaMenuRootGroup,
 } from "@/lib/types";
 import { catalogServerJson } from "./fetch";
-import { buildSpecMatrixForCategory } from "./matrix";
+import { buildSpecMatrixPage, DEFAULT_MATRIX_PAGE_SIZE } from "./matrix";
 
 export type CatalogRouteContext = {
   node: CatalogTaxonomyNode;
@@ -100,6 +100,19 @@ function previewLinksFromRoots(tree: CatalogTaxonomyNode[], limit: number): Cata
   }));
 }
 
+/** DFS lookup by catalog category id — used to prefer `family` nodes for matrix/spec resolution. */
+export function findTaxonomyNodeById(
+  nodes: CatalogTaxonomyNode[],
+  id: string,
+): CatalogTaxonomyNode | undefined {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    const d = findTaxonomyNodeById(n.children, id);
+    if (d) return d;
+  }
+  return undefined;
+}
+
 function findNodeAtPath(
   segments: string[],
   nodes: CatalogTaxonomyNode[],
@@ -136,8 +149,14 @@ export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> =>
   return sortTreeRecursive(filterPublished(raw).map(categoryToTaxonomyNode));
 });
 
+/**
+ * @param pathKey - Category path as `segment/segment/...` (primitives for React `cache` key stability).
+ * @param matrixPage - 0-based matrix page for family nodes (`?m=` on category URL).
+ */
 export const getRouteContext = cache(
-  async (pathSegments: string[]): Promise<CatalogRouteContext | undefined> => {
+  async (pathKey: string, matrixPage: number = 0): Promise<CatalogRouteContext | undefined> => {
+    const pathSegments = pathKey.length > 0 ? pathKey.split("/") : [];
+    const page = Math.max(0, Math.floor(matrixPage));
     if (pathSegments.length === 0) return undefined;
     const tree = await getTaxonomyTree();
     const node = findNodeAtPath(pathSegments, tree);
@@ -146,13 +165,18 @@ export const getRouteContext = cache(
 
     let enriched: CatalogTaxonomyNode = node;
     if (node.kind === "family" && node.activeSpecSchemaId) {
-      const matrix = await buildSpecMatrixForCategory(node.id);
-      if (matrix) {
-        enriched = {
-          ...node,
-          matrix,
-          productCount: matrix.rows.length,
-        };
+      try {
+        const matrix = await buildSpecMatrixPage(node.id, page, DEFAULT_MATRIX_PAGE_SIZE);
+        if (matrix) {
+          enriched = {
+            ...node,
+            matrix,
+            productCount: matrix.totalRowCount,
+          };
+        }
+      } catch {
+        // Matrix/spec APIs are optional enrichment — failures must not turn a valid category URL into 404.
+        enriched = node;
       }
     }
 

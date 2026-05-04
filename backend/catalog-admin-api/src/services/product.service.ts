@@ -1,7 +1,10 @@
 import { MongoServerError } from "mongodb";
-import type { ClientSession, Types } from "mongoose";
+import { Types } from "mongoose";
+import type { ClientSession } from "mongoose";
 import type { ProductRepository, ProductListFilter } from "../repositories/product.repository.js";
 import type { ProductVariantRepository, VariantListFilter } from "../repositories/product-variant.repository.js";
+import type { CategoryRepository } from "../repositories/category.repository.js";
+import type { SpecSchemaRepository } from "../repositories/spec-schema.repository.js";
 import type { SpecRowRepository } from "../repositories/spec-row.repository.js";
 import type { ExecOpts } from "../repositories/exec-opts.js";
 import { withTransaction } from "../db/with-transaction.js";
@@ -12,6 +15,8 @@ import {
   productSlugTaken,
   resourceNotFound,
   skuTaken,
+  specRowNotLinkedToProductFamily,
+  variantPublishRequiresSpecRow,
 } from "../errors/domain.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
@@ -46,13 +51,111 @@ function mapMongoDuplicate(err: unknown): AppError | null {
   );
 }
 
+type ProductCategoryRef = { categoryIds?: Types.ObjectId[] | null };
+
 export class ProductService {
   constructor(
     private readonly products: ProductRepository,
     private readonly variants: ProductVariantRepository,
     private readonly specRows: SpecRowRepository,
+    private readonly categories: CategoryRepository,
+    private readonly specSchemas: SpecSchemaRepository,
     private readonly cloudinary: CloudinaryService,
   ) {}
+
+  private async productRequiresPublishedFamilySpec(product: ProductCategoryRef, ctx?: WriteContext): Promise<boolean> {
+    const ids = product.categoryIds ?? [];
+    for (const cid of ids) {
+      const cat = await this.categories.findById(cid, eo(ctx));
+      if (!cat || cat.kind !== "family" || !cat.activeSpecSchemaId) continue;
+      const sch = await this.specSchemas.findById(cat.activeSpecSchemaId, eo(ctx));
+      if (sch && String(sch.status) === "published") return true;
+    }
+    return false;
+  }
+
+  private pickBindingRow(
+    rows: Array<{
+      _id: Types.ObjectId;
+      variantBindings?: Array<{ productVariantId: Types.ObjectId; role?: string }>;
+    }>,
+    variantId: Types.ObjectId,
+  ): Types.ObjectId {
+    if (rows.length === 1) return rows[0]!._id;
+    const pri = rows.find((r) =>
+      r.variantBindings?.some(
+        (b) => b.productVariantId.equals(variantId) && (b.role ?? "primary") === "primary",
+      ),
+    );
+    return (pri ?? rows[0])!._id;
+  }
+
+  private async assertPublishedSpecRowMatchesProduct(
+    specRowId: Types.ObjectId,
+    product: ProductCategoryRef,
+    ctx?: WriteContext,
+  ): Promise<void> {
+    const row = await this.specRows.findById(specRowId, eo(ctx));
+    if (!row || String(row.status) !== "published") throw specRowNotLinkedToProductFamily();
+    const tax = row.taxonomyNodeId as Types.ObjectId;
+    const pids = (product.categoryIds ?? []).map((x) => x.toString());
+    if (!pids.includes(tax.toString())) throw specRowNotLinkedToProductFamily();
+    const cat = await this.categories.findById(tax, eo(ctx));
+    if (!cat || !cat.activeSpecSchemaId) throw specRowNotLinkedToProductFamily();
+    if (!cat.activeSpecSchemaId.equals(row.specSchemaId as Types.ObjectId)) {
+      throw specRowNotLinkedToProductFamily();
+    }
+    const sch = await this.specSchemas.findById(row.specSchemaId as Types.ObjectId, eo(ctx));
+    if (!sch || String(sch.status) !== "published") throw specRowNotLinkedToProductFamily();
+  }
+
+  private async autoResolveSpecRowIdFromBindings(
+    variantId: Types.ObjectId,
+    product: ProductCategoryRef,
+    ctx?: WriteContext,
+  ): Promise<Types.ObjectId | null> {
+    type RowPick = {
+      _id: Types.ObjectId;
+      variantBindings?: Array<{ productVariantId: Types.ObjectId; role?: string }>;
+    };
+    const out: RowPick[] = [];
+    const ids = product.categoryIds ?? [];
+    for (const cid of ids) {
+      const cat = await this.categories.findById(cid, eo(ctx));
+      if (!cat || cat.kind !== "family" || !cat.activeSpecSchemaId) continue;
+      const sch = await this.specSchemas.findById(cat.activeSpecSchemaId, eo(ctx));
+      if (!sch || String(sch.status) !== "published") continue;
+      const rows = await this.specRows.listPublishedContainingVariant(sch._id, variantId, eo(ctx));
+      for (const r of rows) {
+        out.push({
+          _id: r._id,
+          variantBindings: r.variantBindings as RowPick["variantBindings"],
+        });
+      }
+    }
+    if (out.length === 0) return null;
+    const byId = new Map<string, RowPick>();
+    for (const r of out) byId.set(r._id.toString(), r);
+    return this.pickBindingRow([...byId.values()], variantId);
+  }
+
+  /**
+   * Sets variant.specRowId when the variant is published, family requires a schema link,
+   * and a published spec row already lists this variant in variantBindings.
+   */
+  async tryBackfillSpecRowIdFromBindings(variantId: string, ctx?: WriteContext): Promise<
+    "linked" | "skipped"
+  > {
+    const v = await this.variants.findById(toObjectId(variantId), eo(ctx));
+    if (!v || String(v.status) !== "published" || v.specRowId) return "skipped";
+    const product = await this.products.findById(v.productId, eo(ctx));
+    if (!product) return "skipped";
+    if (!(await this.productRequiresPublishedFamilySpec(product, ctx))) return "skipped";
+    const rid = await this.autoResolveSpecRowIdFromBindings(v._id, product, ctx);
+    if (!rid) return "skipped";
+    await this.variants.updateById(v._id, { specRowId: rid }, eo(ctx));
+    return "linked";
+  }
 
   async list(skip = 0, limit = 100, filter?: ProductListFilter, ctx?: WriteContext) {
     const [items, total] = await Promise.all([
@@ -67,10 +170,10 @@ export class ProductService {
    * (avoids N+1 variant fetches from the storefront).
    */
   async summaryCardsForProductIds(ids: string[], ctx?: WriteContext) {
-    const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 48);
+    const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 100);
     if (!unique.length) return [];
     const oids = unique.map(toObjectId);
-    const { items } = await this.list(0, 48, { status: "published", ids: oids }, ctx);
+    const { items } = await this.list(0, 100, { status: "published", ids: oids }, ctx);
     const byId = new Map(items.map((p) => [p._id.toString(), p]));
     const ordered = unique.map((id) => byId.get(id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
     if (!ordered.length) return [];
@@ -84,6 +187,7 @@ export class ProductService {
         | {
             sku?: string;
             itemNumber?: string;
+            mpn?: string;
             manufacturer?: string;
             unitPrice?: string;
             currency?: string;
@@ -100,6 +204,7 @@ export class ProductService {
         brand: p.brand,
         sku: v?.sku ?? "—",
         itemNumber: v?.itemNumber,
+        mpn: v?.mpn?.trim() || undefined,
         manufacturer: v?.manufacturer ?? p.brand,
         price,
         uom: v?.uom ?? "Each",
@@ -118,6 +223,35 @@ export class ProductService {
       variant: v.toObject(),
       product: p.toObject(),
     };
+  }
+
+  /**
+   * Storefront spec matrix: batch-resolve variants + parent products (replaces per-row GET /variants/:id).
+   * Returns only ids that exist; order follows `ids` (first occurrence). Max 500 ids per request.
+   */
+  async getVariantsWithProductsByIds(ids: string[], ctx?: WriteContext) {
+    const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 500);
+    if (!unique.length) return [];
+    const oids: Types.ObjectId[] = [];
+    for (const id of unique) {
+      if (Types.ObjectId.isValid(id)) oids.push(new Types.ObjectId(id));
+    }
+    if (!oids.length) return [];
+    const variants = await this.variants.findByIds(oids, eo(ctx));
+    if (!variants.length) return [];
+    const vById = new Map(variants.map((v) => [v._id.toString(), v]));
+    const pids = [...new Set(variants.map((v) => v.productId))];
+    const products = await this.products.findByIds(pids, eo(ctx));
+    const pMap = new Map(products.map((p) => [p._id.toString(), p]));
+    const out: Array<{ variant: Record<string, unknown>; product: Record<string, unknown> }> = [];
+    for (const id of unique) {
+      const v = vById.get(id);
+      if (!v) continue;
+      const p = pMap.get(v.productId.toString());
+      if (!p) continue;
+      out.push({ variant: v.toObject(), product: p.toObject() });
+    }
+    return out;
   }
 
   async getProduct(id: string, ctx?: WriteContext) {
@@ -333,6 +467,19 @@ export class ProductService {
   ) {
     const product = await this.products.findById(toObjectId(productId), eo(ctx));
     if (!product) throw resourceNotFound("Product", productId);
+    const nextStatus = input.status ?? "draft";
+    let specOid: Types.ObjectId | null | undefined =
+      input.specRowId === undefined
+        ? undefined
+        : input.specRowId
+          ? toObjectId(input.specRowId)
+          : null;
+
+    if (nextStatus === "published" && (await this.productRequiresPublishedFamilySpec(product, ctx))) {
+      if (!specOid) throw variantPublishRequiresSpecRow();
+      await this.assertPublishedSpecRowMatchesProduct(specOid, product, ctx);
+    }
+
     try {
       return await this.variants.create(
         {
@@ -349,7 +496,7 @@ export class ProductService {
           moq: input.moq,
           packaging: input.packaging,
           status: input.status,
-          specRowId: input.specRowId ? toObjectId(input.specRowId) : input.specRowId === null ? null : undefined,
+          specRowId: specOid === undefined ? undefined : specOid,
           searchBlob: input.searchBlob,
           sortOrder: input.sortOrder,
         },
@@ -383,17 +530,38 @@ export class ProductService {
     },
     ctx?: WriteContext,
   ) {
+    const existing = await this.variants.findById(toObjectId(variantId), eo(ctx));
+    if (!existing) throw resourceNotFound("ProductVariant", variantId);
+    const product = await this.products.findById(existing.productId, eo(ctx));
+    if (!product) throw resourceNotFound("Product", existing.productId.toString());
+
+    let resolvedSpec: Types.ObjectId | null | undefined =
+      patch.specRowId === undefined
+        ? undefined
+        : patch.specRowId
+          ? toObjectId(patch.specRowId)
+          : null;
+
+    const nextStatus = patch.status ?? String(existing.status ?? "draft");
+
+    if (nextStatus === "published" && (await this.productRequiresPublishedFamilySpec(product, ctx))) {
+      let effective =
+        resolvedSpec !== undefined ? resolvedSpec : (existing.specRowId as Types.ObjectId | null | undefined) ?? null;
+      if (!effective) {
+        const auto = await this.autoResolveSpecRowIdFromBindings(existing._id, product, ctx);
+        if (auto) effective = auto;
+      }
+      if (!effective) throw variantPublishRequiresSpecRow();
+      await this.assertPublishedSpecRowMatchesProduct(effective, product, ctx);
+      resolvedSpec = effective;
+    }
+
     try {
       const v = await this.variants.updateById(
         toObjectId(variantId),
         {
           ...patch,
-          specRowId:
-            patch.specRowId === undefined
-              ? undefined
-              : patch.specRowId
-                ? toObjectId(patch.specRowId)
-                : null,
+          specRowId: resolvedSpec,
           publishedAt: patch.status === "published" ? new Date() : undefined,
         },
         eo(ctx),
@@ -425,6 +593,13 @@ export class ProductService {
       if (!variant) throw resourceNotFound("ProductVariant", variantId);
       const row = await this.specRows.findById(toObjectId(input.specRowId), opt);
       if (!row) throw resourceNotFound("CatalogSpecRow", input.specRowId);
+      const product = await this.products.findById(variant.productId, opt);
+      if (product && row.taxonomyNodeId) {
+        const pids = (product.categoryIds ?? []).map((x) => x.toString());
+        if (!pids.includes((row.taxonomyNodeId as Types.ObjectId).toString())) {
+          throw specRowNotLinkedToProductFamily();
+        }
+      }
 
       await this.variants.updateById(
         toObjectId(variantId),
