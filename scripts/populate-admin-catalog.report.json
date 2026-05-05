@@ -1,0 +1,398 @@
+{
+  "categories": [
+    {
+      "title": "Electrical",
+      "slug": "electrical",
+      "id": "69f9beebcd9584e70ac3ff1d"
+    },
+    {
+      "title": "Home Stuff",
+      "slug": "home-stuff",
+      "id": "69f9beebcd9584e70ac3ff22",
+      "parentId": "69f9beebcd9584e70ac3ff1d"
+    },
+    {
+      "title": "Heater",
+      "slug": "heater",
+      "id": "69f9beebcd9584e70ac3ff27",
+      "parentId": "69f9beebcd9584e70ac3ff22"
+    },
+    {
+      "title": "Iron",
+      "slug": "iron",
+      "id": "69f9bef0cd9584e70ac3ff6b",
+      "parentId": "69f9beebcd9584e70ac3ff22"
+    },
+    {
+      "title": "AC",
+      "slug": "ac",
+      "id": "69f9bef5cd9584e70ac3ffaf",
+      "parentId": "69f9beebcd9584e70ac3ff22"
+    },
+    {
+      "title": "Shop Stuff",
+      "slug": "shop-stuff",
+      "id": "69f9bef9cd9584e70ac3fff3",
+      "parentId": "69f9beebcd9584e70ac3ff1d"
+    },
+    {
+      "title": "Wires",
+      "slug": "wires",
+      "id": "69f9befacd9584e70ac3fff8",
+      "parentId": "69f9bef9cd9584e70ac3fff3"
+    },
+    {
+      "title": "Meter",
+      "slug": "meter",
+      "id": "69f9befecd9584e70ac4003c",
+      "parentId": "69f9bef9cd9584e70ac3fff3"
+    },
+    {
+      "title": "Bulb",
+      "slug": "bulb",
+      "id": "69f9bf02cd9584e70ac40080",
+      "parentId": "69f9bef9cd9584e70ac3fff3"
+    },
+    {
+      "title": "Industry Stuff",
+      "slug": "industry-stuff",
+      "id": "69f9bf06cd9584e70ac400c4",
+      "parentId": "69f9beebcd9584e70ac3ff1d"
+    },
+    {
+      "title": "Cement",
+      "slug": "cement",
+      "id": "69f9bf06cd9584e70ac400c9",
+      "parentId": "69f9bf06cd9584e70ac400c4"
+    },
+    {
+      "title": "Fan",
+      "slug": "fan",
+      "id": "69f9bf0acd9584e70ac4010d",
+      "parentId": "69f9bf06cd9584e70ac400c4"
+    },
+    {
+      "title": "Jug",
+      "slug": "jug",
+      "id": "69f9bf0fcd9584e70ac40151",
+      "parentId": "69f9bf06cd9584e70ac400c4"
+    }
+  ],
+  "products": [
+    {
+      "category": "Heater",
+      "productSlug": "heater-industrial-grade-panel-heater",
+      "sku": "HEATER-001"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-heavy-duty-steam-iron",
+      "sku": "HEATER-002"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-split-inverter-ac-controller",
+      "sku": "HEATER-003"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-flame-resistant-copper-wire-coil",
+      "sku": "HEATER-004"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-digital-clamp-meter",
+      "sku": "HEATER-005"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-high-lumen-industrial-bulb",
+      "sku": "HEATER-006"
+    },
+    {
+      "category": "Heater",
+      "productSlug": "heater-smart-energy-monitor-unit",
+      "sku": "HEATER-007"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-industrial-grade-panel-heater",
+      "sku": "IRON-001"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-heavy-duty-steam-iron",
+      "sku": "IRON-002"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-split-inverter-ac-controller",
+      "sku": "IRON-003"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-flame-resistant-copper-wire-coil",
+      "sku": "IRON-004"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-digital-clamp-meter",
+      "sku": "IRON-005"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-high-lumen-industrial-bulb",
+      "sku": "IRON-006"
+    },
+    {
+      "category": "Iron",
+      "productSlug": "iron-smart-energy-monitor-unit",
+      "sku": "IRON-007"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-industrial-grade-panel-heater",
+      "sku": "AC-001"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-heavy-duty-steam-iron",
+      "sku": "AC-002"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-split-inverter-ac-controller",
+      "sku": "AC-003"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-flame-resistant-copper-wire-coil",
+      "sku": "AC-004"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-digital-clamp-meter",
+      "sku": "AC-005"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-high-lumen-industrial-bulb",
+      "sku": "AC-006"
+    },
+    {
+      "category": "AC",
+      "productSlug": "ac-smart-energy-monitor-unit",
+      "sku": "AC-007"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-industrial-grade-panel-heater",
+      "sku": "WIRES-001"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-heavy-duty-steam-iron",
+      "sku": "WIRES-002"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-split-inverter-ac-controller",
+      "sku": "WIRES-003"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-flame-resistant-copper-wire-coil",
+      "sku": "WIRES-004"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-digital-clamp-meter",
+      "sku": "WIRES-005"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-high-lumen-industrial-bulb",
+      "sku": "WIRES-006"
+    },
+    {
+      "category": "Wires",
+      "productSlug": "wires-smart-energy-monitor-unit",
+      "sku": "WIRES-007"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-industrial-grade-panel-heater",
+      "sku": "METER-001"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-heavy-duty-steam-iron",
+      "sku": "METER-002"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-split-inverter-ac-controller",
+      "sku": "METER-003"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-flame-resistant-copper-wire-coil",
+      "sku": "METER-004"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-digital-clamp-meter",
+      "sku": "METER-005"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-high-lumen-industrial-bulb",
+      "sku": "METER-006"
+    },
+    {
+      "category": "Meter",
+      "productSlug": "meter-smart-energy-monitor-unit",
+      "sku": "METER-007"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-industrial-grade-panel-heater",
+      "sku": "BULB-001"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-heavy-duty-steam-iron",
+      "sku": "BULB-002"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-split-inverter-ac-controller",
+      "sku": "BULB-003"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-flame-resistant-copper-wire-coil",
+      "sku": "BULB-004"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-digital-clamp-meter",
+      "sku": "BULB-005"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-high-lumen-industrial-bulb",
+      "sku": "BULB-006"
+    },
+    {
+      "category": "Bulb",
+      "productSlug": "bulb-smart-energy-monitor-unit",
+      "sku": "BULB-007"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-industrial-grade-panel-heater",
+      "sku": "CEMENT-001"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-heavy-duty-steam-iron",
+      "sku": "CEMENT-002"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-split-inverter-ac-controller",
+      "sku": "CEMENT-003"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-flame-resistant-copper-wire-coil",
+      "sku": "CEMENT-004"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-digital-clamp-meter",
+      "sku": "CEMENT-005"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-high-lumen-industrial-bulb",
+      "sku": "CEMENT-006"
+    },
+    {
+      "category": "Cement",
+      "productSlug": "cement-smart-energy-monitor-unit",
+      "sku": "CEMENT-007"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-industrial-grade-panel-heater",
+      "sku": "FAN-001"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-heavy-duty-steam-iron",
+      "sku": "FAN-002"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-split-inverter-ac-controller",
+      "sku": "FAN-003"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-flame-resistant-copper-wire-coil",
+      "sku": "FAN-004"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-digital-clamp-meter",
+      "sku": "FAN-005"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-high-lumen-industrial-bulb",
+      "sku": "FAN-006"
+    },
+    {
+      "category": "Fan",
+      "productSlug": "fan-smart-energy-monitor-unit",
+      "sku": "FAN-007"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-industrial-grade-panel-heater",
+      "sku": "JUG-001"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-heavy-duty-steam-iron",
+      "sku": "JUG-002"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-split-inverter-ac-controller",
+      "sku": "JUG-003"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-flame-resistant-copper-wire-coil",
+      "sku": "JUG-004"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-digital-clamp-meter",
+      "sku": "JUG-005"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-high-lumen-industrial-bulb",
+      "sku": "JUG-006"
+    },
+    {
+      "category": "Jug",
+      "productSlug": "jug-smart-energy-monitor-unit",
+      "sku": "JUG-007"
+    }
+  ]
+}

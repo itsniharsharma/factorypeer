@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { catalogServerJsonList } from "./fetch";
+import { cacheAside } from "@/lib/cache/redis-cache";
 
 type LinkStatus = "draft" | "published" | "archived";
 type Placement = "utility" | "navigation" | "footer";
@@ -59,19 +60,28 @@ function withPublishedStatus(path: string): string {
 }
 
 export const getNavigationLinkGroups = cache(async (placement: Placement): Promise<SiteLinkGroup[]> => {
-  const path = withPublishedStatus(`/navigation/link-groups?placement=${placement}`);
-  const res = await catalogServerJsonList<SiteLinkGroup[]>(path, {
-    next: { revalidate: 60, tags: ["catalog", "merchandising", `nav-${placement}`] },
+  return cacheAside({
+    namespace: "navigation",
+    key: `link-groups:${placement}`,
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: `nav-${placement}`,
+    loader: async () => {
+      const path = withPublishedStatus(`/navigation/link-groups?placement=${placement}`);
+      const res = await catalogServerJsonList<SiteLinkGroup[]>(path, {
+        next: { revalidate: 60, tags: ["catalog", "merchandising", `nav-${placement}`] },
+      });
+      const data = Array.isArray(res.data) ? res.data : [];
+      return data
+        .map((group) => ({
+          ...group,
+          links: (group.links ?? [])
+            .filter((link) => (link.status ?? "published") === "published")
+            .sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder)),
+        }))
+        .sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder));
+    },
   });
-  const data = Array.isArray(res.data) ? res.data : [];
-  return data
-    .map((group) => ({
-      ...group,
-      links: (group.links ?? [])
-        .filter((link) => (link.status ?? "published") === "published")
-        .sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder)),
-    }))
-    .sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder));
 });
 
 export const getUtilityLinkGroup = cache(async (): Promise<SiteLinkGroup | undefined> => {
@@ -89,9 +99,18 @@ export const getFooterLinkGroups = cache(async (): Promise<SiteLinkGroup[]> => {
 });
 
 export const getFooterContent = cache(async (): Promise<FooterContent | undefined> => {
-  const res = await catalogServerJsonList<FooterContent[]>(withPublishedStatus("/navigation/footer-content"), {
-    next: { revalidate: 60, tags: ["catalog", "merchandising", "footer-content"] },
+  return cacheAside({
+    namespace: "navigation",
+    key: "footer-content",
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "footer-content",
+    loader: async () => {
+      const res = await catalogServerJsonList<FooterContent[]>(withPublishedStatus("/navigation/footer-content"), {
+        next: { revalidate: 60, tags: ["catalog", "merchandising", "footer-content"] },
+      });
+      const data = Array.isArray(res.data) ? res.data : [];
+      return data.sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder))[0];
+    },
   });
-  const data = Array.isArray(res.data) ? res.data : [];
-  return data.sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder))[0];
 });

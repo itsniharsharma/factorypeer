@@ -3,6 +3,8 @@ import { CatalogErrorCodes, resourceNotFound } from "../errors/domain.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
 import { NavigationRepository } from "../repositories/navigation.repository.js";
+import { invalidateCatalogCache } from "../utils/cache.js";
+import { adminCacheAside } from "../utils/admin-cache.js";
 
 function publishedAtFor(status?: string) {
   return status === "published" ? new Date() : undefined;
@@ -19,13 +21,28 @@ export class NavigationService {
   constructor(private readonly repo: NavigationRepository) {}
 
   async listLinkGroups(ctx?: WriteContext, placement?: string, status?: string) {
-    return this.repo.listLinkGroups({ actorId: ctx?.actorUserId ?? undefined, placement, status });
+    return adminCacheAside({
+      scope: "navigation",
+      key: `link-groups:${placement ?? "all"}:${status ?? "any"}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () =>
+        this.repo.listLinkGroups({ actorId: ctx?.actorUserId ?? undefined, placement, status }),
+    });
   }
 
   async getLinkGroup(id: string, ctx?: WriteContext) {
-    const doc = await this.repo.findLinkGroupById(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
-    if (!doc) throw resourceNotFound("SiteLinkGroup", id);
-    return doc;
+    return adminCacheAside({
+      scope: "navigation",
+      key: `link-group:${id}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const doc = await this.repo.findLinkGroupById(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+        if (!doc) throw resourceNotFound("SiteLinkGroup", id);
+        return doc;
+      },
+    });
   }
 
   async createLinkGroup(body: {
@@ -42,7 +59,7 @@ export class NavigationService {
       actorId: ctx?.actorUserId ?? undefined,
     });
     if (existing) throw recordAlreadyExists(body.slug, `${body.placement} link group`);
-    return this.repo.createLinkGroup(
+    const created = await this.repo.createLinkGroup(
       {
         ...body,
         links: body.links ?? [],
@@ -50,6 +67,8 @@ export class NavigationService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return created;
   }
 
   async updateLinkGroup(
@@ -76,7 +95,7 @@ export class NavigationService {
       });
       if (existing && !existing._id.equals(oid)) throw recordAlreadyExists(patch.slug, `${placement} link group`);
     }
-    return this.repo.updateLinkGroup(
+    const updated = await this.repo.updateLinkGroup(
       oid,
       {
         ...patch,
@@ -84,20 +103,38 @@ export class NavigationService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return updated;
   }
 
   async deleteLinkGroup(id: string, ctx?: WriteContext) {
-    return this.repo.deleteLinkGroup(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+    const deleted = await this.repo.deleteLinkGroup(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return deleted;
   }
 
   async listFooterContents(ctx?: WriteContext, status?: string) {
-    return this.repo.listFooterContents({ actorId: ctx?.actorUserId ?? undefined, status });
+    return adminCacheAside({
+      scope: "navigation",
+      key: `footer-content:${status ?? "any"}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => this.repo.listFooterContents({ actorId: ctx?.actorUserId ?? undefined, status }),
+    });
   }
 
   async getFooterContent(id: string, ctx?: WriteContext) {
-    const doc = await this.repo.findFooterContentById(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
-    if (!doc) throw resourceNotFound("FooterContent", id);
-    return doc;
+    return adminCacheAside({
+      scope: "navigation",
+      key: `footer-content-by-id:${id}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const doc = await this.repo.findFooterContentById(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+        if (!doc) throw resourceNotFound("FooterContent", id);
+        return doc;
+      },
+    });
   }
 
   async createFooterContent(body: {
@@ -118,7 +155,7 @@ export class NavigationService {
   }, ctx?: WriteContext) {
     const existing = await this.repo.findFooterContentBySlug(body.slug, { actorId: ctx?.actorUserId ?? undefined });
     if (existing) throw recordAlreadyExists(body.slug, "footer content");
-    return this.repo.createFooterContent(
+    const created = await this.repo.createFooterContent(
       {
         ...body,
         socialLinks: body.socialLinks ?? [],
@@ -126,6 +163,8 @@ export class NavigationService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return created;
   }
 
   async updateFooterContent(
@@ -155,7 +194,7 @@ export class NavigationService {
       const existing = await this.repo.findFooterContentBySlug(patch.slug, { actorId: ctx?.actorUserId ?? undefined });
       if (existing && !existing._id.equals(oid)) throw recordAlreadyExists(patch.slug, "footer content");
     }
-    return this.repo.updateFooterContent(
+    const updated = await this.repo.updateFooterContent(
       oid,
       {
         ...patch,
@@ -163,10 +202,14 @@ export class NavigationService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return updated;
   }
 
   async deleteFooterContent(id: string, ctx?: WriteContext) {
-    return this.repo.deleteFooterContent(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+    const deleted = await this.repo.deleteFooterContent(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
+    await invalidateCatalogCache(["navigation", "homepage"]);
+    return deleted;
   }
 }
 

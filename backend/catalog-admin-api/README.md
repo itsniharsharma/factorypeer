@@ -45,6 +45,8 @@ Copy `env.example` to **`.env`** in this package (loaded automatically via `dote
 | `PORT` | `4040` |
 | `HOST` | `0.0.0.0` |
 | `CATALOG_TENANT_ID` | _(optional)_ 24-char hex ObjectId for multi-tenant filtering |
+| `UPSTASH_REDIS_REST_URL` | _(optional)_ Upstash Redis REST base URL used for cache invalidation |
+| `UPSTASH_REDIS_REST_TOKEN` | _(optional)_ Upstash Redis REST token used for cache invalidation |
 
 **Atlas:** URI must include the database name at the end, e.g. `...mongodb.net/factorypeer_catalog?retryWrites=true&w=majority`.
 

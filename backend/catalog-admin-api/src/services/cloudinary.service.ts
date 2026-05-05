@@ -139,13 +139,30 @@ export class CloudinaryService {
     stream: Readable;
     mime: string;
     folder?: string;
+    timeoutMs?: number;
   }): Promise<UploadedAssetMeta> {
     const folder = opts.folder ?? "factorypeer/catalog";
+    const timeoutMs = opts.timeoutMs ?? 60_000; // 60 second default for large uploads
+
     const result = await new Promise<UploadedAssetMeta>((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout | null = null;
+      let uploadStreamDestroyed = false;
+
+      const cleanup = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (!uploadStreamDestroyed) {
+          uploadStream.destroy();
+          uploadStreamDestroyed = true;
+        }
+      };
+
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder, resource_type: "image", overwrite: false, invalidate: true },
         (err, res) => {
-          if (err || !res) return reject(err ?? new Error("Cloudinary upload failed"));
+          cleanup();
+          if (err || !res) {
+            return reject(err ?? new Error("Cloudinary upload failed"));
+          }
           resolve({
             url: res.secure_url,
             publicId: res.public_id,
@@ -156,8 +173,27 @@ export class CloudinaryService {
           });
         },
       );
+
+      // Set timeout for upload
+      timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error(`Cloudinary upload timeout after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      // Handle stream errors
+      opts.stream.on("error", (err) => {
+        cleanup();
+        reject(new Error(`Stream error during Cloudinary upload: ${err.message}`));
+      });
+
+      uploadStream.on("error", (err) => {
+        cleanup();
+        reject(new Error(`Cloudinary upload stream error: ${err.message}`));
+      });
+
       opts.stream.pipe(uploadStream);
     });
+
     return result;
   }
 }

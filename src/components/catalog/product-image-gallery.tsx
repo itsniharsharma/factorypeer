@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 export type GalleryImage = { url: string; alt: string };
@@ -74,8 +75,7 @@ export function ProductImageGallery({ images, productTitle }: ProductImageGaller
                 }`}
                 aria-label={`Thumbnail ${i + 1} of ${safe.length}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={im.url} alt="" className="h-full w-full object-contain p-0.5" />
+                <Image src={im.url} alt="" fill sizes="52px" className="object-contain p-0.5" />
               </button>
             ))}
           </div>
@@ -88,8 +88,7 @@ export function ProductImageGallery({ images, productTitle }: ProductImageGaller
             aria-label={`View larger image ${idx + 1} of ${safe.length}`}
             onClick={openLightbox}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={current.url} alt={current.alt} className="max-h-full max-w-full object-contain p-1" />
+            <Image src={current.url} alt={current.alt} fill sizes="(max-width: 768px) 100vw, 60vw" className="object-contain p-1" priority={idx === 0} />
             <span className="pointer-events-none absolute bottom-1 right-1 bg-slate-900/70 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
               Zoom
             </span>
@@ -150,10 +149,11 @@ export function ProductImageGallery({ images, productTitle }: ProductImageGaller
               </>
             ) : null}
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={lbCurrent.url}
               alt={lbCurrent.alt}
+              fill
+              sizes="100vw"
               className="max-h-[min(88vh,920px)] max-w-full cursor-default object-contain"
               onClick={(e) => e.stopPropagation()}
             />

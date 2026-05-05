@@ -18,7 +18,7 @@ export function CategoryTileGrid({ tiles }: CategoryTileGridProps) {
             </p>
             <h2 className="mt-1 text-[18px] font-bold leading-tight text-slate-900">Browse Category Catalog</h2>
           </div>
-          <Link href="/" className="whitespace-nowrap text-xs font-semibold text-brand hover:text-brand-dark">
+          <Link href="/category" className="whitespace-nowrap text-xs font-semibold text-brand hover:text-brand-dark">
             View All Product Categories →
           </Link>
         </div>

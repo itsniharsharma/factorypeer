@@ -28,6 +28,10 @@ export class ProductRepository {
 
   async findById(id: Types.ObjectId, opts?: ExecOpts) {
     const q = this.models.Product.findOne({ _id: id, ...this.tq() });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     return withSession(q, opts?.session).exec();
   }
 
@@ -35,11 +39,19 @@ export class ProductRepository {
   async findByIds(ids: Types.ObjectId[], opts?: ExecOpts) {
     if (!ids.length) return [];
     const q = this.models.Product.find({ _id: { $in: ids }, ...this.tq() });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     return withSession(q, opts?.session).exec();
   }
 
   async findBySlug(slug: string, opts?: ExecOpts) {
     const q = this.models.Product.findOne({ slug, ...this.tq() });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     return withSession(q, opts?.session).exec();
   }
 
@@ -92,6 +104,10 @@ export class ProductRepository {
     const mongoFilter = await this.buildListFilter(filter, opts);
     const sort = sortFromFilter(filter?.sort);
     let q = this.models.Product.find(mongoFilter).sort(sort).skip(skip).limit(limit);
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     q = withSession(q, opts?.session);
     return q.exec();
   }

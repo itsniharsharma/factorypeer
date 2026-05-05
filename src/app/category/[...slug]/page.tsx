@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { CatalogHierarchyRenderer } from "@/components/catalog-hierarchy/catalog-hierarchy-renderer";
 import { AppShell } from "@/components/layout/app-shell";
-import { getRouteContext, getTaxonomyTree } from "@/lib/catalog-service";
+import { getHomepageCategoryTiles, getProductsByIds, getRouteContext, getTaxonomyTree } from "@/lib/catalog-service";
 import type { CatalogTaxonomyNode } from "@/lib/types";
+import { catalogServerJsonList } from "@/lib/catalog-service/fetch";
+import type { ProductDoc } from "@/lib/admin-api/types";
 
 export const revalidate = 60;
 
@@ -38,12 +40,29 @@ export default async function CategoryHierarchyPage({ params, searchParams }: Ca
     notFound();
   }
 
+  const [featuredProducts, homepageTiles] = await Promise.all([
+    catalogServerJsonList<ProductDoc[]>(
+      `/products?status=published&categoryId=${encodeURIComponent(routeContext.node.id)}&limit=6&sort=-updatedAt`,
+    )
+      .then((res) => getProductsByIds(res.data.map((p) => p._id)))
+      .catch(() => []),
+    getHomepageCategoryTiles().catch(() => []),
+  ]);
+
+  const heroTile = homepageTiles.find((tile) => {
+    const href = tile.href?.trim();
+    return href === `/category/${routeContext.pathSegments.join("/")}`;
+  });
+
   return (
     <AppShell>
       <CatalogHierarchyRenderer
         node={routeContext.node}
         breadcrumbs={routeContext.breadcrumbs}
         pathSegments={routeContext.pathSegments}
+        bannerImage={heroTile?.image}
+        bannerImageAlt={heroTile?.imageAlt}
+        featuredProducts={featuredProducts}
       />
     </AppShell>
   );

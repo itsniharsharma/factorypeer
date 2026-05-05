@@ -14,6 +14,8 @@ import {
 } from "../errors/domain.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
+import { adminCacheAside } from "../utils/admin-cache.js";
+import { invalidateCatalogCache } from "../utils/cache.js";
 
 function eo(ctx?: WriteContext, session?: ClientSession): ExecOpts {
   return { actorId: ctx?.actorUserId ?? undefined, session };
@@ -28,12 +30,20 @@ export class SpecMatrixService {
   ) {}
 
   async getSchemaForCategory(categoryId: string, ctx?: WriteContext) {
-    const catId = toObjectId(categoryId);
-    const cat = await this.categories.findById(catId, eo(ctx));
-    if (!cat) throw resourceNotFound("CatalogCategory", categoryId);
-    const id = cat.activeSpecSchemaId as Types.ObjectId | null | undefined;
-    if (!id) return null;
-    return this.specSchemas.findById(id, eo(ctx));
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `spec-schema-by-category:${categoryId}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const catId = toObjectId(categoryId);
+        const cat = await this.categories.findById(catId, eo(ctx));
+        if (!cat) throw resourceNotFound("CatalogCategory", categoryId);
+        const id = cat.activeSpecSchemaId as Types.ObjectId | null | undefined;
+        if (!id) return null;
+        return this.specSchemas.findById(id, eo(ctx));
+      },
+    });
   }
 
   async createSchema(categoryId: string, input: { familySummary?: string; status?: string }, ctx?: WriteContext) {
@@ -43,7 +53,7 @@ export class SpecMatrixService {
     if (cat.kind !== "family") {
       throw familyRequiredForSpec();
     }
-    return this.specSchemas.create(
+    const created = await this.specSchemas.create(
       {
         taxonomyNodeId: catId,
         familySummary: input.familySummary ?? "",
@@ -51,25 +61,36 @@ export class SpecMatrixService {
       },
       eo(ctx),
     );
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return created;
   }
 
   async updateSchema(schemaId: string, patch: { familySummary?: string; status?: string }, ctx?: WriteContext) {
     const sid = toObjectId(schemaId);
     const doc = await this.specSchemas.updateById(sid, patch, eo(ctx));
     if (!doc) throw resourceNotFound("CatalogSpecSchema", schemaId);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
     return doc;
   }
 
   async getSchema(schemaId: string, ctx?: WriteContext) {
-    const sid = toObjectId(schemaId);
-    const doc = await this.specSchemas.findById(sid, eo(ctx));
-    if (!doc) throw resourceNotFound("CatalogSpecSchema", schemaId);
-    return doc;
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `spec-schema:${schemaId}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const sid = toObjectId(schemaId);
+        const doc = await this.specSchemas.findById(sid, eo(ctx));
+        if (!doc) throw resourceNotFound("CatalogSpecSchema", schemaId);
+        return doc;
+      },
+    });
   }
 
   async publishSchema(schemaId: string, ctx?: WriteContext) {
     const sid = toObjectId(schemaId);
-    return withTransaction(async (session) => {
+    const published = await withTransaction(async (session) => {
       const opt = eo(ctx, session);
       const doc = await this.specSchemas.updateById(
         sid,
@@ -90,16 +111,24 @@ export class SpecMatrixService {
       );
       return doc;
     });
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return published;
   }
 
   async listColumns(schemaId: string, ctx?: WriteContext) {
-    return this.columns.listBySpecSchema(toObjectId(schemaId), eo(ctx));
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `spec-columns:${schemaId}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => this.columns.listBySpecSchema(toObjectId(schemaId), eo(ctx)),
+    });
   }
 
   async addColumn(schemaId: string, input: Record<string, unknown>, ctx?: WriteContext) {
     const s = await this.specSchemas.findById(toObjectId(schemaId), eo(ctx));
     if (!s) throw resourceNotFound("CatalogSpecSchema", schemaId);
-    return this.columns.create(
+    const created = await this.columns.create(
       {
         specSchemaId: toObjectId(schemaId),
         key: input["key"] as string,
@@ -115,17 +144,21 @@ export class SpecMatrixService {
       },
       eo(ctx),
     );
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return created;
   }
 
   async updateColumn(columnId: string, patch: Record<string, unknown>, ctx?: WriteContext) {
     const c = await this.columns.updateById(toObjectId(columnId), patch as never, eo(ctx));
     if (!c) throw resourceNotFound("CatalogSpecColumn", columnId);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
     return c;
   }
 
   async deleteColumn(columnId: string, ctx?: WriteContext) {
     const c = await this.columns.deleteById(toObjectId(columnId), eo(ctx));
     if (!c) throw resourceNotFound("CatalogSpecColumn", columnId);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
     return c;
   }
 
@@ -134,28 +167,44 @@ export class SpecMatrixService {
     ctx?: WriteContext,
     listOpts?: { status?: string; skip?: number; limit?: number },
   ) {
-    const specId = toObjectId(schemaId);
-    const [list, total] = await Promise.all([
-      this.rows.listBySpecSchema(specId, {
-        ...eo(ctx),
-        status: listOpts?.status,
-        skip: listOpts?.skip,
-        limit: listOpts?.limit,
-      }),
-      this.rows.countBySpecSchema(specId, {
-        ...eo(ctx),
-        status: listOpts?.status,
-      }),
-    ]);
-    type RowDoc = (typeof list)[number];
-    const items = list.map((r: RowDoc) => this.serializeRow(r));
-    return { items, total };
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `spec-rows:${schemaId}:${listOpts?.status ?? "any"}:${listOpts?.skip ?? 0}:${listOpts?.limit ?? 500}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const specId = toObjectId(schemaId);
+        const [list, total] = await Promise.all([
+          this.rows.listBySpecSchema(specId, {
+            ...eo(ctx),
+            status: listOpts?.status,
+            skip: listOpts?.skip,
+            limit: listOpts?.limit,
+          }),
+          this.rows.countBySpecSchema(specId, {
+            ...eo(ctx),
+            status: listOpts?.status,
+          }),
+        ]);
+        type RowDoc = (typeof list)[number];
+        const items = list.map((r: RowDoc) => this.serializeRow(r));
+        return { items, total };
+      },
+    });
   }
 
   async getRow(rowId: string, ctx?: WriteContext) {
-    const row = await this.rows.findById(toObjectId(rowId), eo(ctx));
-    if (!row) throw resourceNotFound("CatalogSpecRow", rowId);
-    return this.serializeRow(row);
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `spec-row:${rowId}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const row = await this.rows.findById(toObjectId(rowId), eo(ctx));
+        if (!row) throw resourceNotFound("CatalogSpecRow", rowId);
+        return this.serializeRow(row);
+      },
+    });
   }
 
   async addRow(
@@ -188,7 +237,7 @@ export class SpecMatrixService {
 
     const hasBindings = bindings.length > 0;
     if (hasBindings) {
-      return withTransaction(async (session) => {
+      const created = await withTransaction(async (session) => {
         const opt = eo(ctx, session);
         const row = await this.rows.create(
           {
@@ -205,6 +254,8 @@ export class SpecMatrixService {
         if (!row) throw new AppError("Could not create spec matrix row.", 500, "CREATE_FAILED");
         return this.serializeRow(row);
       });
+      await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+      return created;
     }
 
     const row = await this.rows.create(
@@ -220,7 +271,9 @@ export class SpecMatrixService {
       eo(ctx),
     );
     if (!row) throw new AppError("Could not create spec matrix row.", 500, "CREATE_FAILED");
-    return this.serializeRow(row);
+    const serialized = this.serializeRow(row);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return serialized;
   }
 
   async updateRow(
@@ -274,9 +327,13 @@ export class SpecMatrixService {
     };
 
     if (patch.variantBindings !== undefined) {
-      return withTransaction(async (session) => run(session));
+      const updated = await withTransaction(async (session) => run(session));
+      await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+      return updated;
     }
-    return run();
+    const updated = await run();
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return updated;
   }
 
   async setRowBindings(
@@ -288,7 +345,7 @@ export class SpecMatrixService {
     }>,
     ctx?: WriteContext,
   ) {
-    return withTransaction(async (session) => {
+    const updated = await withTransaction(async (session) => {
       const opt = eo(ctx, session);
       const mapped: VariantBindingInput[] = bindings.map((b, i) => ({
         productVariantId: toObjectId(b.productVariantId),
@@ -303,16 +360,19 @@ export class SpecMatrixService {
       if (!row) throw resourceNotFound("CatalogSpecRow", rowId);
       return this.serializeRow(row);
     });
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return updated;
   }
 
   async deleteRow(rowId: string, ctx?: WriteContext) {
     const r = await this.rows.deleteById(toObjectId(rowId), eo(ctx));
     if (!r) throw resourceNotFound("CatalogSpecRow", rowId);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
     return r;
   }
 
   async reorderRows(schemaId: string, orderedIds: string[], ctx?: WriteContext) {
-    return withTransaction(async (session) => {
+    const reordered = await withTransaction(async (session) => {
       const opt = eo(ctx, session);
       const oid = orderedIds.map((x) => toObjectId(x));
       await this.rows.setSortOrders(oid.map((id, i) => ({ id, sortOrder: i })), opt);
@@ -320,6 +380,8 @@ export class SpecMatrixService {
       type RowDoc = (typeof list)[number];
       return list.map((r: RowDoc) => this.serializeRow(r));
     });
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage"]);
+    return reordered;
   }
 
   private serializeRow(row: {

@@ -22,6 +22,10 @@ export class ProductVariantRepository {
 
   async findById(id: Types.ObjectId, opts?: ExecOpts) {
     const q = this.models.ProductVariant.findOne({ _id: id, ...this.tq() });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     return withSession(q, opts?.session).exec();
   }
 
@@ -29,6 +33,10 @@ export class ProductVariantRepository {
   async findByIds(ids: Types.ObjectId[], opts?: ExecOpts) {
     if (!ids.length) return [];
     const q = this.models.ProductVariant.find({ _id: { $in: ids }, ...this.tq() });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     return withSession(q, opts?.session).exec();
   }
 
@@ -72,6 +80,10 @@ export class ProductVariantRepository {
       filter["$or"] = [{ sku: rx }, { itemNumber: rx }, { mpn: rx }];
     }
     let q = this.models.ProductVariant.find(filter).sort({ sortOrder: 1, sku: 1 });
+    const select = (opts as ExecOpts & { select?: string }).select;
+    if (select) {
+      q.select(select);
+    }
     if (opts?.skip != null) q = q.skip(opts.skip);
     if (opts?.limit != null) q = q.limit(opts.limit);
     q = withSession(q, opts?.session);

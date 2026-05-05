@@ -6,12 +6,17 @@ import type { FastifyInstance } from "fastify";
 export function registerRequestObservability(app: FastifyInstance) {
   app.addHook("onResponse", async (req, reply) => {
     const rt = (reply as unknown as { elapsedTime?: number }).elapsedTime;
-    req.log.info({
+    const payload = {
       reqId: req.id,
       method: req.method,
       url: req.url,
       statusCode: reply.statusCode,
       responseTimeMs: rt,
-    });
+    };
+    if (typeof rt === "number" && rt >= 250) {
+      req.log.warn({ ...payload, slowRequest: true }, "Slow admin API response");
+      return;
+    }
+    req.log.info(payload);
   });
 }

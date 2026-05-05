@@ -21,6 +21,8 @@ import {
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
 import type { CloudinaryService } from "./cloudinary.service.js";
+import { invalidateCatalogCache } from "../utils/cache.js";
+import { adminCacheAside } from "../utils/admin-cache.js";
 
 function mediaPublicIds(media?: Array<{ publicId?: string | null }>): Set<string> {
   const s = new Set<string>();
@@ -33,6 +35,10 @@ function mediaPublicIds(media?: Array<{ publicId?: string | null }>): Set<string
 
 function eo(ctx?: WriteContext, session?: ClientSession): ExecOpts {
   return { actorId: ctx?.actorUserId ?? undefined, session };
+}
+
+function eoSelect(ctx?: WriteContext, session?: ClientSession, select?: string): ExecOpts & { select?: string } {
+  return { actorId: ctx?.actorUserId ?? undefined, session, select };
 }
 
 function mapMongoDuplicate(err: unknown): AppError | null {
@@ -158,11 +164,28 @@ export class ProductService {
   }
 
   async list(skip = 0, limit = 100, filter?: ProductListFilter, ctx?: WriteContext) {
-    const [items, total] = await Promise.all([
-      this.products.list(skip, limit, filter, eo(ctx)),
-      this.products.count(filter, eo(ctx)),
-    ]);
-    return { items, total };
+    const filterKey = JSON.stringify({
+      skip,
+      limit,
+      status: filter?.status ?? null,
+      q: filter?.q ?? null,
+      sort: filter?.sort ?? null,
+      categoryId: filter?.categoryId?.toString() ?? null,
+      ids: (filter?.ids ?? []).map((id) => id.toString()),
+    });
+    return adminCacheAside({
+      scope: "product",
+      key: `list:${filterKey}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const [items, total] = await Promise.all([
+          this.products.list(skip, limit, filter, eo(ctx)),
+          this.products.count(filter, eo(ctx)),
+        ]);
+        return { items, total };
+      },
+    });
   }
 
   /**
@@ -170,11 +193,19 @@ export class ProductService {
    * (avoids N+1 variant fetches from the storefront).
    */
   async summaryCardsForProductIds(ids: string[], ctx?: WriteContext) {
+    const cacheIds = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 100);
+    const cacheKey = cacheIds.join(",");
+    return adminCacheAside({
+      scope: "product",
+      key: `summary-cards:${cacheKey}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
     const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 100);
     if (!unique.length) return [];
     const oids = unique.map(toObjectId);
-    const { items } = await this.list(0, 100, { status: "published", ids: oids }, ctx);
-    const byId = new Map(items.map((p) => [p._id.toString(), p]));
+    const items = await this.products.findByIds(oids, eoSelect(ctx, undefined, "slug title brand status"));
+    const byId = new Map(items.filter((p) => String(p.status) === "published").map((p) => [p._id.toString(), p]));
     const ordered = unique.map((id) => byId.get(id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
     if (!ordered.length) return [];
     const variantMap = await this.variants.firstPublishedVariantPerProduct(
@@ -211,13 +242,22 @@ export class ProductService {
         availability: v?.availability ?? "—",
       };
     });
+      },
+    });
   }
 
   /** Storefront: resolve a variant to its parent product (slug, title) for spec matrix links. */
   async getVariantWithProduct(variantId: string, ctx?: WriteContext) {
-    const v = await this.variants.findById(toObjectId(variantId), eo(ctx));
+    const v = await this.variants.findById(
+      toObjectId(variantId),
+      eoSelect(
+        ctx,
+        undefined,
+        "productId sku itemNumber mpn manufacturer unitPrice currency availability uom leadTime moq packaging status specRowId searchBlob sortOrder",
+      ),
+    );
     if (!v) throw resourceNotFound("ProductVariant", variantId);
-    const p = await this.products.findById(v.productId, eo(ctx));
+    const p = await this.products.findById(v.productId, eoSelect(ctx, undefined, "slug title brand status"));
     if (!p) throw resourceNotFound("Product", v.productId.toString());
     return {
       variant: v.toObject(),
@@ -231,33 +271,56 @@ export class ProductService {
    */
   async getVariantsWithProductsByIds(ids: string[], ctx?: WriteContext) {
     const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 500);
-    if (!unique.length) return [];
-    const oids: Types.ObjectId[] = [];
-    for (const id of unique) {
-      if (Types.ObjectId.isValid(id)) oids.push(new Types.ObjectId(id));
-    }
-    if (!oids.length) return [];
-    const variants = await this.variants.findByIds(oids, eo(ctx));
-    if (!variants.length) return [];
-    const vById = new Map(variants.map((v) => [v._id.toString(), v]));
-    const pids = [...new Set(variants.map((v) => v.productId))];
-    const products = await this.products.findByIds(pids, eo(ctx));
-    const pMap = new Map(products.map((p) => [p._id.toString(), p]));
-    const out: Array<{ variant: Record<string, unknown>; product: Record<string, unknown> }> = [];
-    for (const id of unique) {
-      const v = vById.get(id);
-      if (!v) continue;
-      const p = pMap.get(v.productId.toString());
-      if (!p) continue;
-      out.push({ variant: v.toObject(), product: p.toObject() });
-    }
-    return out;
+    return adminCacheAside({
+      scope: "product",
+      key: `variant-bundles:${unique.join(",")}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        if (!unique.length) return [];
+        const oids: Types.ObjectId[] = [];
+        for (const id of unique) {
+          if (Types.ObjectId.isValid(id)) oids.push(new Types.ObjectId(id));
+        }
+        if (!oids.length) return [];
+        const variants = await this.variants.findByIds(
+          oids,
+          eoSelect(
+            ctx,
+            undefined,
+            "productId sku itemNumber mpn manufacturer unitPrice currency availability uom leadTime moq packaging status specRowId searchBlob sortOrder",
+          ),
+        );
+        if (!variants.length) return [];
+        const vById = new Map(variants.map((v) => [v._id.toString(), v]));
+        const pids = [...new Set(variants.map((v) => v.productId))];
+        const products = await this.products.findByIds(pids, eoSelect(ctx, undefined, "slug title brand status"));
+        const pMap = new Map(products.map((p) => [p._id.toString(), p]));
+        const out: Array<{ variant: Record<string, unknown>; product: Record<string, unknown> }> = [];
+        for (const id of unique) {
+          const v = vById.get(id);
+          if (!v) continue;
+          const p = pMap.get(v.productId.toString());
+          if (!p) continue;
+          out.push({ variant: v.toObject(), product: p.toObject() });
+        }
+        return out;
+      },
+    });
   }
 
   async getProduct(id: string, ctx?: WriteContext) {
-    const p = await this.products.findById(toObjectId(id), eo(ctx));
-    if (!p) throw resourceNotFound("Product", id);
-    return p;
+    return adminCacheAside({
+      scope: "product",
+      key: `product:${id}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const p = await this.products.findById(toObjectId(id), eo(ctx));
+        if (!p) throw resourceNotFound("Product", id);
+        return p;
+      },
+    });
   }
 
   async createProduct(
@@ -302,7 +365,7 @@ export class ProductService {
       throw productSlugTaken(input.slug);
     }
     try {
-      return await this.products.create(
+      const created = await this.products.create(
         {
           slug: input.slug,
           title: input.title,
@@ -326,6 +389,8 @@ export class ProductService {
         },
         eo(ctx),
       );
+      await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      return created;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
       if (mapped) throw mapped;
@@ -408,6 +473,7 @@ export class ProductService {
       );
       if (!p) throw resourceNotFound("Product", id);
       for (const pid of orphanPublicIds) await this.cloudinary.destroy(pid);
+      await invalidateCatalogCache(["product", "search", "category", "homepage"]);
       return p;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -428,6 +494,7 @@ export class ProductService {
       const pid = typeof m.publicId === "string" ? m.publicId.trim() : "";
       if (pid) await this.cloudinary.destroy(pid);
     }
+    await invalidateCatalogCache(["product", "search", "category", "homepage"]);
     return deleted;
   }
 
@@ -437,11 +504,19 @@ export class ProductService {
     opts?: VariantListFilter & { skip?: number; limit?: number },
   ) {
     const pid = toObjectId(productId);
-    const [items, total] = await Promise.all([
-      this.variants.listByProduct(pid, { ...eo(ctx), ...opts }),
-      this.variants.countByProduct(pid, { ...eo(ctx), status: opts?.status, q: opts?.q }),
-    ]);
-    return { items, total };
+    return adminCacheAside({
+      scope: "product",
+      key: `variants:${productId}:${opts?.status ?? "any"}:${opts?.q ?? ""}:${opts?.skip ?? 0}:${opts?.limit ?? 500}`,
+      ttlSeconds: 90,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const [items, total] = await Promise.all([
+          this.variants.listByProduct(pid, { ...eo(ctx), ...opts }),
+          this.variants.countByProduct(pid, { ...eo(ctx), status: opts?.status, q: opts?.q }),
+        ]);
+        return { items, total };
+      },
+    });
   }
 
   async createVariant(
@@ -481,7 +556,7 @@ export class ProductService {
     }
 
     try {
-      return await this.variants.create(
+      const created = await this.variants.create(
         {
           productId: toObjectId(productId),
           sku: input.sku,
@@ -502,6 +577,8 @@ export class ProductService {
         },
         eo(ctx),
       );
+      await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      return created;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
       if (mapped) throw mapped;
@@ -567,6 +644,7 @@ export class ProductService {
         eo(ctx),
       );
       if (!v) throw resourceNotFound("ProductVariant", variantId);
+      await invalidateCatalogCache(["product", "search", "category", "homepage"]);
       return v;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -576,7 +654,9 @@ export class ProductService {
   }
 
   async deleteVariant(variantId: string, ctx?: WriteContext) {
-    return this.variants.deleteById(toObjectId(variantId), eo(ctx));
+    const deleted = await this.variants.deleteById(toObjectId(variantId), eo(ctx));
+    await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+    return deleted;
   }
 
   /**
@@ -644,7 +724,9 @@ export class ProductService {
         );
       }
 
-      return this.variants.findById(toObjectId(variantId), opt);
+      const updated = await this.variants.findById(toObjectId(variantId), opt);
+      await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      return updated;
     });
   }
 }

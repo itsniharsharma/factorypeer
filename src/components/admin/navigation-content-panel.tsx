@@ -10,7 +10,6 @@ import {
   deleteNavigationLinkGroup,
   listFooterContents,
   listNavigationLinkGroups,
-  seedElectricalShowcaseFooterFromAdminPanel,
   type FooterContentDoc,
   type FooterSocialLinkDoc,
   type PublishStatus,
@@ -40,7 +39,6 @@ export function NavigationContentPanel() {
   const [linkGroupModal, setLinkGroupModal] = useState<LinkGroupModalState>(null);
   const [footerModal, setFooterModal] = useState<FooterContentModalState>(null);
   const [reorderTarget, setReorderTarget] = useState<ReorderTarget>(null);
-  const [footerShowcaseSeeding, setFooterShowcaseSeeding] = useState(false);
 
   const [linkGroupForm, setLinkGroupForm] = useState({
     slug: "",
@@ -90,22 +88,6 @@ export function NavigationContentPanel() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  async function applyElectricalShowcaseFooterFromPanel() {
-    setFooterShowcaseSeeding(true);
-    try {
-      const { created, updated } = await seedElectricalShowcaseFooterFromAdminPanel();
-      const parts: string[] = [];
-      if (created.length) parts.push(`Created: ${created.join(", ")}`);
-      if (updated.length) parts.push(`Updated: ${updated.join(", ")}`);
-      toast.success(parts.length ? parts.join(" · ") : "Footer showcase data applied");
-      await load();
-    } catch (e) {
-      toast.error(e instanceof AdminApiError ? e.message : "Failed to apply Electrical showcase footer");
-    } finally {
-      setFooterShowcaseSeeding(false);
-    }
-  }
 
   const linkGroupById = useMemo(() => new Map(linkGroups.map((x) => [x._id, x])), [linkGroups]);
   const footerById = useMemo(() => new Map(footerContents.map((x) => [x._id, x])), [footerContents]);
@@ -419,25 +401,6 @@ export function NavigationContentPanel() {
           <span className="font-mono text-xs">electrical-showcase-footer</span>) for the main strip. Reorder with the
           reorder buttons if you have multiple blocks or groups.
         </p>
-      </div>
-
-      <div className="rounded-sm border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="max-w-2xl">
-            <span className="font-medium text-slate-900">Electrical showcase footer (optional shortcut).</span> One click
-            creates or updates the same three footer link groups and one footer content document you could add
-            manually above—using identical <em>New / Edit</em> APIs. After that, ongoing edits are always through{" "}
-            <em>Edit</em> on this page; deployed admins use the same controls.
-          </p>
-          <button
-            type="button"
-            className="shrink-0 rounded-sm bg-brand px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
-            disabled={footerShowcaseSeeding}
-            onClick={() => void applyElectricalShowcaseFooterFromPanel()}
-          >
-            {footerShowcaseSeeding ? "Applying…" : "Load Electrical showcase footer"}
-          </button>
-        </div>
       </div>
 
       <section className="rounded-sm border border-slate-200 bg-white p-4">

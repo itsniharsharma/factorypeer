@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PrefetchLink } from "@/components/ui/prefetch-link";
 import { Product } from "@/lib/types";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
@@ -42,7 +42,7 @@ export function FeaturedProductsRow({ products }: FeaturedProductsRowProps) {
                     </p>
                     <h3 className="mt-1 text-[14px] font-semibold leading-snug text-brand hover:underline">
                       {product.slug ? (
-                        <Link href={`/product/${product.slug}`}>{product.title}</Link>
+                        <PrefetchLink href={`/product/${product.slug}`}>{product.title}</PrefetchLink>
                       ) : (
                         <span>{product.title}</span>
                       )}

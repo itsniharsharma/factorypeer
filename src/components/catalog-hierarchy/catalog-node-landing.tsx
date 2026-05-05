@@ -1,16 +1,24 @@
+import Image from "next/image";
 import CategoryTileCard from "@/components/catalog/category-tile-card";
-import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
+import { ProductCard } from "@/components/ui/product-card";
+import { CatalogBreadcrumb, CatalogTaxonomyNode, Product } from "@/lib/types";
 
 interface CatalogNodeLandingProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
+  bannerImage?: string;
+  bannerImageAlt?: string;
+  featuredProducts?: Product[];
 }
 
 export function CatalogNodeLanding({
   node,
   breadcrumbs,
   pathSegments,
+  bannerImage,
+  bannerImageAlt,
+  featuredProducts = [],
 }: CatalogNodeLandingProps) {
   const sectionTitle =
     pathSegments.length === 1
@@ -30,6 +38,17 @@ export function CatalogNodeLanding({
         <p className="mt-1 text-[11px] font-semibold text-slate-700">
           {node.productCount.toLocaleString()} Products
         </p>
+        {bannerImage ? (
+          <div className="relative mt-2 h-[180px] w-full overflow-hidden rounded-sm border border-slate-200">
+            <Image
+              src={bannerImage}
+              alt={bannerImageAlt?.trim() || `${node.title} banner`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 1100px"
+              className="object-cover"
+            />
+          </div>
+        ) : null}
       </section>
 
       <section className="grid gap-2 lg:grid-cols-[220px_1fr]">
@@ -76,6 +95,19 @@ export function CatalogNodeLanding({
           </div>
         </section>
       </section>
+
+      {featuredProducts.length > 0 ? (
+        <section className="border border-line bg-white p-2.5">
+          <h2 className="mb-1.5 text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
+            Featured Products
+          </h2>
+          <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

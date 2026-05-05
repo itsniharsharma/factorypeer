@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { PrefetchLink } from "@/components/ui/prefetch-link";
 import { ProductListingPageData } from "@/lib/types";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
@@ -77,15 +77,16 @@ export function ProductListingTemplate({ data }: ProductListingTemplateProps) {
                     src={product.thumbnail ?? getDefaultCatalogImageUrl()}
                     alt={product.title}
                     fill
+                    sizes="100px"
                     className="object-cover"
                   />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 leading-tight">
                     {product.slug ? (
-                      <Link href={`/product/${product.slug}`} className="hover:text-brand hover:underline">
+                      <PrefetchLink href={`/product/${product.slug}`} className="hover:text-brand hover:underline">
                         {product.title}
-                      </Link>
+                      </PrefetchLink>
                     ) : (
                       product.title
                     )}

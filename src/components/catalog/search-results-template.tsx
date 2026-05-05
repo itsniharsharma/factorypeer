@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PrefetchLink } from "@/components/ui/prefetch-link";
 import { SearchCatalogProduct } from "@/lib/types";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
@@ -86,9 +87,9 @@ export function SearchResultsTemplate({ query, results, facets }: SearchResultsT
                     />
                   </div>
                   <div className="min-w-0">
-                    <a href={`/product/${product.slug}`} className="text-sm font-bold leading-tight text-slate-900 hover:text-brand hover:underline">
+                    <PrefetchLink href={`/product/${product.slug}`} className="text-sm font-bold leading-tight text-slate-900 hover:text-brand hover:underline">
                       {product.title}
-                    </a>
+                    </PrefetchLink>
                     <div className="mt-0.5 flex gap-1 text-[10px] font-mono text-slate-600">
                       <span className="font-semibold">SKU:</span>
                       <span>{product.sku}</span>

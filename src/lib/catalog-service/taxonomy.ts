@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import { catalogServerJson } from "./fetch";
 import { buildSpecMatrixPage, DEFAULT_MATRIX_PAGE_SIZE } from "./matrix";
+import { cacheAside } from "@/lib/cache/redis-cache";
 
 export type CatalogRouteContext = {
   node: CatalogTaxonomyNode;
@@ -71,10 +72,19 @@ export function pathHrefFromSegments(segments: string[]): string {
   return `/category/${segments.join("/")}`;
 }
 
+function previewLinksFromRoots(tree: CatalogTaxonomyNode[], limit: number): CatalogNavLinkItem[] {
+  const roots = sortTaxonomySiblings(tree).slice(0, limit);
+  return roots.map((root) => ({
+    id: root.id,
+    label: root.title,
+    href: pathHrefFromSegments([root.slug]),
+  }));
+}
+
 export function buildMegaMenuGroups(tree: CatalogTaxonomyNode[]): MegaMenuRootGroup[] {
   const roots = sortTaxonomySiblings(tree);
   return roots.map((root) => {
-    const rootHref = pathHrefFromSegments(firstBrowsePathSegments(root));
+    const rootHref = pathHrefFromSegments([root.slug]);
     const children = sortTaxonomySiblings(root.children).map((child) => ({
       id: child.id,
       label: child.title,
@@ -91,14 +101,36 @@ export function buildMegaMenuGroups(tree: CatalogTaxonomyNode[]): MegaMenuRootGr
   });
 }
 
-function previewLinksFromRoots(tree: CatalogTaxonomyNode[], limit: number): CatalogNavLinkItem[] {
-  const roots = sortTaxonomySiblings(tree).slice(0, limit);
-  return roots.map((root) => ({
-    id: root.id,
-    label: root.title,
-    href: pathHrefFromSegments(firstBrowsePathSegments(root)),
-  }));
-}
+export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> => {
+  return cacheAside({
+    namespace: "taxonomy",
+    key: "tree",
+    ttlSeconds: 60 * 60,
+    staleWhileRevalidateSeconds: 15 * 60,
+    label: "taxonomy-tree",
+    loader: async () => {
+      const raw = await catalogServerJson<CategoryDoc[]>("/categories/tree");
+      return sortTreeRecursive(filterPublished(raw).map(categoryToTaxonomyNode));
+    },
+  });
+});
+
+export const getMegaMenuNavigation = cache(async () => {
+  return cacheAside({
+    namespace: "navigation",
+    key: "mega-menu",
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "mega-menu",
+    loader: async () => {
+      const tree = await getTaxonomyTree();
+      return {
+        groups: buildMegaMenuGroups(tree),
+        previewLinks: previewLinksFromRoots(tree, 8),
+      };
+    },
+  });
+});
 
 /** DFS lookup by catalog category id — used to prefer `family` nodes for matrix/spec resolution. */
 export function findTaxonomyNodeById(
@@ -144,11 +176,6 @@ function buildBreadcrumbTrail(
   return crumbs;
 }
 
-export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> => {
-  const raw = await catalogServerJson<CategoryDoc[]>("/categories/tree");
-  return sortTreeRecursive(filterPublished(raw).map(categoryToTaxonomyNode));
-});
-
 /**
  * @param pathKey - Category path as `segment/segment/...` (primitives for React `cache` key stability).
  * @param matrixPage - 0-based matrix page for family nodes (`?m=` on category URL).
@@ -188,10 +215,3 @@ export const getRouteContext = cache(
   },
 );
 
-export const getMegaMenuNavigation = cache(async () => {
-  const tree = await getTaxonomyTree();
-  return {
-    groups: buildMegaMenuGroups(tree),
-    previewLinks: previewLinksFromRoots(tree, 8),
-  };
-});

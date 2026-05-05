@@ -18,6 +18,8 @@ import {
 import { NotFoundError } from "../errors/app-error.js";
 import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
+import { invalidateCatalogCache } from "../utils/cache.js";
+import { adminCacheAside } from "../utils/admin-cache.js";
 
 type CategoryDoc = Awaited<ReturnType<CategoryRepository["listChildren"]>>[number];
 
@@ -37,34 +39,60 @@ export class CategoryService {
   ) {}
 
   async getById(id: string, ctx?: WriteContext) {
-    const doc = await this.categories.findById(toObjectId(id), eo(ctx));
-    if (!doc) throw resourceNotFound("CatalogCategory", id);
-    return doc;
+    return adminCacheAside({
+      scope: "category",
+      key: `by-id:${id}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const doc = await this.categories.findById(toObjectId(id), eo(ctx));
+        if (!doc) throw resourceNotFound("CatalogCategory", id);
+        return doc;
+      },
+    });
   }
 
   async listChildren(parentId: string | null, ctx?: WriteContext, filters?: { status?: string }) {
-    const pid = parentId ? toObjectId(parentId) : null;
-    return this.categories.listChildren(pid, "sortOrder", { ...eo(ctx), status: filters?.status });
+    const cacheParentId = parentId ?? "root";
+    const cacheStatus = filters?.status ?? "any";
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: `children:${cacheParentId}:${cacheStatus}`,
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const pid = parentId ? toObjectId(parentId) : null;
+        return this.categories.listChildren(pid, "sortOrder", { ...eo(ctx), status: filters?.status });
+      },
+    });
   }
 
   /** Recursive tree for admin (nested children). */
   async getTree(ctx?: WriteContext): Promise<unknown[]> {
-    const roots = await this.categories.listChildren(null, "sortOrder", eo(ctx));
-    const build = async (parentId: Types.ObjectId | null): Promise<unknown[]> => {
-      const kids = await this.categories.listChildren(parentId, "sortOrder", eo(ctx));
-      return Promise.all(
-        kids.map(async (n: CategoryDoc) => ({
-          ...n.toObject(),
-          children: await build(n._id),
-        })),
-      );
-    };
-    return Promise.all(
-      roots.map(async (n: CategoryDoc) => ({
-        ...n.toObject(),
-        children: await build(n._id),
-      })),
-    );
+    return adminCacheAside({
+      scope: "taxonomy",
+      key: "tree:admin",
+      ttlSeconds: 120,
+      staleWhileRevalidateSeconds: 30,
+      loader: async () => {
+        const roots = await this.categories.listChildren(null, "sortOrder", eo(ctx));
+        const build = async (parentId: Types.ObjectId | null): Promise<unknown[]> => {
+          const kids = await this.categories.listChildren(parentId, "sortOrder", eo(ctx));
+          return Promise.all(
+            kids.map(async (n: CategoryDoc) => ({
+              ...n.toObject(),
+              children: await build(n._id),
+            })),
+          );
+        };
+        return Promise.all(
+          roots.map(async (n: CategoryDoc) => ({
+            ...n.toObject(),
+            children: await build(n._id),
+          })),
+        );
+      },
+    });
   }
 
   async create(
@@ -93,7 +121,7 @@ export class CategoryService {
     const pathTakenDoc = await this.categories.findByPath(path, eo(ctx));
     if (pathTakenDoc) throw pathTaken(path);
 
-    return this.categories.create(
+    const created = await this.categories.create(
       {
         parentId,
         path,
@@ -106,6 +134,8 @@ export class CategoryService {
       },
       eo(ctx),
     );
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return created;
   }
 
   async update(
@@ -146,9 +176,9 @@ export class CategoryService {
     const needsSubtreeRewrite = Boolean(patch.slug && newPath !== oldPath);
 
     if (needsSubtreeRewrite) {
-      return withTransaction(async (session) => {
+      const updated = await withTransaction(async (session) => {
         const opt = eo(ctx, session);
-        const updated = await this.categories.updateById(
+        const result = await this.categories.updateById(
           oid,
           {
             ...patch,
@@ -158,11 +188,13 @@ export class CategoryService {
           opt,
         );
         await this.categories.rewriteSubtreePaths(oldPath, newPath, opt);
-        return updated;
+        return result;
       });
+      await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+      return updated;
     }
 
-    return this.categories.updateById(
+    const updated = await this.categories.updateById(
       oid,
       {
         ...patch,
@@ -170,11 +202,13 @@ export class CategoryService {
       },
       eo(ctx),
     );
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return updated;
   }
 
   async move(categoryId: string, newParentId: string | null, ctx?: WriteContext) {
     const oid = toObjectId(categoryId);
-    return withTransaction(async (session) => {
+    const updated = await withTransaction(async (session) => {
       const opt = eo(ctx, session);
       const node = await this.categories.findById(oid, opt);
       if (!node) throw resourceNotFound("CatalogCategory", categoryId);
@@ -207,10 +241,12 @@ export class CategoryService {
       await this.categories.rewriteSubtreePaths(oldPath, newPath, opt);
       return this.categories.updateById(oid, { parentId: newPid }, opt);
     });
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return updated;
   }
 
   async reorderSiblings(categoryId: string, orderedIds: string[], ctx?: WriteContext) {
-    return withTransaction(async (session) => {
+    const reordered = await withTransaction(async (session) => {
       const opt = eo(ctx, session);
       const anchor = await this.categories.findById(toObjectId(categoryId), opt);
       if (!anchor) throw resourceNotFound("CatalogCategory", categoryId);
@@ -229,11 +265,14 @@ export class CategoryService {
       );
       return this.categories.listChildren(parentId, "sortOrder", opt);
     });
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return reordered;
   }
 
   async setKind(id: string, kind: "branch" | "family", ctx?: WriteContext) {
     const doc = await this.categories.updateById(toObjectId(id), { kind }, eo(ctx));
     if (!doc) throw resourceNotFound("CatalogCategory", id);
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
     return doc;
   }
 
@@ -248,13 +287,15 @@ export class CategoryService {
     if (!(spec.taxonomyNodeId as Types.ObjectId).equals(cat._id)) {
       throw specSchemaWrongCategory();
     }
-    return this.categories.updateById(
+    const updated = await this.categories.updateById(
       toObjectId(categoryId),
       {
         activeSpecSchemaId: toObjectId(specSchemaId),
       },
       eo(ctx),
     );
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return updated;
   }
 
   async delete(id: string, ctx?: WriteContext) {
@@ -265,6 +306,8 @@ export class CategoryService {
     if (children > 0) {
       throw categoryHasChildren();
     }
-    return this.categories.deleteById(oid, eo(ctx));
+    const deleted = await this.categories.deleteById(oid, eo(ctx));
+    await invalidateCatalogCache(["taxonomy", "category", "search", "homepage", "navigation"]);
+    return deleted;
   }
 }

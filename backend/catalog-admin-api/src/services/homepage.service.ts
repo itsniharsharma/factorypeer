@@ -14,6 +14,7 @@ import {
   type HomepageImageInput,
 } from "../utils/homepage-image-normalize.js";
 import type { CloudinaryService } from "./cloudinary.service.js";
+import { invalidateCatalogCache } from "../utils/cache.js";
 
 function publishedAtFor(status?: string) {
   return status === "published" ? new Date() : undefined;
@@ -87,7 +88,7 @@ export class HomepageService {
         CatalogErrorCodes.VALIDATION_ERROR,
       );
     }
-    return this.repo.createBanner(
+    const created = await this.repo.createBanner(
       {
         ...body,
         ...norm,
@@ -95,6 +96,8 @@ export class HomepageService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["homepage"]);
+    return created;
   }
 
   async updateBanner(
@@ -149,6 +152,7 @@ export class HomepageService {
     );
     const newPid = updated?.image?.publicId;
     if (oldPid && newPid && oldPid !== newPid) await this.cloudinary.destroy(oldPid);
+    await invalidateCatalogCache(["homepage"]);
     return updated;
   }
 
@@ -158,6 +162,7 @@ export class HomepageService {
     const pid = cur?.image?.publicId;
     const deleted = await this.repo.deleteBanner(oid, { actorId: ctx?.actorUserId ?? undefined });
     if (pid) await this.cloudinary.destroy(pid);
+    await invalidateCatalogCache(["homepage"]);
     return deleted;
   }
 
@@ -205,7 +210,7 @@ export class HomepageService {
         CatalogErrorCodes.VALIDATION_ERROR,
       );
     }
-    return this.repo.createCategoryTile(
+    const created = await this.repo.createCategoryTile(
       {
         ...body,
         ...norm,
@@ -214,6 +219,8 @@ export class HomepageService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["homepage"]);
+    return created;
   }
 
   async updateCategoryTile(
@@ -272,6 +279,7 @@ export class HomepageService {
     );
     const newPid = updated?.image?.publicId;
     if (oldPid && newPid && oldPid !== newPid) await this.cloudinary.destroy(oldPid);
+    await invalidateCatalogCache(["homepage"]);
     return updated;
   }
 
@@ -281,6 +289,7 @@ export class HomepageService {
     const pid = cur?.image?.publicId;
     const deleted = await this.repo.deleteCategoryTile(oid, { actorId: ctx?.actorUserId ?? undefined });
     if (pid) await this.cloudinary.destroy(pid);
+    await invalidateCatalogCache(["homepage"]);
     return deleted;
   }
 
@@ -319,7 +328,7 @@ export class HomepageService {
     const existing = await this.repo.findSupportCardBySlug(body.slug, { actorId: ctx?.actorUserId ?? undefined });
     if (existing) throw recordAlreadyExists(body.slug, "homepage support card");
     const norm = body.image?.url ? normalizeHomepageImagePayload({ image: body.image }) : null;
-    return this.repo.createSupportCard(
+    const created = await this.repo.createSupportCard(
       {
         ...body,
         ...(norm ?? {}),
@@ -327,6 +336,8 @@ export class HomepageService {
       },
       { actorId: ctx?.actorUserId ?? undefined },
     );
+    await invalidateCatalogCache(["homepage"]);
+    return created;
   }
 
   async updateSupportCard(
@@ -381,6 +392,7 @@ export class HomepageService {
     );
     const newPid = updated?.image?.publicId;
     if (oldPid && newPid && oldPid !== newPid) await this.cloudinary.destroy(oldPid);
+    await invalidateCatalogCache(["homepage"]);
     return updated;
   }
 
@@ -390,6 +402,7 @@ export class HomepageService {
     const pid = cur?.image?.publicId;
     const deleted = await this.repo.deleteSupportCard(oid, { actorId: ctx?.actorUserId ?? undefined });
     if (pid) await this.cloudinary.destroy(pid);
+    await invalidateCatalogCache(["homepage"]);
     return deleted;
   }
 }

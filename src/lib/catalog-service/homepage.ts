@@ -1,7 +1,7 @@
 import type { PromoBanner, CategoryTile, SupportCTA, CatalogTaxonomyNode } from "@/lib/types";
 import { catalogServerJsonList } from "./fetch";
+import { cacheAside } from "@/lib/cache/redis-cache";
 import {
-  firstBrowsePathSegments,
   getTaxonomyTree,
   pathHrefFromSegments,
   sortTaxonomySiblings,
@@ -67,62 +67,98 @@ function resolveCategoryTileHref(
 }
 
 export async function getHomepagePromoBanners(): Promise<PromoBanner[]> {
-  const res = await catalogServerJsonList<HomepagePromoBannerDoc[]>("/homepage/banners?status=published");
-  const data = Array.isArray(res.data) ? res.data : [];
-  return data.map((b) => ({
-    id: b._id,
-    title: b.title,
-    subtitle: b.subtitle ?? "",
-    image: b.image?.url ?? "",
-    imageAlt: b.image?.alt ?? b.imageAlt,
-    eyebrow: b.eyebrow,
-    ctaLabel: b.ctaLabel,
-    href: b.href,
-    openInNewTab: b.openInNewTab,
-  }));
+  return cacheAside({
+    namespace: "homepage",
+    key: "promo-banners",
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "homepage-promo-banners",
+    loader: async () => {
+      const res = await catalogServerJsonList<HomepagePromoBannerDoc[]>('/homepage/banners?status=published');
+      const data = Array.isArray(res.data) ? res.data : [];
+      return data.map((b) => ({
+        id: b._id,
+        title: b.title,
+        subtitle: b.subtitle ?? "",
+        image: b.image?.url ?? "",
+        imageAlt: b.image?.alt ?? b.imageAlt,
+        eyebrow: b.eyebrow,
+        ctaLabel: b.ctaLabel,
+        href: b.href,
+        openInNewTab: b.openInNewTab,
+      }));
+    },
+  });
 }
 
 export async function getHomepageCategoryTiles(): Promise<CategoryTile[]> {
-  const [res, tree] = await Promise.all([
-    catalogServerJsonList<HomepageCategoryTileDoc[]>("/homepage/category-tiles?status=published"),
-    getTaxonomyTree(),
-  ]);
-  const data = Array.isArray(res.data) ? res.data : [];
-  return data.map((tile) => ({
-    id: tile._id,
-    label: tile.label,
-    image: tile.image?.url ?? "",
-    href: resolveCategoryTileHref(tree, tile),
-    imageAlt: tile.image?.alt ?? tile.imageAlt,
-    ctaLabel: tile.ctaLabel,
-  }));
+  return cacheAside({
+    namespace: "homepage",
+    key: "category-tiles",
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "homepage-category-tiles",
+    loader: async () => {
+      const [res, tree] = await Promise.all([
+        catalogServerJsonList<HomepageCategoryTileDoc[]>("/homepage/category-tiles?status=published"),
+        getTaxonomyTree(),
+      ]);
+      const data = Array.isArray(res.data) ? res.data : [];
+      return data.map((tile) => ({
+        id: tile._id,
+        label: tile.label,
+        image: tile.image?.url ?? "",
+        href: resolveCategoryTileHref(tree, tile),
+        imageAlt: tile.image?.alt ?? tile.imageAlt,
+        ctaLabel: tile.ctaLabel,
+      }));
+    },
+  });
 }
 
 /** Top-level (root) categories only; card links to first browseable path under each root (taxonomy sortOrder). */
 export async function getHomepageBrowseCategoryTiles(limit = 14): Promise<CategoryTile[]> {
-  const tree = await getTaxonomyTree();
-  const roots = sortTaxonomySiblings(tree).slice(0, limit);
-  return roots.map((node) => ({
-    id: node.id,
-    label: node.title,
-    href: pathHrefFromSegments(firstBrowsePathSegments(node)),
-    image: getDefaultCatalogImageUrl(),
-    imageAlt: `${node.title} category`,
-  }));
+  return cacheAside({
+    namespace: "homepage",
+    key: `browse-category-tiles:${limit}`,
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "homepage-browse-category-tiles",
+    loader: async () => {
+      const tree = await getTaxonomyTree();
+      const roots = sortTaxonomySiblings(tree).slice(0, limit);
+      return roots.map((node) => ({
+        id: node.id,
+        label: node.title,
+        href: pathHrefFromSegments([node.slug]),
+        image: getDefaultCatalogImageUrl(),
+        imageAlt: `${node.title} category`,
+      }));
+    },
+  });
 }
 
 export async function getHomepageSupportCards(): Promise<SupportCTA[]> {
-  const res = await catalogServerJsonList<HomepageSupportCardDoc[]>("/homepage/support-cards?status=published");
-  const data = Array.isArray(res.data) ? res.data : [];
-  return data.map((card) => ({
-    id: card._id,
-    title: card.title,
-    description: card.description ?? "",
-    action: card.ctaLabel ?? "Learn More",
-    href: card.href,
-    image: card.image?.url,
-    imageAlt: card.image?.alt,
-  }));
+  return cacheAside({
+    namespace: "homepage",
+    key: "support-cards",
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 2 * 60,
+    label: "homepage-support-cards",
+    loader: async () => {
+      const res = await catalogServerJsonList<HomepageSupportCardDoc[]>('/homepage/support-cards?status=published');
+      const data = Array.isArray(res.data) ? res.data : [];
+      return data.map((card) => ({
+        id: card._id,
+        title: card.title,
+        description: card.description ?? "",
+        action: card.ctaLabel ?? "Learn More",
+        href: card.href,
+        image: card.image?.url,
+        imageAlt: card.image?.alt,
+      }));
+    },
+  });
 }
 
 const homepageService = {};

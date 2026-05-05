@@ -13,6 +13,7 @@ import { catalogServerJson, catalogServerJsonList } from "./fetch";
 import { findTaxonomyNodeById, getTaxonomyTree } from "./taxonomy";
 import { buildSpecMatrixForCategory, specRowsForLinkedVariant } from "./matrix";
 import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
+import { cacheAside, getCachedQueryHash } from "@/lib/cache/redis-cache";
 
 function findCategoryBySlug(
   nodes: CatalogTaxonomyNode[],
@@ -119,6 +120,13 @@ function normalizeProductImages(product: ProductDoc): Array<{ url: string; alt: 
     alt: m.alt?.trim() || `${product.title} — image ${i + 1}`,
   }));
 }
+function productThumbnailUrl(product: ProductDoc): string {
+  const media = product.media;
+  if (!media?.length) return getDefaultCatalogImageUrl();
+  const sorted = [...media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const url = sorted[0]?.url?.trim();
+  return url || getDefaultCatalogImageUrl();
+}
 
 function normalizeAttachmentDocType(raw?: string): ProductAttachmentDoc["docType"] {
   const allowed: ProductAttachmentDoc["docType"][] = [
@@ -206,102 +214,148 @@ async function fetchOrderedProductCards(ids: string[] | undefined): Promise<Prod
 
 /** Public helper for client-driven lists (e.g. recently viewed localStorage IDs). */
 export async function getProductsByIds(ids: string[] | undefined): Promise<Product[]> {
-  return fetchOrderedProductCards(ids);
+  if (!ids?.length) return [];
+  const key = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].sort().join(",");
+  return cacheAside({
+    namespace: "product",
+    key: `batch:${getCachedQueryHash(key)}`,
+    ttlSeconds: 15 * 60,
+    staleWhileRevalidateSeconds: 5 * 60,
+    label: "recently-viewed-products",
+    loader: async () => {
+      // Detect whether caller passed Mongo ObjectIds (24-hex) or slugs/SKUs.
+      const isObjectIdLike = (s: string) => /^[a-fA-F0-9]{24}$/.test(s);
+      const unique = [...new Set(ids.map((x) => x.trim()).filter(Boolean))].slice(0, 48);
+      if (unique.every(isObjectIdLike)) {
+        return fetchOrderedProductCards(unique);
+      }
+
+      // Treat values as slugs (friendly client ids). Resolve each slug to a PDP
+      // using `getProductBySlug` (cached) and map to the lightweight `Product` shape.
+      const proms = unique.map((s) => getProductBySlug(s).catch(() => undefined));
+      const pdps = (await Promise.all(proms)).filter(Boolean) as ProductDetailPageData[];
+      if (!pdps.length) return [];
+      return pdps.map((p) => ({
+        id: p.id ?? "",
+        slug: p.slug,
+        title: p.title,
+        sku: p.sku,
+        itemNumber: p.itemNumber,
+        manufacturer: p.manufacturerModel ?? "—",
+        brand: p.brand ?? undefined,
+        thumbnail: p.images[0]?.url ?? getDefaultCatalogImageUrl(),
+        price: p.price,
+        uom: p.uom,
+        status: mapVariantStatus(p.availability),
+        leadTime: p.leadTime,
+      }));
+    },
+  });
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductDetailPageData | undefined> {
-  const tree = await getTaxonomyTree();
-  const { data: list } = await catalogServerJsonList<ProductDoc[]>(
-    `/products?status=published&limit=40&q=${encodeURIComponent(slug)}`,
-    { cache: "no-store" },
-  );
-  const product = list.find((p) => p.slug === slug);
-  if (!product) return undefined;
+  return cacheAside({
+    namespace: "product",
+    key: slug,
+    ttlSeconds: 15 * 60,
+    staleWhileRevalidateSeconds: 5 * 60,
+    label: "pdp",
+    loader: async () => {
+      const tree = await getTaxonomyTree();
+      const { data: list } = await catalogServerJsonList<ProductDoc[]>(
+        `/products?status=published&limit=40&q=${encodeURIComponent(slug)}`,
+        { cache: "no-store" },
+      );
+      const product = list.find((p) => p.slug === slug);
+      if (!product) return undefined;
 
-  const { data: variants } = await catalogServerJsonList<ProductVariantDoc[]>(
-    `/products/${product._id}/variants?status=published&limit=80`,
-    { cache: "no-store" },
-  );
-  const primary =
-    variants.find((v) => v._id === product.defaultVariantId) ?? variants[0];
+      const { data: variants } = await catalogServerJsonList<ProductVariantDoc[]>(
+        `/products/${product._id}/variants?status=published&limit=80`,
+        { cache: "no-store" },
+      );
+      const primary =
+        variants.find((v) => v._id === product.defaultVariantId) ?? variants[0];
 
-  const price =
-    primary?.unitPrice && primary.currency
-      ? `${primary.unitPrice} ${primary.currency}`
-      : primary?.unitPrice ?? "—";
+      const price =
+        primary?.unitPrice && primary.currency
+          ? `${primary.unitPrice} ${primary.currency}`
+          : primary?.unitPrice ?? "—";
 
-  const specificationRows = await specificationRowsForPublishedVariant(primary, product.categoryIds, tree);
+      const specificationRows = await specificationRowsForPublishedVariant(primary, product.categoryIds, tree);
 
-  const breadcrumbs = breadcrumbsForProduct(product.categoryIds, tree);
-  const images = normalizeProductImages(product);
+      const breadcrumbs = breadcrumbsForProduct(product.categoryIds, tree);
+      const images = normalizeProductImages(product);
 
-  const longDescription =
-    product.longDescription?.trim() ||
-    product.searchText?.trim() ||
-    `${product.title}. Industrial catalog item.`;
+      const longDescription =
+        product.longDescription?.trim() ||
+        product.searchText?.trim() ||
+        `${product.title}. Industrial catalog item.`;
 
-  const shortDescription =
-    product.searchText?.trim() ||
-    (product.longDescription?.trim()
-      ? product.longDescription.trim().slice(0, 320)
-      : `${product.title}.`);
+      const shortDescription =
+        product.searchText?.trim() ||
+        (product.longDescription?.trim()
+          ? product.longDescription.trim().slice(0, 320)
+          : `${product.title}.`);
 
-  const attachments: ProductAttachmentDoc[] = (product.attachments ?? []).map((a, i) => ({
-    id: `att-${product._id}-${i}`,
-    title: a.title,
-    url: a.url.trim(),
-    docType: normalizeAttachmentDocType(a.docType),
-  }));
+      const attachments: ProductAttachmentDoc[] = (product.attachments ?? []).map((a, i) => ({
+        id: `att-${product._id}-${i}`,
+        title: a.title,
+        url: a.url.trim(),
+        docType: normalizeAttachmentDocType(a.docType),
+      }));
 
-  const shippingWeight =
-    product.shippingWeight?.trim() ||
-    "Shipping weight — request dimensional weight / freight class from buyer services.";
-  const branchAvailability =
-    product.branchAvailabilityPlaceholder?.trim() ||
-    "Branch / DC availability: sign in to view local stock, transfer times, and will-call pickup.";
-  const logisticsAdmin = (product.logisticsMeta ?? []).filter(
-    (x) => x.label?.trim() && x.value?.trim(),
-  );
-  const logisticsLines =
-    logisticsAdmin.length > 0
-      ? logisticsAdmin.map((x) => ({ label: x.label.trim(), value: x.value.trim() }))
-      : [
-          {
-            label: "Shipping terms",
-            value: "Standard parcel — motor freight / LTL quoted separately when applicable.",
-          },
-          {
-            label: "Pickup / drop ship",
-            value: "Fulfillment source confirmed at order entry — expedite requests via RFQ.",
-          },
-        ];
+      const shippingWeight =
+        product.shippingWeight?.trim() ||
+        "Shipping weight — request dimensional weight / freight class from buyer services.";
+      const branchAvailability =
+        product.branchAvailabilityPlaceholder?.trim() ||
+        "Branch / DC availability: sign in to view local stock, transfer times, and will-call pickup.";
+      const logisticsAdmin = (product.logisticsMeta ?? []).filter(
+        (x) => x.label?.trim() && x.value?.trim(),
+      );
+      const logisticsLines =
+        logisticsAdmin.length > 0
+          ? logisticsAdmin.map((x) => ({ label: x.label.trim(), value: x.value.trim() }))
+          : [
+              {
+                label: "Shipping terms",
+                value: "Standard parcel — motor freight / LTL quoted separately when applicable.",
+              },
+              {
+                label: "Pickup / drop ship",
+                value: "Fulfillment source confirmed at order entry — expedite requests via RFQ.",
+              },
+            ];
 
-  return {
-    slug: product.slug,
-    title: product.title,
-    brand: product.brand ?? "Factorypeer",
-    sku: primary?.sku ?? "—",
-    itemNumber: primary?.itemNumber ?? "—",
-    manufacturerModel: primary?.mpn ?? primary?.manufacturer ?? "—",
-    availability: primary?.availability ?? "—",
-    leadTime: primary?.leadTime?.trim() || "Contact buyer services for lead time",
-    moq: primary?.moq ?? null,
-    packaging: primary?.packaging?.trim() || "—",
-    price,
-    uom: primary?.uom ?? "Each",
-    breadcrumbs,
-    images,
-    shortDescription,
-    longDescription,
-    features: product.features ?? [],
-    applications: product.applications ?? [],
-    marketingBullets: product.marketingBullets ?? [],
-    specificationRows,
-    attachments,
-    shippingWeight,
-    branchAvailability,
-    logisticsLines,
-  };
+      return {
+        id: String(product._id),
+        slug: product.slug,
+        title: product.title,
+        brand: product.brand ?? "Factorypeer",
+        sku: primary?.sku ?? "—",
+        itemNumber: primary?.itemNumber ?? "—",
+        manufacturerModel: primary?.mpn ?? primary?.manufacturer ?? "—",
+        availability: primary?.availability ?? "—",
+        leadTime: primary?.leadTime?.trim() || "Contact buyer services for lead time",
+        moq: primary?.moq ?? null,
+        packaging: primary?.packaging?.trim() || "—",
+        price,
+        uom: primary?.uom ?? "Each",
+        breadcrumbs,
+        images,
+        shortDescription,
+        longDescription,
+        features: product.features ?? [],
+        applications: product.applications ?? [],
+        marketingBullets: product.marketingBullets ?? [],
+        specificationRows,
+        attachments,
+        shippingWeight,
+        branchAvailability,
+        logisticsLines,
+      };
+    },
+  });
 }
 
 export async function getProductSlugs(): Promise<string[]> {
@@ -324,82 +378,100 @@ export async function getProductSlugs(): Promise<string[]> {
 export async function searchCatalog(query: string): Promise<SearchCatalogProduct[]> {
   const q = query.trim();
   if (!q) return [];
-  const { data: products } = await catalogServerJsonList<ProductDoc[]>(
-    `/products?status=published&limit=60&q=${encodeURIComponent(q)}`,
-  );
-  const cards = await summaryCardsMapForProducts(products, {
-    next: { revalidate: 60, tags: ["catalog", "search-summary-cards"] },
-  });
+  return cacheAside({
+    namespace: "search",
+    key: getCachedQueryHash(q),
+    ttlSeconds: 2 * 60,
+    staleWhileRevalidateSeconds: 45,
+    label: "catalog-search",
+    loader: async () => {
+      const { data: products } = await catalogServerJsonList<ProductDoc[]>(
+        `/products?status=published&limit=60&q=${encodeURIComponent(q)}`,
+      );
+      const cards = await summaryCardsMapForProducts(products, {
+        next: { revalidate: 60, tags: ["catalog", "search-summary-cards"] },
+      });
 
-  return products.map((p) => {
-    const row = cards.get(String(p._id));
-    const price = row?.price ?? "—";
-    return {
-      id: p._id,
-      slug: p.slug,
-      title: p.title,
-      sku: row?.sku ?? "—",
-      itemNumber: row?.itemNumber ?? "—",
-      manufacturer: row?.manufacturer ?? p.brand ?? "—",
-      mpn: row?.mpn ?? "—",
-      shortSpec: (p.searchText ?? p.title).slice(0, 160),
-      price,
-      uom: row?.uom ?? "Each",
-      thumbnail: getDefaultCatalogImageUrl(),
-      availability: row?.availability ?? "—",
-    };
+      return products.map((p) => {
+        const row = cards.get(String(p._id));
+        const price = row?.price ?? "—";
+        return {
+          id: p._id,
+          slug: p.slug,
+          title: p.title,
+          sku: row?.sku ?? "—",
+          itemNumber: row?.itemNumber ?? "—",
+          manufacturer: row?.manufacturer ?? p.brand ?? "—",
+          mpn: row?.mpn ?? "—",
+          shortSpec: (p.searchText ?? p.title).slice(0, 160),
+          price,
+          uom: row?.uom ?? "Each",
+          thumbnail: productThumbnailUrl(p),
+          availability: row?.availability ?? "—",
+        };
+      });
+    },
   });
 }
 
 export async function getProductListingBySlug(slug: string): Promise<ProductListingPageData | undefined> {
-  const tree = await getTaxonomyTree();
-  const cat = findCategoryBySlug(tree, slug);
-  if (!cat) return undefined;
+  return cacheAside({
+    namespace: "category",
+    key: slug,
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 3 * 60,
+    label: "plp",
+    loader: async () => {
+      const tree = await getTaxonomyTree();
+      const cat = findCategoryBySlug(tree, slug);
+      if (!cat) return undefined;
 
-  const path = findCategoryPath(tree, cat.id);
-  const breadcrumbs = path ? path.map((n) => n.title) : [cat.title];
+      const path = findCategoryPath(tree, cat.id);
+      const breadcrumbs = path ? path.map((n) => n.title) : [cat.title];
 
-  const { data: products, total } = await catalogServerJsonList<ProductDoc[]>(
-    `/products?status=published&categoryId=${encodeURIComponent(cat.id)}&limit=100`,
-  );
+      const { data: products, total } = await catalogServerJsonList<ProductDoc[]>(
+        `/products?status=published&categoryId=${encodeURIComponent(cat.id)}&limit=100`,
+      );
 
-  const cards = await summaryCardsMapForProducts(products, {
-    next: { revalidate: 60, tags: ["catalog", "plp-summary-cards", `category-${cat.id}`] },
+      const cards = await summaryCardsMapForProducts(products, {
+        next: { revalidate: 60, tags: ["catalog", "plp-summary-cards", `category-${cat.id}`] },
+      });
+
+      const grid: Array<
+        Product & {
+          shortSpec: string;
+        }
+      > = [];
+
+      for (const p of products) {
+        const row = cards.get(String(p._id));
+        const price = row?.price ?? "—";
+        grid.push({
+          id: p._id,
+          slug: p.slug,
+          title: p.title,
+          sku: row?.sku ?? "—",
+          itemNumber: row?.itemNumber ?? "—",
+          manufacturer: row?.manufacturer ?? p.brand ?? "—",
+          thumbnail: productThumbnailUrl(p),
+          price,
+          uom: row?.uom ?? "Each",
+          status: mapVariantStatus(row?.availability),
+          leadTime: "—",
+          shortSpec: (p.searchText ?? "").slice(0, 80),
+        });
+      }
+
+      return {
+        slug: cat.slug,
+        title: cat.title,
+        breadcrumbs,
+        resultCount: total ?? grid.length,
+        filters: [],
+        products: grid,
+      };
+    },
   });
-
-  const grid: Array<
-    Product & {
-      shortSpec: string;
-    }
-  > = [];
-
-  for (const p of products) {
-    const row = cards.get(String(p._id));
-    const price = row?.price ?? "—";
-    grid.push({
-      id: p._id,
-      slug: p.slug,
-      title: p.title,
-      sku: row?.sku ?? "—",
-      itemNumber: row?.itemNumber ?? "—",
-      manufacturer: row?.manufacturer ?? p.brand ?? "—",
-      thumbnail: getDefaultCatalogImageUrl(),
-      price,
-      uom: row?.uom ?? "Each",
-      status: mapVariantStatus(row?.availability),
-      leadTime: "—",
-      shortSpec: (p.searchText ?? "").slice(0, 80),
-    });
-  }
-
-  return {
-    slug: cat.slug,
-    title: cat.title,
-    breadcrumbs,
-    resultCount: total ?? grid.length,
-    filters: [],
-    products: grid,
-  };
 }
 
 export async function getProductListingSlugs(): Promise<string[]> {
@@ -417,27 +489,36 @@ export async function getProductListingSlugs(): Promise<string[]> {
 
 /** Recently updated published products for the home page (with first variant for price/SKU). */
 export async function getFeaturedHomeProducts(limit = 6): Promise<Product[]> {
-  const { data: products } = await catalogServerJsonList<ProductDoc[]>(
-    `/products?status=published&limit=${limit}&sort=-updatedAt`,
-  );
-  const cards = await summaryCardsMapForProducts(products, {
-    next: { revalidate: 60, tags: ["catalog", "featured-summary-cards"] },
-  });
-  return products.map((p) => {
-    const row = cards.get(String(p._id));
-    const price = row?.price ?? "—";
-    return {
-      id: p._id,
-      slug: p.slug,
-      title: p.title,
-      sku: row?.sku ?? "—",
-      itemNumber: row?.itemNumber,
-      manufacturer: row?.manufacturer ?? p.brand ?? "—",
-      thumbnail: getDefaultCatalogImageUrl(),
-      price,
-      uom: row?.uom ?? "Each",
-      status: mapVariantStatus(row?.availability),
-      leadTime: "—",
-    };
+  return cacheAside({
+    namespace: "homepage",
+    key: `featured-products:${limit}`,
+    ttlSeconds: 10 * 60,
+    staleWhileRevalidateSeconds: 3 * 60,
+    label: "featured-products",
+    loader: async () => {
+      const { data: products } = await catalogServerJsonList<ProductDoc[]>(
+        `/products?status=published&limit=${limit}&sort=-updatedAt`,
+      );
+      const cards = await summaryCardsMapForProducts(products, {
+        next: { revalidate: 60, tags: ["catalog", "featured-summary-cards"] },
+      });
+      return products.map((p) => {
+        const row = cards.get(String(p._id));
+        const price = row?.price ?? "—";
+        return {
+          id: p._id,
+          slug: p.slug,
+          title: p.title,
+          sku: row?.sku ?? "—",
+          itemNumber: row?.itemNumber,
+          manufacturer: row?.manufacturer ?? p.brand ?? "—",
+          thumbnail: productThumbnailUrl(p),
+          price,
+          uom: row?.uom ?? "Each",
+          status: mapVariantStatus(row?.availability),
+          leadTime: "—",
+        };
+      });
+    },
   });
 }

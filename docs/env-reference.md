@@ -15,6 +15,8 @@ Canonical template: **`.env.example`** at the repository root. Use it as the sin
 | `HOST` | — | ✓ (`0.0.0.0` typical) | — |
 | `CATALOG_TENANT_ID` | — | ✓ optional | — |
 | `LOG_LEVEL` | — | ✓ optional | — |
+| `UPSTASH_REDIS_REST_URL` | ✓ | ✓ | Shared cache backend |
+| `UPSTASH_REDIS_REST_TOKEN` | ✓ | ✓ | Shared cache backend |
 
 ## Local file layout
 

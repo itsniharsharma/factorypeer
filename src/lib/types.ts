@@ -130,6 +130,8 @@ export interface ProductAttachmentDoc {
 }
 
 export interface ProductDetailPageData {
+  /** Product document id when available */
+  id?: string;
   slug: string;
   title: string;
   brand: string;
