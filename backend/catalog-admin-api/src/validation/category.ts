@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   catalogCategoryKindSchema,
+  catalogMediaAssetSchema,
   objectIdString,
   publishStatusSchema,
 } from "./common.js";
@@ -10,6 +11,7 @@ export const createCategoryBodySchema = z.object({
   slug: z.string().min(1).max(200),
   title: z.string().min(1).max(500),
   description: z.string().max(10000).optional().default(""),
+  landingImage: catalogMediaAssetSchema.optional(),
   kind: catalogCategoryKindSchema,
   status: publishStatusSchema.optional(),
   sortOrder: z.number().int().optional(),
@@ -20,6 +22,7 @@ export const updateCategoryBodySchema = z
     slug: z.string().min(1).max(200).optional(),
     title: z.string().min(1).max(500).optional(),
     description: z.string().max(10000).optional(),
+    landingImage: catalogMediaAssetSchema.nullable().optional(),
     kind: catalogCategoryKindSchema.optional(),
     status: publishStatusSchema.optional(),
     sortOrder: z.number().int().optional(),

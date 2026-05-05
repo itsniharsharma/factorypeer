@@ -13,7 +13,6 @@ export {
   getRouteContext,
   getMegaMenuNavigation,
   buildMegaMenuGroups,
-  firstBrowsePathSegments,
   pathHrefFromSegments,
   sortTaxonomySiblings,
   findTaxonomyNodeById,

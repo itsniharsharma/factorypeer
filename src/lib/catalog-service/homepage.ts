@@ -6,7 +6,6 @@ import {
   pathHrefFromSegments,
   sortTaxonomySiblings,
 } from "./taxonomy";
-import { getDefaultCatalogImageUrl } from "@/config/cdn-defaults";
 
 type HomepagePromoBannerDoc = {
   _id: string;
@@ -131,8 +130,8 @@ export async function getHomepageBrowseCategoryTiles(limit = 14): Promise<Catego
         id: node.id,
         label: node.title,
         href: pathHrefFromSegments([node.slug]),
-        image: getDefaultCatalogImageUrl(),
-        imageAlt: `${node.title} category`,
+        image: node.landingImage?.url,
+        imageAlt: node.landingImage?.alt ?? `${node.title} category`,
       }));
     },
   });

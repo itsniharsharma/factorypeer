@@ -2,7 +2,6 @@ import { cache } from "react";
 import type { CategoryDoc } from "@/lib/admin-api/types";
 import type {
   CatalogBreadcrumb,
-  CatalogNavLinkItem,
   CatalogTaxonomyNode,
   MegaMenuRootGroup,
 } from "@/lib/types";
@@ -32,6 +31,12 @@ function categoryToTaxonomyNode(doc: CategoryDoc): CatalogTaxonomyNode {
     title: doc.title,
     description: doc.description ?? "",
     productCount: 0,
+    landingImage: doc.landingImage?.url
+      ? {
+          url: doc.landingImage.url,
+          alt: doc.landingImage.alt,
+        }
+      : undefined,
     children: (doc.children ?? []).map(categoryToTaxonomyNode),
     filters: [],
     matrix: undefined,
@@ -51,34 +56,8 @@ function sortTreeRecursive(nodes: CatalogTaxonomyNode[]): CatalogTaxonomyNode[] 
   return sorted.map((n) => ({ ...n, children: sortTreeRecursive(n.children) }));
 }
 
-/**
- * First “browse” URL under a category: walk first child by sort order until a family node
- * (matrix / PLP) or a leaf — matches homepage + mega-menu root click targets.
- */
-export function firstBrowsePathSegments(node: CatalogTaxonomyNode): string[] {
-  const segments = [node.slug];
-  let cur = node;
-  while (cur.children.length > 0) {
-    const sorted = sortTaxonomySiblings(cur.children);
-    const next = sorted[0];
-    segments.push(next.slug);
-    if (next.kind === "family") break;
-    cur = next;
-  }
-  return segments;
-}
-
 export function pathHrefFromSegments(segments: string[]): string {
   return `/category/${segments.join("/")}`;
-}
-
-function previewLinksFromRoots(tree: CatalogTaxonomyNode[], limit: number): CatalogNavLinkItem[] {
-  const roots = sortTaxonomySiblings(tree).slice(0, limit);
-  return roots.map((root) => ({
-    id: root.id,
-    label: root.title,
-    href: pathHrefFromSegments([root.slug]),
-  }));
 }
 
 export function buildMegaMenuGroups(tree: CatalogTaxonomyNode[]): MegaMenuRootGroup[] {
@@ -126,7 +105,6 @@ export const getMegaMenuNavigation = cache(async () => {
       const tree = await getTaxonomyTree();
       return {
         groups: buildMegaMenuGroups(tree),
-        previewLinks: previewLinksFromRoots(tree, 8),
       };
     },
   });

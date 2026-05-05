@@ -80,8 +80,8 @@ declare const siteLinkGroupSchema: Schema<any, Model<any, any, any, any, any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -124,8 +124,8 @@ declare const siteLinkGroupSchema: Schema<any, Model<any, any, any, any, any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -170,8 +170,8 @@ declare const siteLinkGroupSchema: Schema<any, Model<any, any, any, any, any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -226,8 +226,8 @@ export declare function registerSiteLinkGroupSchema(): Schema<any, Model<any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -270,8 +270,8 @@ export declare function registerSiteLinkGroupSchema(): Schema<any, Model<any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -316,8 +316,8 @@ export declare function registerSiteLinkGroupSchema(): Schema<any, Model<any, an
         description?: string | null | undefined;
         icon?: string | null | undefined;
     }>;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;

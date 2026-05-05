@@ -4,7 +4,6 @@ export * from "@/components/home/featured-products-row";
 export * from "@/components/home/recently-viewed-products-section";
 export * from "@/components/home/hero-banner-section";
 export * from "@/components/home/industry-solutions-section";
-export * from "@/components/home/popular-categories-section";
 export * from "@/components/home/promo-banner-row";
 export * from "@/components/home/procurement-support-strip";
 export * from "@/components/home/support-cards-row";

@@ -7,8 +7,6 @@ interface CatalogNodeLandingProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
-  bannerImage?: string;
-  bannerImageAlt?: string;
   featuredProducts?: Product[];
 }
 
@@ -16,8 +14,6 @@ export function CatalogNodeLanding({
   node,
   breadcrumbs,
   pathSegments,
-  bannerImage,
-  bannerImageAlt,
   featuredProducts = [],
 }: CatalogNodeLandingProps) {
   const sectionTitle =
@@ -38,11 +34,11 @@ export function CatalogNodeLanding({
         <p className="mt-1 text-[11px] font-semibold text-slate-700">
           {node.productCount.toLocaleString()} Products
         </p>
-        {bannerImage ? (
+        {node.landingImage?.url ? (
           <div className="relative mt-2 h-[180px] w-full overflow-hidden rounded-sm border border-slate-200">
             <Image
-              src={bannerImage}
-              alt={bannerImageAlt?.trim() || `${node.title} banner`}
+              src={node.landingImage.url}
+              alt={node.landingImage.alt?.trim() || `${node.title} banner`}
               fill
               sizes="(max-width: 1024px) 100vw, 1100px"
               className="object-cover"
@@ -87,9 +83,9 @@ export function CatalogNodeLanding({
                   key={child.id}
                   href={`/category/${[...pathSegments, child.slug].join("/")}`}
                   label={child.title}
-                  image={undefined}
+                  image={child.landingImage?.url}
+                  imageAlt={child.landingImage?.alt}
                   subtitle={child.description}
-                  count={child.productCount}
                 />
               ))}
           </div>

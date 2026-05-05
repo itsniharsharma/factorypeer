@@ -80,7 +80,7 @@ export interface PromoBanner {
 export interface CategoryTile {
   id: string;
   label: string;
-  image: string;
+  image?: string;
   /** Resolved from admin href, or /category/... from categoryId. */
   href?: string;
   imageAlt?: string;
@@ -219,6 +219,7 @@ export interface CatalogTaxonomyNode {
   title: string;
   description: string;
   productCount: number;
+  landingImage?: { url: string; alt?: string };
   children: CatalogTaxonomyNode[];
   filters?: CatalogFilterGroup[];
   matrix?: CatalogSpecMatrix;

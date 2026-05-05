@@ -26,8 +26,9 @@ export default async function CategoryIndexPage() {
                 key={root.id}
                 href={`/category/${root.slug}`}
                 label={root.title}
+                image={root.landingImage?.url}
+                imageAlt={root.landingImage?.alt}
                 subtitle={root.description}
-                count={root.productCount}
               />
             ))}
           </div>

@@ -6,10 +6,10 @@ import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 declare const catalogCategorySchema: Schema<any, Model<any, any, any, any, any, any>, {}, {}, {}, {}, {
     timestamps: true;
 }, {
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -18,15 +18,23 @@ declare const catalogCategorySchema: Schema<any, Model<any, any, any, any, any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -35,6 +43,14 @@ declare const catalogCategorySchema: Schema<any, Model<any, any, any, any, any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -42,10 +58,10 @@ declare const catalogCategorySchema: Schema<any, Model<any, any, any, any, any, 
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
 }>> & import("mongoose").FlatRecord<{
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -54,6 +70,14 @@ declare const catalogCategorySchema: Schema<any, Model<any, any, any, any, any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -70,10 +94,10 @@ export type CatalogCategoryModel = Model<CatalogCategoryDocument>;
 export declare function registerCatalogCategorySchema(): Schema<any, Model<any, any, any, any, any, any>, {}, {}, {}, {}, {
     timestamps: true;
 }, {
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -82,15 +106,23 @@ export declare function registerCatalogCategorySchema(): Schema<any, Model<any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -99,6 +131,14 @@ export declare function registerCatalogCategorySchema(): Schema<any, Model<any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -106,10 +146,10 @@ export declare function registerCatalogCategorySchema(): Schema<any, Model<any, 
 } & import("mongoose").DefaultTimestampProps>, {}, import("mongoose").MergeType<import("mongoose").DefaultSchemaOptions, {
     timestamps: true;
 }>> & import("mongoose").FlatRecord<{
+    description: string;
     slug: string;
     path: string;
     title: string;
-    description: string;
     kind: "branch" | "family";
     status: "draft" | "published" | "archived";
     sortOrder: number;
@@ -118,6 +158,14 @@ export declare function registerCatalogCategorySchema(): Schema<any, Model<any, 
     documentVersion: number;
     tenantId?: Types.ObjectId | null | undefined;
     parentId?: Types.ObjectId | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | null | undefined;
+        alt?: string | null | undefined;
+        width?: number | null | undefined;
+        height?: number | null | undefined;
+        format?: string | null | undefined;
+    } | null | undefined;
     activeSpecSchemaId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;

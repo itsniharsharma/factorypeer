@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { CatalogNavLinkItem, MegaMenuRootGroup } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import type { MegaMenuRootGroup } from "@/lib/types";
 
 type MegaMenuPayload = {
   groups: MegaMenuRootGroup[];
-  previewLinks: CatalogNavLinkItem[];
   utilityLinks: Array<{ label: string; href: string }>;
 };
 
@@ -25,7 +24,6 @@ export function CategoryNavigation() {
         if (!cancelled) {
           setMegaMenu({
             groups: Array.isArray(data.groups) ? data.groups : [],
-            previewLinks: Array.isArray(data.previewLinks) ? data.previewLinks : [],
             utilityLinks: Array.isArray(data.utilityLinks) ? data.utilityLinks : [],
           });
           setMenuError(false);
@@ -33,7 +31,7 @@ export function CategoryNavigation() {
       })
       .catch(() => {
         if (!cancelled) {
-          setMegaMenu({ groups: [], previewLinks: [], utilityLinks: [] });
+          setMegaMenu({ groups: [], utilityLinks: [] });
           setMenuError(true);
         }
       });
@@ -43,7 +41,6 @@ export function CategoryNavigation() {
   }, []);
 
   const groups = megaMenu?.groups ?? [];
-  const previewLinks = megaMenu?.previewLinks ?? [];
   const utilityLinks = megaMenu?.utilityLinks ?? [];
 
   const clearCloseTimer = () => {
@@ -65,7 +62,7 @@ export function CategoryNavigation() {
 
   return (
     <nav className="relative border-b border-slate-400 bg-slate-800">
-      <div className="mx-auto grid h-10 max-w-[1440px] grid-cols-[136px_1fr] items-center gap-2 px-3">
+      <div className="mx-auto flex h-10 max-w-[1440px] items-center px-3">
         <div className="relative" onMouseLeave={handleClose}>
           <button
             type="button"
@@ -152,17 +149,6 @@ export function CategoryNavigation() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 overflow-x-auto">
-          {previewLinks.map((link) => (
-            <Link
-              key={link.id}
-              href={link.href}
-              className="whitespace-nowrap text-[11px] font-semibold text-slate-100 hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
       </div>
     </nav>
   );

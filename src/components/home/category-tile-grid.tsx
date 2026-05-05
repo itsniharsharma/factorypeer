@@ -35,6 +35,7 @@ export function CategoryTileGrid({ tiles }: CategoryTileGridProps) {
               image={tile.image}
               imageAlt={tile.imageAlt}
               ctaLabel={tile.ctaLabel}
+              compact
             />
           );
         })}

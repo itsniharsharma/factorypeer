@@ -101,6 +101,14 @@ export class CategoryService {
       slug: string;
       title: string;
       description?: string;
+      landingImage?: {
+        url: string;
+        publicId?: string;
+        alt?: string;
+        width?: number;
+        height?: number;
+        format?: string;
+      };
       kind: "branch" | "family";
       status?: string;
       sortOrder?: number;
@@ -128,6 +136,7 @@ export class CategoryService {
         slug: input.slug,
         title: input.title,
         description: input.description ?? "",
+        landingImage: input.landingImage,
         kind: input.kind,
         status: input.status,
         sortOrder: input.sortOrder,
@@ -144,6 +153,16 @@ export class CategoryService {
       slug?: string;
       title?: string;
       description?: string;
+      landingImage?:
+        | {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+          }
+        | null;
       kind?: "branch" | "family";
       status?: string;
       sortOrder?: number;

@@ -6,6 +6,14 @@ export type CreateCategoryBody = {
   slug: string;
   title: string;
   description?: string;
+  landingImage?: {
+    url: string;
+    publicId?: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+    format?: string;
+  };
   kind: "branch" | "family";
   status?: string;
   sortOrder?: number;
@@ -15,6 +23,16 @@ export type UpdateCategoryBody = Partial<{
   slug: string;
   title: string;
   description: string;
+  landingImage:
+    | {
+        url: string;
+        publicId?: string;
+        alt?: string;
+        width?: number;
+        height?: number;
+        format?: string;
+      }
+    | null;
   kind: "branch" | "family";
   status: string;
   sortOrder: number;

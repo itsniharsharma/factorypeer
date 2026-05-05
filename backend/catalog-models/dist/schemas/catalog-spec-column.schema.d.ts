@@ -7,13 +7,13 @@ declare const catalogSpecColumnSchema: Schema<any, Model<any, any, any, any, any
 }, {
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -23,13 +23,13 @@ declare const catalogSpecColumnSchema: Schema<any, Model<any, any, any, any, any
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -41,13 +41,13 @@ declare const catalogSpecColumnSchema: Schema<any, Model<any, any, any, any, any
 }>> & import("mongoose").FlatRecord<{
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -68,13 +68,13 @@ export declare function registerCatalogSpecColumnSchema(): Schema<any, Model<any
 }, {
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -84,13 +84,13 @@ export declare function registerCatalogSpecColumnSchema(): Schema<any, Model<any
 } & import("mongoose").DefaultTimestampProps, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<{
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -102,13 +102,13 @@ export declare function registerCatalogSpecColumnSchema(): Schema<any, Model<any
 }>> & import("mongoose").FlatRecord<{
     sortOrder: number;
     documentVersion: number;
+    searchIndex: boolean;
     specSchemaId: Types.ObjectId;
     key: string;
     label: string;
     dataType: "string" | "number" | "boolean" | "enum" | "dimension";
     filterable: boolean;
     sortable: boolean;
-    searchIndex: boolean;
     enumOptions: string[];
     tenantId?: Types.ObjectId | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;

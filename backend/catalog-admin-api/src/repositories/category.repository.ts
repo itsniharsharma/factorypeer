@@ -73,6 +73,14 @@ export class CategoryRepository {
       slug: string;
       title: string;
       description: string;
+      landingImage?: {
+        url: string;
+        publicId?: string;
+        alt?: string;
+        width?: number;
+        height?: number;
+        format?: string;
+      };
       kind: "branch" | "family";
       status?: string;
       sortOrder?: number;
@@ -86,6 +94,7 @@ export class CategoryRepository {
       slug: data.slug,
       title: data.title,
       description: data.description,
+      landingImage: data.landingImage,
       kind: data.kind,
       status: data.status ?? "draft",
       sortOrder: data.sortOrder ?? 0,
@@ -106,6 +115,16 @@ export class CategoryRepository {
       path: string;
       title: string;
       description: string;
+      landingImage:
+        | {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+          }
+        | null;
       kind: "branch" | "family";
       status: string;
       sortOrder: number;

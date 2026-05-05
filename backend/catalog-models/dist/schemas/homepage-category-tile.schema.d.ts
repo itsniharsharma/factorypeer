@@ -8,8 +8,8 @@ declare const homepageCategoryTileSchema: Schema<any, Model<any, any, any, any, 
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -32,8 +32,8 @@ declare const homepageCategoryTileSchema: Schema<any, Model<any, any, any, any, 
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -58,8 +58,8 @@ declare const homepageCategoryTileSchema: Schema<any, Model<any, any, any, any, 
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -93,8 +93,8 @@ export declare function registerHomepageCategoryTileSchema(): Schema<any, Model<
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -117,8 +117,8 @@ export declare function registerHomepageCategoryTileSchema(): Schema<any, Model<
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -143,8 +143,8 @@ export declare function registerHomepageCategoryTileSchema(): Schema<any, Model<
     documentVersion: number;
     label: string;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;

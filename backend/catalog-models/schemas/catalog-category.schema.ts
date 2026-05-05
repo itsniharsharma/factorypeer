@@ -1,5 +1,6 @@
 import { Schema, type InferSchemaType, type Model, Types } from "mongoose";
 import type { CatalogCategoryKind, PublishStatus } from "../enums.js";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 
 /**
  * Taxonomy node (CatalogCategory / TaxonomyNode).
@@ -20,6 +21,7 @@ const catalogCategorySchema = new Schema(
 
     title: { type: String, required: true },
     description: { type: String, default: "" },
+    landingImage: { type: catalogMediaAssetSchema, required: false },
 
     kind: {
       type: String,

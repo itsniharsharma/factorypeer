@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import type { CatalogNavLinkItem, MegaMenuRootGroup } from "@/lib/types";
+import type { MegaMenuRootGroup } from "@/lib/types";
 import { getMegaMenuNavigation, getMegaMenuUtilityLinks } from "@/lib/catalog-service";
 
 type MegaMenuNavigation = {
   groups: MegaMenuRootGroup[];
-  previewLinks: CatalogNavLinkItem[];
 };
 
 export async function GET() {
@@ -16,7 +15,6 @@ export async function GET() {
     const megaMenu = nav as MegaMenuNavigation;
     return NextResponse.json({
       groups: megaMenu.groups,
-      previewLinks: megaMenu.previewLinks,
       utilityLinks: utilityLinks.map((link) => ({
         label: link.label,
         href: link.href,
@@ -25,6 +23,6 @@ export async function GET() {
   } catch (err) {
     // Propagate error status so client-side can treat this as a fetch failure
     const message = err instanceof Error ? err.message : "catalog upstream error";
-    return NextResponse.json({ error: true, message, groups: [], previewLinks: [], utilityLinks: [] }, { status: 503 });
+    return NextResponse.json({ error: true, message, groups: [], utilityLinks: [] }, { status: 503 });
   }
 }

@@ -12,9 +12,11 @@ import {
   reorderCategorySiblings,
   updateCategory,
   type CategoryDoc,
+  type CatalogMediaAssetDoc,
   AdminApiError,
 } from "@/lib/admin-api";
 import { AdminModal } from "./modal";
+import { CatalogMediaField } from "./catalog-media-field";
 
 function flattenFamilyCategories(nodes: CategoryDoc[], out: CategoryDoc[] = []): CategoryDoc[] {
   for (const n of nodes) {
@@ -58,6 +60,7 @@ function TreeNodes({
             <span className="text-xs text-slate-500">{n.slug}</span>
             <span className="rounded bg-slate-100 px-1 text-xs uppercase text-slate-600">{n.kind}</span>
             <span className="text-xs text-slate-400">{n.status}</span>
+            {n.landingImage?.url ? <span className="text-xs text-slate-500">image</span> : null}
             <div className="ml-auto flex flex-wrap gap-1">
               <button type="button" className="text-xs text-brand underline" onClick={() => onAddChild(n)}>
                 Add child
@@ -109,6 +112,8 @@ export function CategoriesPanel() {
   const [formDesc, setFormDesc] = useState("");
   const [formKind, setFormKind] = useState<"branch" | "family">("branch");
   const [formStatus, setFormStatus] = useState("draft");
+  const [formImage, setFormImage] = useState<CatalogMediaAssetDoc | null>(null);
+  const [formImageAlt, setFormImageAlt] = useState("");
   const [moveParentId, setMoveParentId] = useState("");
   const [siblings, setSiblings] = useState<CategoryDoc[]>([]);
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
@@ -137,6 +142,8 @@ export function CategoriesPanel() {
     setFormDesc("");
     setFormKind("branch");
     setFormStatus("draft");
+    setFormImage(null);
+    setFormImageAlt("");
     setModal({ mode: "create", parent });
   }
 
@@ -146,6 +153,8 @@ export function CategoriesPanel() {
     setFormDesc(cat.description ?? "");
     setFormKind(cat.kind);
     setFormStatus(cat.status);
+    setFormImage(cat.landingImage ?? null);
+    setFormImageAlt(cat.landingImage?.alt ?? "");
     setModal({ mode: "edit", cat });
   }
 
@@ -173,6 +182,12 @@ export function CategoriesPanel() {
         slug: formSlug.trim(),
         title: formTitle.trim(),
         description: formDesc,
+        landingImage: formImage
+          ? {
+              ...formImage,
+              alt: formImageAlt.trim() || undefined,
+            }
+          : undefined,
         kind: formKind,
         status: formStatus,
       });
@@ -191,6 +206,12 @@ export function CategoriesPanel() {
         slug: formSlug.trim(),
         title: formTitle.trim(),
         description: formDesc,
+        landingImage: formImage
+          ? {
+              ...formImage,
+              alt: formImageAlt.trim() || undefined,
+            }
+          : null,
         kind: formKind,
         status: formStatus,
       });
@@ -355,6 +376,14 @@ export function CategoriesPanel() {
                 onChange={(e) => setFormDesc(e.target.value)}
               />
             </label>
+            <CatalogMediaField
+              label="Category landing image"
+              folder="categories/landing"
+              value={formImage}
+              onChange={setFormImage}
+              altText={formImageAlt}
+              onAltChange={setFormImageAlt}
+            />
             <label className="block">
               <span className="text-slate-600">Kind</span>
               <select
@@ -424,6 +453,14 @@ export function CategoriesPanel() {
                 onChange={(e) => setFormDesc(e.target.value)}
               />
             </label>
+            <CatalogMediaField
+              label="Category landing image"
+              folder="categories/landing"
+              value={formImage}
+              onChange={setFormImage}
+              altText={formImageAlt}
+              onAltChange={setFormImageAlt}
+            />
             <label className="block">
               <span className="text-slate-600">Kind</span>
               <select

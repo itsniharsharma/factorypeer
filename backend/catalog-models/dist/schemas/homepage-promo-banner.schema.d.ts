@@ -9,8 +9,8 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -34,8 +34,8 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -61,8 +61,8 @@ declare const homepagePromoBannerSchema: Schema<any, Model<any, any, any, any, a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -97,8 +97,8 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -122,8 +122,8 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -149,8 +149,8 @@ export declare function registerHomepagePromoBannerSchema(): Schema<any, Model<a
     documentVersion: number;
     openInNewTab: boolean;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;

@@ -6,8 +6,6 @@ interface CatalogHierarchyRendererProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
-  bannerImage?: string;
-  bannerImageAlt?: string;
   featuredProducts?: Product[];
 }
 
@@ -15,8 +13,6 @@ export function CatalogHierarchyRenderer({
   node,
   breadcrumbs,
   pathSegments,
-  bannerImage,
-  bannerImageAlt,
   featuredProducts = [],
 }: CatalogHierarchyRendererProps) {
   if (node.matrix) {
@@ -34,8 +30,6 @@ export function CatalogHierarchyRenderer({
       node={node}
       breadcrumbs={breadcrumbs}
       pathSegments={pathSegments}
-      bannerImage={bannerImage}
-      bannerImageAlt={bannerImageAlt}
       featuredProducts={featuredProducts}
     />
   );

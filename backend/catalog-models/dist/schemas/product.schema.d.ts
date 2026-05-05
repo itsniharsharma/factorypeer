@@ -13,24 +13,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -42,19 +42,19 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];
@@ -87,24 +87,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -116,19 +116,19 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];
@@ -163,24 +163,24 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -192,19 +192,19 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];
@@ -248,24 +248,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -277,19 +277,19 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];
@@ -322,24 +322,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -351,19 +351,19 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];
@@ -398,24 +398,24 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     categoryIds: Types.ObjectId[];
     searchText: string;
     media: Types.DocumentArray<{
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }, Types.Subdocument<import("bson").ObjectId, any, {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
         height?: number | null | undefined;
         format?: string | null | undefined;
     }> & {
-        sortOrder: number;
         url: string;
+        sortOrder: number;
         publicId?: string | null | undefined;
         alt?: string | null | undefined;
         width?: number | null | undefined;
@@ -427,19 +427,19 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     applications: string[];
     marketingBullets: string[];
     attachments: Types.DocumentArray<{
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }, Types.Subdocument<import("bson").ObjectId, any, {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }> & {
+        url: string;
         title: string;
         sortOrder: number;
-        url: string;
         docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
     }>;
     relatedProductIds: Types.ObjectId[];

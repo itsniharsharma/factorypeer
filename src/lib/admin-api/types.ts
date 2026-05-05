@@ -7,6 +7,7 @@ export type CategoryDoc = {
   slug: string;
   title: string;
   description?: string;
+  landingImage?: CatalogMediaAssetDoc;
   kind: "branch" | "family";
   status: PublishStatus;
   parentId?: string | null;

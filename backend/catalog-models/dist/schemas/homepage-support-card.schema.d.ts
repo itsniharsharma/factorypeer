@@ -8,8 +8,8 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -31,8 +31,8 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -56,8 +56,8 @@ declare const homepageSupportCardSchema: Schema<any, Model<any, any, any, any, a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -90,8 +90,8 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -113,8 +113,8 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;
@@ -138,8 +138,8 @@ export declare function registerHomepageSupportCardSchema(): Schema<any, Model<a
     sortOrder: number;
     documentVersion: number;
     metadata: any;
-    tenantId?: Types.ObjectId | null | undefined;
     description?: string | null | undefined;
+    tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
     updatedBy?: Types.ObjectId | null | undefined;

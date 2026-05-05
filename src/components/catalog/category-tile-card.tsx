@@ -9,7 +9,6 @@ export interface CategoryTileCardProps {
   imageAlt?: string | null;
   subtitle?: string | null;
   ctaLabel?: string | null;
-  count?: number | null;
   compact?: boolean;
 }
 
@@ -20,18 +19,18 @@ export function CategoryTileCard({
   imageAlt = null,
   subtitle = null,
   ctaLabel = null,
-  count = null,
   compact = false,
 }: CategoryTileCardProps) {
+  const tileImageSize = compact ? "w-20" : "w-24 sm:w-28";
   const inner = (
-    <div className={`flex flex-col items-center text-center ${compact ? "p-2" : "p-3"}`}>
-      <div className={`relative ${compact ? "h-20" : "h-[110px]"} w-full overflow-hidden bg-slate-50 rounded-sm`}>
+    <div className={`flex h-full min-h-[190px] flex-col items-center text-center ${compact ? "p-3" : "p-4"}`}>
+      <div className={`relative ${tileImageSize} aspect-square overflow-hidden rounded-sm border border-slate-200 bg-slate-50`}>
         {image ? (
           <Image
             src={image}
             alt={imageAlt?.trim() || label}
             fill
-            className="object-contain object-center"
+            className="object-cover object-center"
             sizes={compact ? "(max-width: 640px) 33vw, 16vw" : "(max-width: 1280px) 20vw, 14vw"}
           />
         ) : (
@@ -41,7 +40,7 @@ export function CategoryTileCard({
         )}
       </div>
 
-      <p className={`mt-3 ${compact ? "text-sm" : "text-[14px] leading-tight"} text-slate-900 font-semibold`}>
+      <p className={`mt-4 ${compact ? "text-sm" : "text-[15px] leading-tight"} text-slate-900 font-semibold`}>
         {label}
       </p>
 
@@ -49,18 +48,14 @@ export function CategoryTileCard({
         <p className="mt-1 text-[12px] text-slate-600">{subtitle}</p>
       ) : null}
 
-      {count != null ? (
-        <p className="mt-2 text-[11px] font-semibold text-slate-700">{count.toLocaleString()} Products</p>
-      ) : null}
-
       {ctaLabel ? <span className="mt-2 text-[12px] font-semibold text-brand">{ctaLabel}</span> : null}
     </div>
   );
 
   return (
-    <article className={`border border-slate-300 bg-white ${compact ? "" : "px-3 py-4"}`}>
+    <article className="h-full border border-slate-300 bg-white">
       {href ? (
-        <Link href={href} className="flex flex-col items-center text-inherit no-underline hover:opacity-95">
+        <Link href={href} className="block h-full text-inherit no-underline hover:bg-slate-50">
           {inner}
         </Link>
       ) : (

@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+import { catalogMediaAssetSchema } from "./catalog-media-asset.schema.js";
 /**
  * Taxonomy node (CatalogCategory / TaxonomyNode).
  * Unlimited depth via adjacency list + materialized `path` for URL routing.
@@ -13,6 +14,7 @@ const catalogCategorySchema = new Schema({
     path: { type: String, required: true, trim: true },
     title: { type: String, required: true },
     description: { type: String, default: "" },
+    landingImage: { type: catalogMediaAssetSchema, required: false },
     kind: {
         type: String,
         enum: ["branch", "family"],
