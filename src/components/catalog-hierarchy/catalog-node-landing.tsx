@@ -77,7 +77,7 @@ export function CatalogNodeLanding({
           <h2 className="mb-1.5 text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
             {sectionTitle}
           </h2>
-          <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {node.children.map((child) => (
                 <CategoryTileCard
                   key={child.id}
