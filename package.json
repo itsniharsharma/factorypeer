@@ -15,6 +15,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "typecheck:workspaces": "npm run typecheck --workspaces --if-present",
     "build:catalog-api": "npm run build --workspace=@factorypeer/catalog-admin-api",
     "start:catalog-api": "npm run start --workspace=@factorypeer/catalog-admin-api",
     "seed:catalog": "node scripts/seed-machining-t-slot.mjs",
