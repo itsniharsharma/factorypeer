@@ -1,4 +1,5 @@
 import { adminFetchJson, adminFetchJsonList } from "./http";
+import type { FooterContentPayload } from "@/lib/footer-content";
 import type {
   FooterContentDoc,
   PublishStatus,
@@ -61,7 +62,7 @@ export async function listFooterContents(
   return { items: data, total };
 }
 
-export async function createFooterContent(body: Record<string, unknown>): Promise<FooterContentDoc> {
+export async function createFooterContent(body: FooterContentPayload): Promise<FooterContentDoc> {
   return adminFetchJson<FooterContentDoc>("/navigation/footer-content", {
     method: "POST",
     json: body,
@@ -70,7 +71,7 @@ export async function createFooterContent(body: Record<string, unknown>): Promis
 
 export async function updateFooterContent(
   id: string,
-  body: Record<string, unknown>,
+  body: Partial<FooterContentPayload>,
 ): Promise<FooterContentDoc | null> {
   return adminFetchJson<FooterContentDoc | null>(`/navigation/footer-content/${id}`, {
     method: "PATCH",

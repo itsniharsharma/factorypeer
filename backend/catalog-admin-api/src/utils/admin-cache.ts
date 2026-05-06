@@ -101,6 +101,20 @@ async function getScopeVersion(scope: CacheScope): Promise<number> {
   return version;
 }
 
+async function setScopeVersion(scope: CacheScope, version: number): Promise<void> {
+  scopeVersionMemo.set(scope, { version, loadedAt: Date.now() });
+  try {
+    await redisSetJson(scopeVersionKey(scope), version, 60 * 60 * 24 * 30);
+  } catch {
+    /* ignore cache backend errors */
+  }
+}
+
+async function bumpScopeVersion(scope: CacheScope): Promise<void> {
+  const next = (await getScopeVersion(scope)) + 1;
+  await setScopeVersion(scope, next);
+}
+
 async function loadAndStore<T>(opts: CacheReadOptions<T>, version: number, k: string): Promise<T> {
   const value = await opts.loader();
   const freshForMs = Math.max(opts.ttlSeconds * 1000, 1000);
@@ -161,4 +175,13 @@ export async function adminCacheAside<T>(opts: CacheReadOptions<T>): Promise<T> 
   const load = loadAndStore(opts, version, key).finally(() => pendingLoads.delete(key));
   pendingLoads.set(key, load);
   return load;
+}
+
+export async function invalidateAdminCacheScopes(scopes: CacheScope[]): Promise<void> {
+  const unique = [...new Set(scopes)];
+  try {
+    await Promise.all(unique.map((scope) => bumpScopeVersion(scope)));
+  } catch {
+    /* ignore cache backend errors */
+  }
 }

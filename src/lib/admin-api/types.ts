@@ -1,6 +1,19 @@
 /** Mirrors Mongo-backed docs returned by catalog-admin-api (JSON-serialized). */
 
-export type PublishStatus = "draft" | "published" | "archived";
+import type {
+  FooterAppDownloadBlockDoc,
+  FooterAppDownloadLinkDoc,
+  FooterColumnDoc,
+  FooterConnectBlockDoc,
+  FooterContentDoc,
+  FooterCtaBlockDoc,
+  FooterLinkDoc,
+  FooterNewsletterBlockDoc,
+  FooterSocialLinkDoc,
+  FooterStatus,
+} from "@/lib/footer-content";
+
+export type PublishStatus = FooterStatus;
 
 export type CategoryDoc = {
   _id: string;
@@ -215,30 +228,14 @@ export type SiteLinkGroupDoc = {
   updatedAt?: string;
 };
 
-export type FooterSocialLinkDoc = {
-  label: string;
-  href: string;
-  icon?: string;
-  sortOrder?: number;
-};
-
-export type FooterContentDoc = {
-  _id: string;
-  slug: string;
-  brandName?: string;
-  newsletterHeading?: string;
-  newsletterDescription?: string;
-  newsletterCtaLabel?: string;
-  newsletterCtaHref?: string;
-  feedbackHeading?: string;
-  feedbackCtaLabel?: string;
-  feedbackCtaHref?: string;
-  copyrightText?: string;
-  status: PublishStatus;
-  sortOrder?: number;
-  socialLinks: FooterSocialLinkDoc[];
-  metadata?: Record<string, unknown>;
-  publishedAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+export type {
+  FooterAppDownloadBlockDoc,
+  FooterAppDownloadLinkDoc,
+  FooterColumnDoc,
+  FooterConnectBlockDoc,
+  FooterContentDoc,
+  FooterCtaBlockDoc,
+  FooterLinkDoc,
+  FooterNewsletterBlockDoc,
+  FooterSocialLinkDoc,
 };

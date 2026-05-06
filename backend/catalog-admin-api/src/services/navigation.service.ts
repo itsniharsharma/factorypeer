@@ -4,7 +4,7 @@ import { toObjectId } from "../utils/mongo.js";
 import type { WriteContext } from "../types/write-context.js";
 import { NavigationRepository } from "../repositories/navigation.repository.js";
 import { invalidateCatalogCache } from "../utils/cache.js";
-import { adminCacheAside } from "../utils/admin-cache.js";
+import { adminCacheAside, invalidateAdminCacheScopes } from "../utils/admin-cache.js";
 
 function publishedAtFor(status?: string) {
   return status === "published" ? new Date() : undefined;
@@ -68,6 +68,7 @@ export class NavigationService {
       { actorId: ctx?.actorUserId ?? undefined },
     );
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return created;
   }
 
@@ -104,12 +105,14 @@ export class NavigationService {
       { actorId: ctx?.actorUserId ?? undefined },
     );
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return updated;
   }
 
   async deleteLinkGroup(id: string, ctx?: WriteContext) {
     const deleted = await this.repo.deleteLinkGroup(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return deleted;
   }
 
@@ -139,18 +142,18 @@ export class NavigationService {
 
   async createFooterContent(body: {
     slug: string;
-    brandName?: string;
-    newsletterHeading?: string;
-    newsletterDescription?: string;
-    newsletterCtaLabel?: string;
-    newsletterCtaHref?: string;
-    feedbackHeading?: string;
-    feedbackCtaLabel?: string;
-    feedbackCtaHref?: string;
+    preFooterHeading?: string;
+    preFooterBody?: string;
+    columns?: Array<Record<string, unknown>>;
+    newsletter?: Record<string, unknown>;
+    appDownloads?: Record<string, unknown>;
+    connect?: Record<string, unknown>;
+    contact?: Record<string, unknown>;
     copyrightText?: string;
     status?: string;
     sortOrder?: number;
     socialLinks?: Array<Record<string, unknown>>;
+    legalLinks?: Array<Record<string, unknown>>;
     metadata?: Record<string, unknown>;
   }, ctx?: WriteContext) {
     const existing = await this.repo.findFooterContentBySlug(body.slug, { actorId: ctx?.actorUserId ?? undefined });
@@ -164,6 +167,7 @@ export class NavigationService {
       { actorId: ctx?.actorUserId ?? undefined },
     );
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return created;
   }
 
@@ -171,18 +175,18 @@ export class NavigationService {
     id: string,
     patch: Partial<{
       slug: string;
-      brandName: string;
-      newsletterHeading: string;
-      newsletterDescription: string;
-      newsletterCtaLabel: string;
-      newsletterCtaHref: string;
-      feedbackHeading: string;
-      feedbackCtaLabel: string;
-      feedbackCtaHref: string;
+      preFooterHeading: string;
+      preFooterBody: string;
+      columns: Array<Record<string, unknown>>;
+      newsletter: Record<string, unknown>;
+      appDownloads: Record<string, unknown>;
+      connect: Record<string, unknown>;
+      contact: Record<string, unknown>;
       copyrightText: string;
       status: string;
       sortOrder: number;
       socialLinks: Array<Record<string, unknown>>;
+      legalLinks: Array<Record<string, unknown>>;
       metadata: Record<string, unknown>;
     }>,
     ctx?: WriteContext,
@@ -203,12 +207,14 @@ export class NavigationService {
       { actorId: ctx?.actorUserId ?? undefined },
     );
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return updated;
   }
 
   async deleteFooterContent(id: string, ctx?: WriteContext) {
     const deleted = await this.repo.deleteFooterContent(toObjectId(id), { actorId: ctx?.actorUserId ?? undefined });
     await invalidateCatalogCache(["navigation", "homepage"]);
+    await invalidateAdminCacheScopes(["navigation"]);
     return deleted;
   }
 }

@@ -66,7 +66,7 @@ export class NavigationRepository {
 
   async listFooterContents(opts?: ExecOpts & { status?: string }) {
     const base = opts?.status ? { ...this.tq(), status: opts.status } : this.tq();
-    let q = this.models.FooterContent.find(base).sort({ sortOrder: 1, brandName: 1 });
+    let q = this.models.FooterContent.find(base).sort({ sortOrder: 1, slug: 1 });
     q = withSession(q, opts?.session);
     return q.exec();
   }

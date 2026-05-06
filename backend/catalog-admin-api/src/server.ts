@@ -3,11 +3,13 @@ import { loadConfig } from "./config.js";
 import { connectMongo, disconnectMongo } from "./db/connection.js";
 import { createCatalogAdminServices } from "./composition-root.js";
 import { buildApp } from "./app.js";
+import { seedMerchandisingContent } from "./bootstrap/merchandising-seed.js";
 
 async function main() {
   const config = loadConfig();
   const models = await connectMongo(config);
   const services = createCatalogAdminServices(models, config.defaultTenantId ?? null);
+  await seedMerchandisingContent(services);
   const app = await buildApp(services, config);
 
   try {

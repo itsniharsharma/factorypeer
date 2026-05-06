@@ -128,97 +128,101 @@ export const megaMenuUtilityLinkGroupSeed = {
   ],
 } as const;
 
-export const footerLinkGroupSeeds = [
-  {
-    slug: "footer-about-us",
-    title: "About Us",
-    placement: "footer",
-    status: "published",
-    sortOrder: 0,
-    links: [
-      { label: "Careers", href: "/careers" },
-      { label: "Customers", href: "/customers" },
-      { label: "Suppliers", href: "/suppliers" },
-      { label: "Impact", href: "/impact" },
-      { label: "Investors", href: "/investors" },
-      { label: "Media", href: "/media" },
-    ],
-  },
-  {
-    slug: "footer-order-support",
-    title: "Order Support",
-    placement: "footer",
-    status: "published",
-    sortOrder: 1,
-    links: [
-      { label: "Existing Orders", href: "/orders" },
-      { label: "Returns, Warranty and Cancellations", href: "/returns" },
-      { label: "Extended Protection Plan", href: "/protection-plan" },
-      { label: "Invoices", href: "/invoices" },
-      { label: "Special Orders", href: "/special-orders" },
-    ],
-  },
-  {
-    slug: "footer-factorypeer-back",
-    title: "Factorypeer's Got Your Back",
-    placement: "footer",
-    status: "published",
-    sortOrder: 2,
-    links: [
-      { label: "FactoryPeer KnowHow", href: "/knowhow" },
-      { label: "Product Collections", href: "/collections" },
-      { label: "Services and Solutions", href: "/services" },
-      { label: "Industries", href: "/industries" },
-    ],
-  },
-  {
-    slug: "footer-connect",
-    title: "Connect",
-    placement: "footer",
-    status: "published",
-    sortOrder: 3,
-    links: [
-      { label: "Call Us (1-800-SUPPLY)", href: "tel:18007775979" },
-      { label: "Branch Locations", href: "/locations" },
-      { label: "Catalog Request", href: "/catalog-request" },
-      { label: "Help", href: "/help" },
-    ],
-  },
-  {
-    slug: "footer-legal",
-    title: "Legal",
-    placement: "footer",
-    status: "published",
-    sortOrder: 4,
-    links: [
-      { label: "Terms of Access", href: "/terms/access" },
-      { label: "Terms of Sale", href: "/terms/sale" },
-      { label: "Shipping and Delivery", href: "/shipping" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Sitemap", href: "/sitemap" },
-      { label: "Accessibility Statement", href: "/accessibility" },
-    ],
-  },
-] as const;
-
-export const footerContentSeed = {
+export const footerCmsSeed = {
   slug: "global-footer",
-  brandName: "Factorypeer",
-  newsletterHeading: "Sign Up For Email",
-  newsletterDescription: "Get product updates, programs, and procurement support insights.",
-  newsletterCtaLabel: "Submit",
-  newsletterCtaHref: "/email-signup",
-  feedbackHeading: "Feedback",
-  feedbackCtaLabel: "Help Us Improve",
-  feedbackCtaHref: "/feedback",
-  copyrightText: "© 1994 - 2026, FactoryPeer, Inc. All Rights Reserved.",
+  preFooterBody:
+    "FactoryPeer is a trusted source for MRO supplies and industrial products. We help maintenance, reliability, and operations teams get the products and support they need, with broad selection, fast ordering, and responsive technical help.",
   status: "published",
   sortOrder: 0,
-  socialLinks: [
-    { label: "Facebook", href: "https://www.facebook.com/fastenalcompany", icon: "f", sortOrder: 0 },
-    { label: "LinkedIn", href: "https://linkedin.com/company/fastenal", icon: "in", sortOrder: 1 },
-    { label: "YouTube", href: "https://youtube.com/fastenal", icon: "▶", sortOrder: 2 },
-    { label: "X", href: "https://twitter.com/fastenal", icon: "t", sortOrder: 3 },
-    { label: "Instagram", href: "https://www.instagram.com/fastenal_company", icon: "ig", sortOrder: 4 },
+  columns: [
+    {
+      title: "About Us",
+      sortOrder: 0,
+      links: [
+        { label: "Company", href: "/company", sortOrder: 0 },
+        { label: "Careers", href: "/careers", sortOrder: 1 },
+        { label: "Customers", href: "/customers", sortOrder: 2 },
+        { label: "Suppliers", href: "/suppliers", sortOrder: 3 },
+        { label: "Impact", href: "/impact", sortOrder: 4 },
+        { label: "Media", href: "/media", sortOrder: 5 },
+      ],
+    },
+    {
+      title: "Order Support",
+      sortOrder: 1,
+      links: [
+        { label: "Existing Orders", href: "/orders", sortOrder: 0 },
+        { label: "Returns, Warranty and Cancellations", href: "/returns", sortOrder: 1 },
+        { label: "Extended Protection Plan", href: "/protection-plan", sortOrder: 2 },
+        { label: "Invoices", href: "/invoices", sortOrder: 3 },
+        { label: "Special Orders", href: "/special-orders", sortOrder: 4 },
+      ],
+    },
+    {
+      title: "FactoryPeer's Got Your Back",
+      sortOrder: 2,
+      links: [
+        { label: "FactoryPeer KnowHow", href: "/knowhow", sortOrder: 0 },
+        { label: "Product Collections", href: "/collections", sortOrder: 1 },
+        { label: "Services and Solutions", href: "/services", sortOrder: 2 },
+        { label: "Industries", href: "/industries", sortOrder: 3 },
+      ],
+    },
+    {
+      title: "Connect",
+      sortOrder: 3,
+      links: [
+        { label: "Call Us (1-800-FACTORY)", href: "tel:18003226867", sortOrder: 0 },
+        { label: "Branch Locations", href: "/locations", sortOrder: 1 },
+        { label: "Catalog Request", href: "/catalog-request", sortOrder: 2 },
+        { label: "Help", href: "/help", sortOrder: 3 },
+      ],
+    },
   ],
+  newsletter: {
+    title: "Sign Up For Email",
+    body: "Get product updates, programs, and procurement support insights.",
+    inputPlaceholder: "Email Address",
+    buttonLabel: "Subscribe",
+    submitHref: "/email-signup",
+  },
+  appDownloads: {
+    title: "We're Mobile",
+    subtitle: "Mobile Features",
+    appStore: {
+      label: "Download on the App Store",
+      href: "https://www.apple.com/app-store/",
+      imageUrl: "https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg",
+      openInNewTab: true,
+    },
+    googlePlay: {
+      label: "Get it on Google Play",
+      href: "https://play.google.com/store",
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg",
+      openInNewTab: true,
+    },
+  },
+  connect: {
+    heading: "Connect",
+    phoneSubtitle: "Call Us (1-800-FACTORY)",
+    feedbackCtaLabel: "Help Us Improve",
+    feedbackCtaHref: "/feedback",
+  },
+  socialLinks: [
+    { label: "Facebook", href: "https://facebook.com", icon: "f", sortOrder: 0, openInNewTab: true },
+    { label: "LinkedIn", href: "https://linkedin.com", icon: "in", sortOrder: 1, openInNewTab: true },
+    { label: "YouTube", href: "https://youtube.com", icon: "▶", sortOrder: 2, openInNewTab: true },
+    { label: "X", href: "https://x.com", icon: "x", sortOrder: 3, openInNewTab: true },
+    { label: "Instagram", href: "https://instagram.com", icon: "ig", sortOrder: 4, openInNewTab: true },
+  ],
+  legalLinks: [
+    { label: "Terms of Access", href: "/terms/access", sortOrder: 0 },
+    { label: "Terms of Sale", href: "/terms/sale", sortOrder: 1 },
+    { label: "Shipping and Delivery", href: "/shipping", sortOrder: 2 },
+    { label: "Privacy Policy", href: "/privacy", sortOrder: 3 },
+    { label: "Sitemap", href: "/sitemap", sortOrder: 4 },
+    { label: "Accessibility Statement", href: "/accessibility", sortOrder: 5 },
+  ],
+  copyrightText: "© 2026 FactoryPeer, Inc. All rights reserved.",
 } as const;
+

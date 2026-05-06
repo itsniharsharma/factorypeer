@@ -19,6 +19,30 @@ export class AdminApiError extends Error {
   }
 }
 
+async function parseAdminApiError(res: Response): Promise<AdminApiError> {
+  let msg = res.statusText;
+  let code: string | undefined;
+
+  try {
+    const body = (await res.json()) as ApiErrorBody;
+    if (body.message) msg = body.message;
+    if (body.error) code = body.error;
+    if (body.detail) msg = `${msg} — ${body.detail}`;
+  } catch {
+    // ignore invalid error payloads
+  }
+
+  return new AdminApiError(res.status, msg, code);
+}
+
+async function requireOkResponse(res: Response): Promise<Response> {
+  if (res.ok) {
+    return res;
+  }
+
+  throw await parseAdminApiError(res);
+}
+
 function actorHeaders(): HeadersInit {
   const id = typeof window !== "undefined" ? localStorage.getItem("catalogActorId") : null;
   const fromEnv = process.env["NEXT_PUBLIC_CATALOG_ACTOR_ID"];
@@ -52,20 +76,7 @@ export async function adminFetchJson<T>(
   path: string,
   init?: RequestInit & { json?: unknown },
 ): Promise<T> {
-  const res = await adminFetch(path, init);
-  if (!res.ok) {
-    let msg = res.statusText;
-    let code: string | undefined;
-    try {
-      const body = (await res.json()) as ApiErrorBody;
-      if (body.message) msg = body.message;
-      if (body.error) code = body.error;
-      if (body.detail) msg = `${msg} — ${body.detail}`;
-    } catch {
-      /* ignore */
-    }
-    throw new AdminApiError(res.status, msg, code);
-  }
+  const res = await requireOkResponse(await adminFetch(path, init));
   if (res.status === 204 || res.headers.get("content-length") === "0") {
     return undefined as T;
   }
@@ -88,20 +99,7 @@ export async function adminFetchJsonList<T>(
   path: string,
   init?: RequestInit & { json?: unknown },
 ): Promise<{ data: T; total?: number }> {
-  const res = await adminFetch(path, init);
-  if (!res.ok) {
-    let msg = res.statusText;
-    let code: string | undefined;
-    try {
-      const body = (await res.json()) as ApiErrorBody;
-      if (body.message) msg = body.message;
-      if (body.error) code = body.error;
-      if (body.detail) msg = `${msg} — ${body.detail}`;
-    } catch {
-      /* ignore */
-    }
-    throw new AdminApiError(res.status, msg, code);
-  }
+  const res = await requireOkResponse(await adminFetch(path, init));
   const total = getTotalCount(res);
   const data = (await res.json()) as T;
   return { data, total };

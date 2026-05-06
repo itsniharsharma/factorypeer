@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { catalogServerJsonList } from "./fetch";
 import { cacheAside } from "@/lib/cache/redis-cache";
+import { sortBySortOrder, type FooterContentDoc } from "@/lib/footer-content";
 
 type LinkStatus = "draft" | "published" | "archived";
 type Placement = "utility" | "navigation" | "footer";
@@ -25,30 +26,6 @@ type SiteLinkGroup = {
   status: LinkStatus;
   sortOrder?: number;
   links?: SiteLink[];
-};
-
-type FooterSocialLink = {
-  label: string;
-  href: string;
-  icon?: string;
-  sortOrder?: number;
-};
-
-type FooterContent = {
-  _id: string;
-  slug: string;
-  brandName?: string;
-  newsletterHeading?: string;
-  newsletterDescription?: string;
-  newsletterCtaLabel?: string;
-  newsletterCtaHref?: string;
-  feedbackHeading?: string;
-  feedbackCtaLabel?: string;
-  feedbackCtaHref?: string;
-  copyrightText?: string;
-  status: LinkStatus;
-  sortOrder?: number;
-  socialLinks?: FooterSocialLink[];
 };
 
 function bySortOrder(a?: number, b?: number): number {
@@ -94,11 +71,7 @@ export const getMegaMenuUtilityLinks = cache(async (): Promise<SiteLink[]> => {
   return groups[0]?.links ?? [];
 });
 
-export const getFooterLinkGroups = cache(async (): Promise<SiteLinkGroup[]> => {
-  return getNavigationLinkGroups("footer");
-});
-
-export const getFooterContent = cache(async (): Promise<FooterContent | undefined> => {
+export const getFooterContent = cache(async (): Promise<FooterContentDoc | undefined> => {
   return cacheAside({
     namespace: "navigation",
     key: "footer-content",
@@ -106,11 +79,11 @@ export const getFooterContent = cache(async (): Promise<FooterContent | undefine
     staleWhileRevalidateSeconds: 2 * 60,
     label: "footer-content",
     loader: async () => {
-      const res = await catalogServerJsonList<FooterContent[]>(withPublishedStatus("/navigation/footer-content"), {
+      const res = await catalogServerJsonList<FooterContentDoc[]>(withPublishedStatus("/navigation/footer-content"), {
         next: { revalidate: 60, tags: ["catalog", "merchandising", "footer-content"] },
       });
       const data = Array.isArray(res.data) ? res.data : [];
-      return data.sort((a, b) => bySortOrder(a.sortOrder, b.sortOrder))[0];
+      return sortBySortOrder(data)[0];
     },
   });
 });

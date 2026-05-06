@@ -44,7 +44,6 @@ export {
   getNavigationLinkGroups,
   getUtilityLinkGroup,
   getMegaMenuUtilityLinks,
-  getFooterLinkGroups,
   getFooterContent,
 } from "./navigation";
 

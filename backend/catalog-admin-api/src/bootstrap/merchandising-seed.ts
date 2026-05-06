@@ -1,8 +1,7 @@
 import type { z } from "zod";
 import type { CatalogAdminServices } from "../composition-root.js";
 import {
-  footerContentSeed,
-  footerLinkGroupSeeds,
+  footerCmsSeed,
   getHomepageCategoryTileSeeds,
   getHomepagePromoBannerSeeds,
   homepageSupportCardSeeds,
@@ -21,13 +20,6 @@ function toMutableLinkGroup<T extends { links?: readonly Record<string, unknown>
   return {
     ...item,
     links: item.links?.map((link) => ({ ...link })) ?? [],
-  };
-}
-
-function toMutableFooterContent<T extends { socialLinks?: readonly Record<string, unknown>[] }>(item: T) {
-  return {
-    ...item,
-    socialLinks: item.socialLinks?.map((link) => ({ ...link })) ?? [],
   };
 }
 
@@ -60,14 +52,26 @@ export async function seedMerchandisingContent(services: Pick<CatalogAdminServic
     await services.navigation.createLinkGroup(toMutableLinkGroup(megaMenuUtilityLinkGroupSeed));
   });
 
-  await seedCollectionIfEmpty(await services.navigation.listLinkGroups(undefined, "footer"), async () => {
-    await Promise.all(
-      footerLinkGroupSeeds.map((item) => services.navigation.createLinkGroup(toMutableLinkGroup(item))),
-    );
-  });
+  const seedFooterPayload = {
+    ...footerCmsSeed,
+    status: "published" as const,
+    columns: footerCmsSeed.columns.map((c) => ({
+      ...c,
+      links: c.links.map((l) => ({ ...l })),
+    })),
+    socialLinks: footerCmsSeed.socialLinks.map((s) => ({ ...s })),
+    legalLinks: footerCmsSeed.legalLinks.map((l) => ({ ...l })),
+    newsletter: { ...footerCmsSeed.newsletter },
+    appDownloads: {
+      ...footerCmsSeed.appDownloads,
+      appStore: { ...footerCmsSeed.appDownloads.appStore },
+      googlePlay: { ...footerCmsSeed.appDownloads.googlePlay },
+    },
+    connect: { ...footerCmsSeed.connect },
+  };
 
   await seedCollectionIfEmpty(await services.navigation.listFooterContents(), async () => {
-    await services.navigation.createFooterContent(toMutableFooterContent(footerContentSeed));
+    await services.navigation.createFooterContent(seedFooterPayload);
   });
 }
 

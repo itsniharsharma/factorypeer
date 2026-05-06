@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { timingSafeStringEqual } from "@/lib/timing-equal";
 
 export const ADMIN_SESSION_COOKIE = "fp_admin_token";
+
+function timingSafeStringEqual(expected: string, actual: string): boolean {
+  if (expected.length !== actual.length) return false;
+
+  let out = 0;
+  for (let i = 0; i < expected.length; i++) {
+    out |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+  }
+
+  return out === 0;
+}
 
 function forwardHeaders(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);

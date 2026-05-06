@@ -2,7 +2,7 @@
 /**
  * Electrical vertical E2E via catalog-admin-api — same HTTP routes the Admin Panel uses
  * (Categories → Spec schema & columns → Products & variants → Spec rows → link-row → publish schema → homepage tile).
- * Footer: create in the app at **Admin → Navigation & Footer** (“Load Electrical showcase footer”).
+ * Footer: manage entirely in **Admin -> Navigation & Footer**.
  *
  * Usage:
  *   CATALOG_ADMIN_API_URL=http://127.0.0.1:4040 node scripts/electrical-vertical-admin-api.mjs
