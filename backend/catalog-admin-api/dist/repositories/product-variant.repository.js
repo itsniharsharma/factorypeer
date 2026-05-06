@@ -13,6 +13,21 @@ export class ProductVariantRepository {
     }
     async findById(id, opts) {
         const q = this.models.ProductVariant.findOne({ _id: id, ...this.tq() });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
+        return withSession(q, opts?.session).exec();
+    }
+    /** Batch by variant id (spec matrix row bindings — single query vs N findById). */
+    async findByIds(ids, opts) {
+        if (!ids.length)
+            return [];
+        const q = this.models.ProductVariant.find({ _id: { $in: ids }, ...this.tq() });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
         return withSession(q, opts?.session).exec();
     }
     /**
@@ -51,6 +66,10 @@ export class ProductVariantRepository {
             filter["$or"] = [{ sku: rx }, { itemNumber: rx }, { mpn: rx }];
         }
         let q = this.models.ProductVariant.find(filter).sort({ sortOrder: 1, sku: 1 });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
         if (opts?.skip != null)
             q = q.skip(opts.skip);
         if (opts?.limit != null)

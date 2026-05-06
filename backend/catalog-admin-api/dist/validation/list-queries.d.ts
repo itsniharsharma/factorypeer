@@ -11,6 +11,17 @@ export declare const productSummaryCardsQuerySchema: z.ZodEffects<z.ZodObject<{
 }, {
     ids?: unknown;
 }>;
+export declare const variantBundlesQuerySchema: z.ZodEffects<z.ZodObject<{
+    ids: z.ZodEffects<z.ZodOptional<z.ZodArray<z.ZodString, "many">>, string[] | undefined, unknown>;
+}, "strip", z.ZodTypeAny, {
+    ids?: string[] | undefined;
+}, {
+    ids?: unknown;
+}>, {
+    ids?: string[] | undefined;
+}, {
+    ids?: unknown;
+}>;
 export declare const productListQuerySchema: z.ZodObject<{
     skip: z.ZodOptional<z.ZodNumber>;
     limit: z.ZodOptional<z.ZodNumber>;
@@ -39,10 +50,10 @@ export declare const productListQuerySchema: z.ZodObject<{
     categoryId?: string | undefined;
     q?: string | undefined;
 }>;
+/** Spec rows: higher limit than generic pagination — storefront chunks full-schema reads for PDP. */
 export declare const specRowListQuerySchema: z.ZodObject<{
     skip: z.ZodOptional<z.ZodNumber>;
     limit: z.ZodOptional<z.ZodNumber>;
-} & {
     status: z.ZodOptional<z.ZodEnum<["draft", "published", "archived"]>>;
 }, "strip", z.ZodTypeAny, {
     status?: "draft" | "published" | "archived" | undefined;

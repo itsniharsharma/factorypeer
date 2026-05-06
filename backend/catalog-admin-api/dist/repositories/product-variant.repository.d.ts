@@ -39,6 +39,36 @@ export declare class ProductVariantRepository {
     }> & {
         __v: number;
     }) | null>;
+    /** Batch by variant id (spec matrix row bindings — single query vs N findById). */
+    findByIds(ids: Types.ObjectId[], opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").ProductVariantDocument, {}, {}> & {
+        status: "draft" | "published" | "archived";
+        sortOrder: number;
+        documentVersion: number;
+        productId: Types.ObjectId;
+        sku: string;
+        unitPrice: string;
+        currency: string;
+        availability: string;
+        leadTime: string;
+        packaging: string;
+        searchBlob: string;
+        tenantId?: Types.ObjectId | null | undefined;
+        publishedAt?: NativeDate | null | undefined;
+        createdBy?: Types.ObjectId | null | undefined;
+        updatedBy?: Types.ObjectId | null | undefined;
+        itemNumber?: string | null | undefined;
+        mpn?: string | null | undefined;
+        manufacturer?: string | null | undefined;
+        uom?: string | null | undefined;
+        moq?: number | null | undefined;
+        specRowId?: Types.ObjectId | null | undefined;
+    } & import("mongoose").DefaultTimestampProps & {
+        _id: Types.ObjectId;
+    } & Required<{
+        _id: Types.ObjectId;
+    }> & {
+        __v: number;
+    })[]>;
     /**
      * One published variant per product (lowest sortOrder, then SKU) for storefront cards.
      */

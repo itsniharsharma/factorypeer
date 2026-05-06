@@ -1,11 +1,66 @@
 import { v2 as cloudinary } from "cloudinary";
 /**
+ * The Node Cloudinary SDK's `config(true)` only reads `CLOUDINARY_URL` (and account URL) from the
+ * environment — it does **not** apply `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`.
+ * This helper matches the product behavior: support either a single URL or the three split variables.
+ *
+ * @returns which source was applied, or `null` if no Cloudinary env is set (API may still start; uploads 503).
+ * @throws if split env is partially set (misconfiguration)
+ */
+export function applyCloudinarySdkFromEnv() {
+    const url = process.env["CLOUDINARY_URL"]?.trim();
+    const cloudName = process.env["CLOUDINARY_CLOUD_NAME"]?.trim();
+    const apiKey = process.env["CLOUDINARY_API_KEY"]?.trim();
+    const apiSecret = process.env["CLOUDINARY_API_SECRET"]?.trim();
+    const splitCount = [cloudName, apiKey, apiSecret].filter(Boolean).length;
+    if (splitCount > 0 && splitCount < 3) {
+        throw new Error("Cloudinary: incomplete split credentials — set all of CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET, or use CLOUDINARY_URL only.");
+    }
+    if (url) {
+        if (!url.toLowerCase().startsWith("cloudinary://")) {
+            throw new Error("Invalid CLOUDINARY_URL: protocol must be cloudinary:// (see Cloudinary dashboard / API environment variable).");
+        }
+        cloudinary.config(true);
+        const c = cloudinary.config();
+        const name = c.cloud_name;
+        if (!name) {
+            throw new Error("Cloudinary: CLOUDINARY_URL was set but did not produce a cloud_name (check the URL).");
+        }
+        return { source: "CLOUDINARY_URL", cloudName: name };
+    }
+    if (cloudName && apiKey && apiSecret) {
+        cloudinary.config({
+            cloud_name: cloudName,
+            api_key: apiKey,
+            api_secret: apiSecret,
+            secure: true,
+        });
+        return { source: "split_env", cloudName: cloudName };
+    }
+    return null;
+}
+/**
+ * Ensures the v2 SDK has cloud_name, api_key, and api_secret. Use before migration or bulk upload.
+ */
+export function assertCloudinarySdkReadyForUpload() {
+    const applied = applyCloudinarySdkFromEnv();
+    if (!applied) {
+        throw new Error("Cloudinary is not configured. Set CLOUDINARY_URL, or set CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY + CLOUDINARY_API_SECRET.");
+    }
+    const c = cloudinary.config();
+    if (!c.cloud_name || !c.api_key || !c.api_secret) {
+        throw new Error("Cloudinary configuration is invalid after apply (missing cloud_name, api_key, or api_secret). Check env format.");
+    }
+    return applied;
+}
+/**
  * Cloudinary uploads — configured via `CLOUDINARY_URL` or
  * `CLOUDINARY_CLOUD_NAME` + `CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET`.
  */
 export class CloudinaryService {
     constructor() {
-        cloudinary.config(true);
+        /** No-op when unset; throws on malformed URL or incomplete split vars. */
+        applyCloudinarySdkFromEnv();
     }
     isConfigured() {
         return Boolean(process.env["CLOUDINARY_URL"]?.trim() ||
@@ -45,10 +100,23 @@ export class CloudinaryService {
     /** Stream upload for large files without base64 overhead. */
     async uploadImageStream(opts) {
         const folder = opts.folder ?? "factorypeer/catalog";
+        const timeoutMs = opts.timeoutMs ?? 60_000; // 60 second default for large uploads
         const result = await new Promise((resolve, reject) => {
+            let timeoutId = null;
+            let uploadStreamDestroyed = false;
+            const cleanup = () => {
+                if (timeoutId)
+                    clearTimeout(timeoutId);
+                if (!uploadStreamDestroyed) {
+                    uploadStream.destroy();
+                    uploadStreamDestroyed = true;
+                }
+            };
             const uploadStream = cloudinary.uploader.upload_stream({ folder, resource_type: "image", overwrite: false, invalidate: true }, (err, res) => {
-                if (err || !res)
+                cleanup();
+                if (err || !res) {
                     return reject(err ?? new Error("Cloudinary upload failed"));
+                }
                 resolve({
                     url: res.secure_url,
                     publicId: res.public_id,
@@ -57,6 +125,20 @@ export class CloudinaryService {
                     format: res.format,
                     bytes: res.bytes,
                 });
+            });
+            // Set timeout for upload
+            timeoutId = setTimeout(() => {
+                cleanup();
+                reject(new Error(`Cloudinary upload timeout after ${timeoutMs}ms`));
+            }, timeoutMs);
+            // Handle stream errors
+            opts.stream.on("error", (err) => {
+                cleanup();
+                reject(new Error(`Stream error during Cloudinary upload: ${err.message}`));
+            });
+            uploadStream.on("error", (err) => {
+                cleanup();
+                reject(new Error(`Cloudinary upload stream error: ${err.message}`));
             });
             opts.stream.pipe(uploadStream);
         });

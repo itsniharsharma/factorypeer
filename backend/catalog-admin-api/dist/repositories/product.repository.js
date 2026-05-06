@@ -13,10 +13,29 @@ export class ProductRepository {
     }
     async findById(id, opts) {
         const q = this.models.Product.findOne({ _id: id, ...this.tq() });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
+        return withSession(q, opts?.session).exec();
+    }
+    /** Batch load by id (storefront spec matrix — avoids N product lookups). */
+    async findByIds(ids, opts) {
+        if (!ids.length)
+            return [];
+        const q = this.models.Product.find({ _id: { $in: ids }, ...this.tq() });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
         return withSession(q, opts?.session).exec();
     }
     async findBySlug(slug, opts) {
         const q = this.models.Product.findOne({ slug, ...this.tq() });
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
         return withSession(q, opts?.session).exec();
     }
     /**
@@ -61,6 +80,10 @@ export class ProductRepository {
         const mongoFilter = await this.buildListFilter(filter, opts);
         const sort = sortFromFilter(filter?.sort);
         let q = this.models.Product.find(mongoFilter).sort(sort).skip(skip).limit(limit);
+        const select = opts.select;
+        if (select) {
+            q.select(select);
+        }
         q = withSession(q, opts?.session);
         return q.exec();
     }

@@ -42,8 +42,8 @@ export declare class NavigationService {
             description?: string | null | undefined;
             icon?: string | null | undefined;
         }>;
-        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         description?: string | null | undefined;
+        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -93,8 +93,8 @@ export declare class NavigationService {
             description?: string | null | undefined;
             icon?: string | null | undefined;
         }>;
-        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         description?: string | null | undefined;
+        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -153,8 +153,8 @@ export declare class NavigationService {
             description?: string | null | undefined;
             icon?: string | null | undefined;
         }>;
-        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         description?: string | null | undefined;
+        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -213,8 +213,8 @@ export declare class NavigationService {
             description?: string | null | undefined;
             icon?: string | null | undefined;
         }>;
-        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         description?: string | null | undefined;
+        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         updatedBy?: import("mongoose").Types.ObjectId | null | undefined;
@@ -264,8 +264,8 @@ export declare class NavigationService {
             description?: string | null | undefined;
             icon?: string | null | undefined;
         }>;
-        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         description?: string | null | undefined;
+        tenantId?: import("mongoose").Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: import("mongoose").Types.ObjectId | null | undefined;
         updatedBy?: import("mongoose").Types.ObjectId | null | undefined;

@@ -7,10 +7,10 @@ export declare class CategoryService {
     private readonly specSchemas;
     constructor(categories: CategoryRepository, specSchemas: SpecSchemaRepository);
     getById(id: string, ctx?: WriteContext): Promise<import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -19,6 +19,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -33,10 +41,10 @@ export declare class CategoryService {
     listChildren(parentId: string | null, ctx?: WriteContext, filters?: {
         status?: string;
     }): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -45,6 +53,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -63,14 +79,22 @@ export declare class CategoryService {
         slug: string;
         title: string;
         description?: string;
+        landingImage?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         kind: "branch" | "family";
         status?: string;
         sortOrder?: number;
     }, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -79,6 +103,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -94,14 +126,22 @@ export declare class CategoryService {
         slug?: string;
         title?: string;
         description?: string;
+        landingImage?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        } | null;
         kind?: "branch" | "family";
         status?: string;
         sortOrder?: number;
     }, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -110,6 +150,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -122,10 +170,10 @@ export declare class CategoryService {
         __v: number;
     }) | null>;
     move(categoryId: string, newParentId: string | null, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -134,6 +182,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -146,10 +202,10 @@ export declare class CategoryService {
         __v: number;
     }) | null>;
     reorderSiblings(categoryId: string, orderedIds: string[], ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -158,6 +214,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -170,10 +234,10 @@ export declare class CategoryService {
         __v: number;
     })[]>;
     setKind(id: string, kind: "branch" | "family", ctx?: WriteContext): Promise<import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -182,6 +246,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -194,10 +266,10 @@ export declare class CategoryService {
         __v: number;
     }>;
     attachActiveSpecSchema(categoryId: string, specSchemaId: string, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -206,6 +278,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -218,10 +298,10 @@ export declare class CategoryService {
         __v: number;
     }) | null>;
     delete(id: string, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -230,6 +310,14 @@ export declare class CategoryService {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;

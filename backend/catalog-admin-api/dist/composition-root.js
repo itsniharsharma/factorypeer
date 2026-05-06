@@ -19,7 +19,7 @@ export function createCatalogAdminServices(models, tenantId) {
     return {
         categories: new CategoryService(categoryRepo, specSchemaRepo),
         specMatrix: new SpecMatrixService(categoryRepo, specSchemaRepo, specColumnRepo, specRowRepo),
-        products: new ProductService(productRepo, variantRepo, specRowRepo, cloudinary),
+        products: new ProductService(productRepo, variantRepo, specRowRepo, categoryRepo, specSchemaRepo, cloudinary),
         homepage: new HomepageService(homepageRepo, cloudinary),
         navigation: new NavigationService(navigationRepo),
         cloudinary,

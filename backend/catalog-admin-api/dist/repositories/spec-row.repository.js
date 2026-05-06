@@ -15,6 +15,18 @@ export class SpecRowRepository {
         const q = this.models.CatalogSpecRow.findOne({ _id: id, ...this.tq() });
         return withSession(q, opts?.session).exec();
     }
+    /** Published rows (for a schema) that include this variant in variantBindings — PDP / linkage repair. */
+    async listPublishedContainingVariant(specSchemaId, variantId, opts) {
+        const filter = {
+            specSchemaId,
+            status: "published",
+            "variantBindings.productVariantId": variantId,
+            ...this.tq(),
+        };
+        let q = this.models.CatalogSpecRow.find(filter).sort({ sortOrder: 1, _id: 1 });
+        q = withSession(q, opts?.session);
+        return q.exec();
+    }
     async listBySpecSchema(specSchemaId, opts) {
         const filter = { specSchemaId, ...this.tq() };
         if (opts?.status)

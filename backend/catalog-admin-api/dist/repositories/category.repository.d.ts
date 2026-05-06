@@ -8,10 +8,10 @@ export declare class CategoryRepository {
     constructor(models: CatalogModels, tenantId: Types.ObjectId | null);
     private tq;
     findById(id: Types.ObjectId, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -20,6 +20,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -32,10 +40,10 @@ export declare class CategoryRepository {
         __v: number;
     }) | null>;
     findByPath(path: string, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -44,6 +52,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -58,10 +74,10 @@ export declare class CategoryRepository {
     listChildren(parentId: Types.ObjectId | null, sort?: "sortOrder" | "title", opts?: ExecOpts & {
         status?: string;
     }): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -70,6 +86,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -89,14 +113,22 @@ export declare class CategoryRepository {
         slug: string;
         title: string;
         description: string;
+        landingImage?: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        };
         kind: "branch" | "family";
         status?: string;
         sortOrder?: number;
     }, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -105,6 +137,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -121,6 +161,14 @@ export declare class CategoryRepository {
         path: string;
         title: string;
         description: string;
+        landingImage: {
+            url: string;
+            publicId?: string;
+            alt?: string;
+            width?: number;
+            height?: number;
+            format?: string;
+        } | null;
         kind: "branch" | "family";
         status: string;
         sortOrder: number;
@@ -128,10 +176,10 @@ export declare class CategoryRepository {
         activeSpecSchemaId: Types.ObjectId | null;
         publishedAt: Date | null;
     }>, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -140,6 +188,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -152,10 +208,10 @@ export declare class CategoryRepository {
         __v: number;
     }) | null>;
     deleteById(id: Types.ObjectId, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -164,6 +220,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -176,10 +240,10 @@ export declare class CategoryRepository {
         __v: number;
     }) | null>;
     findDescendantsByPathPrefix(prefix: string, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -188,6 +252,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -200,10 +272,10 @@ export declare class CategoryRepository {
         __v: number;
     })[]>;
     findSelfAndDescendants(rootPath: string, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, CatalogCategoryDocument, {}, {}> & {
+        description: string;
         slug: string;
         path: string;
         title: string;
-        description: string;
         kind: "branch" | "family";
         status: "draft" | "published" | "archived";
         sortOrder: number;
@@ -212,6 +284,14 @@ export declare class CategoryRepository {
         documentVersion: number;
         tenantId?: Types.ObjectId | null | undefined;
         parentId?: Types.ObjectId | null | undefined;
+        landingImage?: {
+            url: string;
+            publicId?: string | null | undefined;
+            alt?: string | null | undefined;
+            width?: number | null | undefined;
+            height?: number | null | undefined;
+            format?: string | null | undefined;
+        } | null | undefined;
         activeSpecSchemaId?: Types.ObjectId | null | undefined;
         publishedAt?: NativeDate | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;

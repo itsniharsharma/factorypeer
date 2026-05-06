@@ -4,12 +4,17 @@
 export function registerRequestObservability(app) {
     app.addHook("onResponse", async (req, reply) => {
         const rt = reply.elapsedTime;
-        req.log.info({
+        const payload = {
             reqId: req.id,
             method: req.method,
             url: req.url,
             statusCode: reply.statusCode,
             responseTimeMs: rt,
-        });
+        };
+        if (typeof rt === "number" && rt >= 250) {
+            req.log.warn({ ...payload, slowRequest: true }, "Slow admin API response");
+            return;
+        }
+        req.log.info(payload);
     });
 }

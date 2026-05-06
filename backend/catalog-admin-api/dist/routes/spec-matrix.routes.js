@@ -64,6 +64,10 @@ export async function registerSpecMatrixRoutes(app, services) {
         const body = parseBody(createSpecRowBodySchema, req.body);
         return specMatrix.addRow(id, body, writeContext(req));
     });
+    app.get(`${PREFIX}/spec-rows/:id`, async (req) => {
+        const { id } = parseParams(specRowIdParamsSchema, req.params);
+        return specMatrix.getRow(id, writeContext(req));
+    });
     app.patch(`${PREFIX}/spec-rows/:id`, async (req) => {
         const { id } = parseParams(specRowIdParamsSchema, req.params);
         const body = parseBody(updateSpecRowBodySchema, req.body);

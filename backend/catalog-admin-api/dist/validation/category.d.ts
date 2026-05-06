@@ -4,6 +4,28 @@ export declare const createCategoryBodySchema: z.ZodObject<{
     slug: z.ZodString;
     title: z.ZodString;
     description: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    landingImage: z.ZodOptional<z.ZodObject<{
+        url: z.ZodString;
+        publicId: z.ZodOptional<z.ZodString>;
+        alt: z.ZodOptional<z.ZodString>;
+        width: z.ZodOptional<z.ZodNumber>;
+        height: z.ZodOptional<z.ZodNumber>;
+        format: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    }, {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    }>>;
     kind: z.ZodEnum<["branch", "family"]>;
     status: z.ZodOptional<z.ZodEnum<["draft", "published", "archived"]>>;
     sortOrder: z.ZodOptional<z.ZodNumber>;
@@ -15,6 +37,14 @@ export declare const createCategoryBodySchema: z.ZodObject<{
     status?: "draft" | "published" | "archived" | undefined;
     sortOrder?: number | undefined;
     parentId?: string | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | undefined;
 }, {
     slug: string;
     title: string;
@@ -23,11 +53,41 @@ export declare const createCategoryBodySchema: z.ZodObject<{
     description?: string | undefined;
     sortOrder?: number | undefined;
     parentId?: string | null | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | undefined;
 }>;
 export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     slug: z.ZodOptional<z.ZodString>;
     title: z.ZodOptional<z.ZodString>;
     description: z.ZodOptional<z.ZodString>;
+    landingImage: z.ZodOptional<z.ZodNullable<z.ZodObject<{
+        url: z.ZodString;
+        publicId: z.ZodOptional<z.ZodString>;
+        alt: z.ZodOptional<z.ZodString>;
+        width: z.ZodOptional<z.ZodNumber>;
+        height: z.ZodOptional<z.ZodNumber>;
+        format: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    }, {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    }>>>;
     kind: z.ZodOptional<z.ZodEnum<["branch", "family"]>>;
     status: z.ZodOptional<z.ZodEnum<["draft", "published", "archived"]>>;
     sortOrder: z.ZodOptional<z.ZodNumber>;
@@ -38,6 +98,14 @@ export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
     sortOrder?: number | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | null | undefined;
 }, {
     status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
@@ -45,6 +113,14 @@ export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
     sortOrder?: number | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | null | undefined;
 }>, {
     status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
@@ -52,6 +128,14 @@ export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
     sortOrder?: number | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | null | undefined;
 }, {
     status?: "draft" | "published" | "archived" | undefined;
     description?: string | undefined;
@@ -59,6 +143,14 @@ export declare const updateCategoryBodySchema: z.ZodEffects<z.ZodObject<{
     title?: string | undefined;
     kind?: "family" | "branch" | undefined;
     sortOrder?: number | undefined;
+    landingImage?: {
+        url: string;
+        publicId?: string | undefined;
+        alt?: string | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        format?: string | undefined;
+    } | null | undefined;
 }>;
 export declare const moveCategoryBodySchema: z.ZodObject<{
     newParentId: z.ZodNullable<z.ZodString>;

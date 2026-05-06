@@ -1,6 +1,8 @@
-import type { Types } from "mongoose";
+import { Types } from "mongoose";
 import type { ProductRepository, ProductListFilter } from "../repositories/product.repository.js";
 import type { ProductVariantRepository, VariantListFilter } from "../repositories/product-variant.repository.js";
+import type { CategoryRepository } from "../repositories/category.repository.js";
+import type { SpecSchemaRepository } from "../repositories/spec-schema.repository.js";
 import type { SpecRowRepository } from "../repositories/spec-row.repository.js";
 import type { WriteContext } from "../types/write-context.js";
 import type { CloudinaryService } from "./cloudinary.service.js";
@@ -8,8 +10,19 @@ export declare class ProductService {
     private readonly products;
     private readonly variants;
     private readonly specRows;
+    private readonly categories;
+    private readonly specSchemas;
     private readonly cloudinary;
-    constructor(products: ProductRepository, variants: ProductVariantRepository, specRows: SpecRowRepository, cloudinary: CloudinaryService);
+    constructor(products: ProductRepository, variants: ProductVariantRepository, specRows: SpecRowRepository, categories: CategoryRepository, specSchemas: SpecSchemaRepository, cloudinary: CloudinaryService);
+    private productRequiresPublishedFamilySpec;
+    private pickBindingRow;
+    private assertPublishedSpecRowMatchesProduct;
+    private autoResolveSpecRowIdFromBindings;
+    /**
+     * Sets variant.specRowId when the variant is published, family requires a schema link,
+     * and a published spec row already lists this variant in variantBindings.
+     */
+    tryBackfillSpecRowIdFromBindings(variantId: string, ctx?: WriteContext): Promise<"linked" | "skipped">;
     list(skip?: number, limit?: number, filter?: ProductListFilter, ctx?: WriteContext): Promise<{
         items: (import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").ProductDocument, {}, {}> & {
             slug: string;
@@ -20,24 +33,24 @@ export declare class ProductService {
             categoryIds: Types.ObjectId[];
             searchText: string;
             media: Types.DocumentArray<{
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
                 height?: number | null | undefined;
                 format?: string | null | undefined;
             }, Types.Subdocument<import("bson").ObjectId, any, {
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
                 height?: number | null | undefined;
                 format?: string | null | undefined;
             }> & {
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
@@ -49,19 +62,19 @@ export declare class ProductService {
             applications: string[];
             marketingBullets: string[];
             attachments: Types.DocumentArray<{
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }, Types.Subdocument<import("bson").ObjectId, any, {
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }> & {
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }>;
             relatedProductIds: Types.ObjectId[];
@@ -105,6 +118,7 @@ export declare class ProductService {
         brand: string | null | undefined;
         sku: string;
         itemNumber: string | undefined;
+        mpn: string | undefined;
         manufacturer: string | null | undefined;
         price: string;
         uom: string;
@@ -150,24 +164,24 @@ export declare class ProductService {
             categoryIds: Types.ObjectId[];
             searchText: string;
             media: Types.DocumentArray<{
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
                 height?: number | null | undefined;
                 format?: string | null | undefined;
             }, Types.Subdocument<import("bson").ObjectId, any, {
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
                 height?: number | null | undefined;
                 format?: string | null | undefined;
             }> & {
-                sortOrder: number;
                 url: string;
+                sortOrder: number;
                 publicId?: string | null | undefined;
                 alt?: string | null | undefined;
                 width?: number | null | undefined;
@@ -179,19 +193,19 @@ export declare class ProductService {
             applications: string[];
             marketingBullets: string[];
             attachments: Types.DocumentArray<{
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }, Types.Subdocument<import("bson").ObjectId, any, {
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }> & {
+                url: string;
                 title: string;
                 sortOrder: number;
-                url: string;
                 docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
             }>;
             relatedProductIds: Types.ObjectId[];
@@ -223,6 +237,14 @@ export declare class ProductService {
             __v: number;
         };
     }>;
+    /**
+     * Storefront spec matrix: batch-resolve variants + parent products (replaces per-row GET /variants/:id).
+     * Returns only ids that exist; order follows `ids` (first occurrence). Max 500 ids per request.
+     */
+    getVariantsWithProductsByIds(ids: string[], ctx?: WriteContext): Promise<{
+        variant: Record<string, unknown>;
+        product: Record<string, unknown>;
+    }[]>;
     getProduct(id: string, ctx?: WriteContext): Promise<import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").ProductDocument, {}, {}> & {
         slug: string;
         title: string;
@@ -232,24 +254,24 @@ export declare class ProductService {
         categoryIds: Types.ObjectId[];
         searchText: string;
         media: Types.DocumentArray<{
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }, Types.Subdocument<import("bson").ObjectId, any, {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }> & {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
@@ -261,19 +283,19 @@ export declare class ProductService {
         applications: string[];
         marketingBullets: string[];
         attachments: Types.DocumentArray<{
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }, Types.Subdocument<import("bson").ObjectId, any, {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }> & {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }>;
         relatedProductIds: Types.ObjectId[];
@@ -349,24 +371,24 @@ export declare class ProductService {
         categoryIds: Types.ObjectId[];
         searchText: string;
         media: Types.DocumentArray<{
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }, Types.Subdocument<import("bson").ObjectId, any, {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }> & {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
@@ -378,19 +400,19 @@ export declare class ProductService {
         applications: string[];
         marketingBullets: string[];
         attachments: Types.DocumentArray<{
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }, Types.Subdocument<import("bson").ObjectId, any, {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }> & {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }>;
         relatedProductIds: Types.ObjectId[];
@@ -467,24 +489,24 @@ export declare class ProductService {
         categoryIds: Types.ObjectId[];
         searchText: string;
         media: Types.DocumentArray<{
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }, Types.Subdocument<import("bson").ObjectId, any, {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }> & {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
@@ -496,19 +518,19 @@ export declare class ProductService {
         applications: string[];
         marketingBullets: string[];
         attachments: Types.DocumentArray<{
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }, Types.Subdocument<import("bson").ObjectId, any, {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }> & {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }>;
         relatedProductIds: Types.ObjectId[];
@@ -548,24 +570,24 @@ export declare class ProductService {
         categoryIds: Types.ObjectId[];
         searchText: string;
         media: Types.DocumentArray<{
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }, Types.Subdocument<import("bson").ObjectId, any, {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
             height?: number | null | undefined;
             format?: string | null | undefined;
         }> & {
-            sortOrder: number;
             url: string;
+            sortOrder: number;
             publicId?: string | null | undefined;
             alt?: string | null | undefined;
             width?: number | null | undefined;
@@ -577,19 +599,19 @@ export declare class ProductService {
         applications: string[];
         marketingBullets: string[];
         attachments: Types.DocumentArray<{
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }, Types.Subdocument<import("bson").ObjectId, any, {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }> & {
+            url: string;
             title: string;
             sortOrder: number;
-            url: string;
             docType: "manual" | "datasheet" | "sds" | "certification" | "drawing" | "other";
         }>;
         relatedProductIds: Types.ObjectId[];

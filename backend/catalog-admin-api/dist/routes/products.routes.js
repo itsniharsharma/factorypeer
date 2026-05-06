@@ -2,7 +2,7 @@ import { AppError } from "../errors/app-error.js";
 import { writeContext } from "../http/write-context.js";
 import { parseBody, parseParams, parseQuery } from "../validation/helpers.js";
 import { createProductBodySchema, createVariantBodySchema, linkVariantToRowBodySchema, productIdParamsSchema, updateProductBodySchema, updateVariantBodySchema, variantIdParamsSchema, } from "../validation/product.js";
-import { productListQuerySchema, productSummaryCardsQuerySchema, variantListQuerySchema, } from "../validation/list-queries.js";
+import { productListQuerySchema, productSummaryCardsQuerySchema, variantBundlesQuerySchema, variantListQuerySchema, } from "../validation/list-queries.js";
 import { toObjectId } from "../utils/mongo.js";
 const PREFIX = "/admin/catalog/products";
 export async function registerProductRoutes(app, services) {
@@ -11,6 +11,10 @@ export async function registerProductRoutes(app, services) {
         const q = parseQuery(productSummaryCardsQuerySchema, req.query);
         const ids = q.ids;
         return products.summaryCardsForProductIds(ids, writeContext(req));
+    });
+    app.get(`${PREFIX}/variant-bundles`, async (req) => {
+        const q = parseQuery(variantBundlesQuerySchema, req.query);
+        return products.getVariantsWithProductsByIds(q.ids, writeContext(req));
     });
     app.get(PREFIX, async (req, reply) => {
         const q = parseQuery(productListQuerySchema, req.query);

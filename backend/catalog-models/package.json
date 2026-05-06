@@ -16,16 +16,14 @@
     }
   },
   "files": ["dist"],
-  "peerDependencies": {
-    "mongoose": "^8.0.0"
+  "dependencies": {
+    "mongoose": "^8.8.0"
   },
   "devDependencies": {
-    "mongoose": "^8.8.0",
     "typescript": "^5"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepare": "npm run build",
     "typecheck": "tsc --noEmit"
   }
 }

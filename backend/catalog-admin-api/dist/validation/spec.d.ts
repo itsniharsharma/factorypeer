@@ -40,10 +40,10 @@ export declare const createSpecColumnBodySchema: z.ZodObject<{
     key: string;
     label: string;
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | undefined;
     widthClass?: string | undefined;
@@ -51,10 +51,10 @@ export declare const createSpecColumnBodySchema: z.ZodObject<{
     key: string;
     label: string;
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | undefined;
     widthClass?: string | undefined;
@@ -71,41 +71,41 @@ export declare const updateSpecColumnBodySchema: z.ZodEffects<z.ZodObject<{
     sortOrder: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     label?: string | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | null | undefined;
     widthClass?: string | null | undefined;
 }, {
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     label?: string | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | null | undefined;
     widthClass?: string | null | undefined;
 }>, {
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     label?: string | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | null | undefined;
     widthClass?: string | null | undefined;
 }, {
     sortOrder?: number | undefined;
+    searchIndex?: boolean | undefined;
     label?: string | undefined;
     dataType?: "string" | "number" | "boolean" | "enum" | "dimension" | undefined;
     filterable?: boolean | undefined;
     sortable?: boolean | undefined;
-    searchIndex?: boolean | undefined;
     enumOptions?: string[] | undefined;
     unit?: string | null | undefined;
     widthClass?: string | null | undefined;

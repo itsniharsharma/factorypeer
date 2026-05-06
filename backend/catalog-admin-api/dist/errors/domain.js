@@ -50,3 +50,12 @@ export function categoryHasChildren() {
 export function productHasVariants() {
     return new AppError("Remove all product variants before deleting the product record.", 400, CatalogErrorCodes.HAS_VARIANTS);
 }
+export function variantPublishRequiresSpecRow() {
+    return new AppError("Publishing requires a spec matrix link for this product's family: set variant.specRowId, use Link to row, or add this variant as a binding on a published spec row.", 422, CatalogErrorCodes.VALIDATION_ERROR);
+}
+export function publishedSpecRowRequiresBindings() {
+    return new AppError("A published spec matrix row must list at least one variant binding.", 422, CatalogErrorCodes.VALIDATION_ERROR);
+}
+export function specRowNotLinkedToProductFamily() {
+    return new AppError("That spec row is not on a published family schema for a category this product is assigned to.", 422, CatalogErrorCodes.SPEC_MISMATCH);
+}

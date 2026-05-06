@@ -9,13 +9,13 @@ export declare class SpecColumnRepository {
     listBySpecSchema(specSchemaId: Types.ObjectId, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -32,13 +32,13 @@ export declare class SpecColumnRepository {
     findById(id: Types.ObjectId, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -67,13 +67,13 @@ export declare class SpecColumnRepository {
     }, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -100,13 +100,13 @@ export declare class SpecColumnRepository {
     }>, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -123,13 +123,13 @@ export declare class SpecColumnRepository {
     deleteById(id: Types.ObjectId, opts?: ExecOpts): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;

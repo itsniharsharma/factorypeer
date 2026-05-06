@@ -50,6 +50,7 @@ export class CategoryRepository {
             slug: data.slug,
             title: data.title,
             description: data.description,
+            landingImage: data.landingImage,
             kind: data.kind,
             status: data.status ?? "draft",
             sortOrder: data.sortOrder ?? 0,

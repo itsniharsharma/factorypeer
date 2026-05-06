@@ -26,4 +26,7 @@ export declare function familyRequiredForSpec(): AppError;
 export declare function specSchemaWrongCategory(): AppError;
 export declare function categoryHasChildren(): AppError;
 export declare function productHasVariants(): AppError;
+export declare function variantPublishRequiresSpecRow(): AppError;
+export declare function publishedSpecRowRequiresBindings(): AppError;
+export declare function specRowNotLinkedToProductFamily(): AppError;
 //# sourceMappingURL=domain.d.ts.map

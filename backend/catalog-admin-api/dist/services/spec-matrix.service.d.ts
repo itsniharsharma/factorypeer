@@ -104,13 +104,13 @@ export declare class SpecMatrixService {
     listColumns(schemaId: string, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -127,13 +127,13 @@ export declare class SpecMatrixService {
     addColumn(schemaId: string, input: Record<string, unknown>, ctx?: WriteContext): Promise<(import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -150,13 +150,13 @@ export declare class SpecMatrixService {
     updateColumn(columnId: string, patch: Record<string, unknown>, ctx?: WriteContext): Promise<import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -173,13 +173,13 @@ export declare class SpecMatrixService {
     deleteColumn(columnId: string, ctx?: WriteContext): Promise<import("mongoose").Document<unknown, {}, import("@factorypeer/catalog-models").CatalogSpecColumnDocument, {}, {}> & {
         sortOrder: number;
         documentVersion: number;
+        searchIndex: boolean;
         specSchemaId: Types.ObjectId;
         key: string;
         label: string;
         dataType: "string" | "number" | "boolean" | "enum" | "dimension";
         filterable: boolean;
         sortable: boolean;
-        searchIndex: boolean;
         enumOptions: string[];
         tenantId?: Types.ObjectId | null | undefined;
         createdBy?: Types.ObjectId | null | undefined;
@@ -201,6 +201,7 @@ export declare class SpecMatrixService {
         items: Record<string, unknown>[];
         total: number;
     }>;
+    getRow(rowId: string, ctx?: WriteContext): Promise<Record<string, unknown>>;
     addRow(schemaId: string, input: {
         values?: Record<string, string>;
         variantBindings?: Array<{

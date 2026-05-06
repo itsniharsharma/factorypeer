@@ -2,21 +2,83 @@
  * Uploads non-Cloudinary product/homepage media into Cloudinary and rewrites `image` + `publicId`.
  * Run: npm run migrate:media --prefix backend/catalog-admin-api
  */
-import "dotenv/config";
+import "../bootstrap-env.js";
 import fs from "node:fs";
 import path from "node:path";
 import { v2 as cloudinary } from "cloudinary";
 import { loadConfig } from "../config.js";
 import { connectMongo, disconnectMongo } from "../db/connection.js";
 import { catalogSeedDefaultImageUrl } from "../config/cdn-defaults.js";
-cloudinary.config(true);
+import { assertCloudinarySdkReadyForUpload } from "../services/cloudinary.service.js";
 function publicRoot() {
     return path.resolve(process.cwd(), "..", "..", "public");
 }
 function isCloudinaryDeliveryUrl(url) {
     return /^https?:\/\/res\.cloudinary\.com\//i.test(url.trim());
 }
-async function uploadToCloudinary(sourceUrl, folder) {
+/** Cloudinary remote-upload fetches the URL server-side; 404 means the origin no longer serves the file (not an SDK bug). */
+function isRemoteSourceUnreachable(err) {
+    const o = err;
+    if (o.http_code === 404)
+        return true;
+    const msg = String(o.message ?? err);
+    return /resource not found|status code 404|\b404\b/i.test(msg);
+}
+/** Retry variants: full URL, then path-only (query strings often break older third-party CDNs). */
+function httpsUploadVariants(url) {
+    const trimmed = url.trim();
+    const out = [trimmed];
+    try {
+        const u = new URL(trimmed);
+        const bare = `${u.origin}${u.pathname}`;
+        if (bare !== trimmed)
+            out.push(bare);
+    }
+    catch {
+        /* ignore invalid URL — first attempt will throw */
+    }
+    return [...new Set(out)];
+}
+/**
+ * Upload by remote HTTPS URL. If the origin returns 404 (dead Unsplash/legacy links), retries without `?query`,
+ * then uploads {@link catalogSeedDefaultImageUrl} so the row still lands on your Cloudinary account.
+ */
+async function uploadHttpsToCloudinary(remoteUrl, folder, opts) {
+    const variants = httpsUploadVariants(remoteUrl);
+    let lastUnreachable;
+    for (let i = 0; i < variants.length; i++) {
+        const attempt = variants[i];
+        try {
+            return await cloudinary.uploader.upload(attempt, {
+                folder,
+                resource_type: "auto",
+                invalidate: true,
+            });
+        }
+        catch (e) {
+            if (!isRemoteSourceUnreachable(e))
+                throw e;
+            lastUnreachable = e;
+            if (i < variants.length - 1) {
+                console.warn(`[migrate] remote 404 for ${opts?.label ?? "asset"} — retrying without query (${remoteUrl.slice(0, 88)}…)`);
+                continue;
+            }
+        }
+    }
+    const fallback = catalogSeedDefaultImageUrl();
+    console.warn(`[migrate] remote still unreachable (${remoteUrl.slice(0, 96)}…) — uploading fallback seed: ${fallback}`);
+    try {
+        return await cloudinary.uploader.upload(fallback, {
+            folder,
+            resource_type: "auto",
+            invalidate: true,
+        });
+    }
+    catch (fallbackErr) {
+        throw new Error(`Migration could not fetch ${remoteUrl} and fallback upload failed (${fallback}): ${String(lastUnreachable)} | ${String(fallbackErr)}`);
+    }
+}
+async function uploadToCloudinary(sourceUrl, folder, opts) {
     const raw = sourceUrl.trim();
     if (raw.startsWith("/")) {
         const rel = raw.replace(/^\/+/, "");
@@ -38,7 +100,7 @@ async function uploadToCloudinary(sourceUrl, folder) {
         return cloudinary.uploader.upload(dataUri, { folder, resource_type: "auto", invalidate: true });
     }
     if (/^https?:\/\//i.test(raw)) {
-        return cloudinary.uploader.upload(raw, { folder, resource_type: "auto", invalidate: true });
+        return uploadHttpsToCloudinary(raw, folder, opts);
     }
     throw new Error(`Unsupported media URL: ${raw}`);
 }
@@ -60,7 +122,9 @@ async function migrateProducts(models) {
                 continue;
             }
             try {
-                const res = await uploadToCloudinary(m.url, "factorypeer/migrated/products");
+                const res = await uploadToCloudinary(m.url, "factorypeer/migrated/products", {
+                    label: `product ${String(doc._id)}`,
+                });
                 next.push({
                     url: res.secure_url,
                     publicId: res.public_id,
@@ -98,7 +162,9 @@ async function migrateHomepage(models, modelName, folder) {
         if (isCloudinaryDeliveryUrl(url))
             continue;
         try {
-            const res = await uploadToCloudinary(url, folder);
+            const res = await uploadToCloudinary(url, folder, {
+                label: `${String(modelName)} ${String(doc._id)}`,
+            });
             const alt = o["imageAlt"] ?? image?.alt;
             await Model.updateOne({ _id: doc._id }, {
                 $set: {
@@ -122,10 +188,8 @@ async function migrateHomepage(models, modelName, folder) {
     console.log(`[migrate] ${String(modelName)} migrated rows: ${n}`);
 }
 async function main() {
-    if (!process.env["CLOUDINARY_URL"] && !process.env["CLOUDINARY_CLOUD_NAME"]) {
-        console.error("Set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME before migration.");
-        process.exit(1);
-    }
+    const cld = assertCloudinarySdkReadyForUpload();
+    console.log(`[migrate] Cloudinary: source=${cld.source} cloud_name=${cld.cloudName}`);
     const config = loadConfig();
     const models = await connectMongo(config);
     console.log("[migrate] reference seed URL:", catalogSeedDefaultImageUrl());
