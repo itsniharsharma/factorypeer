@@ -23,7 +23,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit"
+    "build": "node ../../node_modules/typescript/lib/tsc.js -p tsconfig.build.json",
+    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit"
   }
 }
