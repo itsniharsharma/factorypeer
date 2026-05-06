@@ -22,6 +22,10 @@
 # production
 /build
 
+# generated workspace output
+/backend/catalog-admin-api/dist/
+/backend/catalog-models/dist/
+
 # misc
 .DS_Store
 *.pem
