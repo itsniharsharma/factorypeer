@@ -59,6 +59,10 @@ productVariantSchema.index({
     mpn: "text",
     searchBlob: "text",
 });
+// Add single-field indexes to support efficient direct lookups / regex matches
+productVariantSchema.index({ itemNumber: 1 });
+productVariantSchema.index({ mpn: 1 });
+productVariantSchema.index({ searchBlob: 1 });
 export function registerProductVariantSchema() {
     return productVariantSchema;
 }

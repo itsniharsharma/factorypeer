@@ -199,7 +199,7 @@ export class ProductRepository {
       logisticsMeta?: Array<{ label: string; value: string }>;
     },
     opts?: ExecOpts,
-  ) {
+  ): Promise<any> {
     const doc = {
       tenantId: this.tenantId,
       slug: data.slug,
@@ -226,9 +226,9 @@ export class ProductRepository {
     };
     if (opts?.session) {
       const created = await this.models.Product.create([doc], { session: opts.session });
-      return created[0];
+      return created[0]!;
     }
-    return this.models.Product.create(doc);
+    return (await this.models.Product.create(doc)) as any;
   }
 
   async updateById(

@@ -8,6 +8,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -15,7 +16,6 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -30,6 +30,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -37,7 +38,6 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -54,6 +54,7 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -61,7 +62,6 @@ declare const productVariantSchema: Schema<any, Model<any, any, any, any, any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -87,6 +87,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -94,7 +95,6 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -109,6 +109,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -116,7 +117,6 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;
@@ -133,6 +133,7 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     status: "draft" | "published" | "archived";
     sortOrder: number;
     documentVersion: number;
+    searchBlob: string;
     productId: Types.ObjectId;
     sku: string;
     unitPrice: string;
@@ -140,7 +141,6 @@ export declare function registerProductVariantSchema(): Schema<any, Model<any, a
     availability: string;
     leadTime: string;
     packaging: string;
-    searchBlob: string;
     tenantId?: Types.ObjectId | null | undefined;
     publishedAt?: NativeDate | null | undefined;
     createdBy?: Types.ObjectId | null | undefined;

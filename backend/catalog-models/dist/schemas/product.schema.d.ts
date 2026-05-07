@@ -12,6 +12,11 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;
@@ -86,6 +91,11 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;
@@ -162,6 +172,11 @@ declare const productSchema: Schema<any, Model<any, any, any, any, any, any>, {}
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;
@@ -247,6 +262,11 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;
@@ -321,6 +341,11 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;
@@ -397,6 +422,11 @@ export declare function registerProductSchema(): Schema<any, Model<any, any, any
     documentVersion: number;
     categoryIds: Types.ObjectId[];
     searchText: string;
+    searchBlob: string;
+    searchTokens: string[];
+    searchableBrands: string[];
+    searchableCategories: string[];
+    searchableSpecs: string[];
     media: Types.DocumentArray<{
         url: string;
         sortOrder: number;

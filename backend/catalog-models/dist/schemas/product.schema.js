@@ -47,6 +47,12 @@ const productSchema = new Schema({
     categoryIds: [{ type: Schema.Types.ObjectId, ref: "CatalogCategory" }],
     /** Denormalized for MongoDB text index + autocomplete. */
     searchText: { type: String, default: "" },
+    // Denormalized searchable fields for performant product-level search
+    searchBlob: { type: String, default: "" },
+    searchTokens: { type: [String], default: [] },
+    searchableBrands: { type: [String], default: [] },
+    searchableCategories: { type: [String], default: [] },
+    searchableSpecs: { type: [String], default: [] },
     /** PDP gallery — primary + alternates (sorted by sortOrder, then array order). */
     media: { type: [productMediaItemSchema], default: [] },
     /** Full PDP body HTML/markdown-friendly plain text. */
@@ -75,6 +81,11 @@ const productSchema = new Schema({
 }, { timestamps: true });
 productSchema.index({ tenantId: 1, slug: 1 }, { unique: true });
 productSchema.index({ status: 1, title: "text", searchText: "text" });
+// Product-level search indexes for denormalized fields
+productSchema.index({ searchBlob: "text" });
+productSchema.index({ searchTokens: 1 });
+productSchema.index({ searchableBrands: 1 });
+productSchema.index({ searchableCategories: 1 });
 /** Featured / recently updated listings (`sort=-updatedAt`). */
 productSchema.index({ status: 1, updatedAt: -1 });
 /** Category browse / PLP (`categoryId` + published filter). */
