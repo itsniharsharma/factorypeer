@@ -25,19 +25,24 @@ function filterPublished(nodes: CategoryDoc[]): CategoryDoc[] {
 }
 
 function categoryToTaxonomyNode(doc: CategoryDoc): CatalogTaxonomyNode {
+  const children = (doc.children ?? []).map(categoryToTaxonomyNode);
+  // Use denormalized productCount when available, otherwise compute from children.
+  const ownCount = typeof (doc as any).productCount === "number" ? (doc as any).productCount : 0;
+  const aggregated = ownCount + children.reduce((s, c) => s + (c.productCount ?? 0), 0);
+
   return {
     id: doc._id,
     slug: doc.slug,
     title: doc.title,
     description: doc.description ?? "",
-    productCount: 0,
+    productCount: aggregated,
     landingImage: doc.landingImage?.url
       ? {
           url: doc.landingImage.url,
           alt: doc.landingImage.alt,
         }
       : undefined,
-    children: (doc.children ?? []).map(categoryToTaxonomyNode),
+    children,
     filters: [],
     matrix: undefined,
     kind: doc.kind,
