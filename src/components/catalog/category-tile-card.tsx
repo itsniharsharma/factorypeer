@@ -21,13 +21,10 @@ export function CategoryTileCard({
   ctaLabel = null,
   compact = false,
 }: CategoryTileCardProps) {
-  // Larger, more prominent square image frames:
-  // - compact: slightly larger than before for homepage compact grids
-  // - regular: larger hero-ish tile for category pages
   const tileImageSize = compact ? "w-28 sm:w-32" : "w-36 sm:w-40";
   const inner = (
     <div className={`flex h-full min-h-[240px] flex-col items-center text-center ${compact ? "p-3" : "p-4"}`}>
-      <div className={`relative ${tileImageSize} aspect-square overflow-hidden rounded-sm border border-slate-200 bg-slate-50`}>
+      <div className={`relative ${tileImageSize} aspect-square overflow-hidden`}>
         {image ? (
           <Image
             src={image}
