@@ -23,6 +23,7 @@ import type { WriteContext } from "../types/write-context.js";
 import type { CloudinaryService } from "./cloudinary.service.js";
 import { invalidateCatalogCache } from "../utils/cache.js";
 import { adminCacheAside } from "../utils/admin-cache.js";
+import { normalizeAndTokenize, normalizeForBlob, normalizeArrayStrings } from "../utils/search-normalize.js";
 
 function mediaPublicIds(media?: Array<{ publicId?: string | null }>): Set<string> {
   const s = new Set<string>();
@@ -186,6 +187,75 @@ export class ProductService {
         return { items, total };
       },
     });
+  }
+
+  /**
+   * Compute deterministic searchable fields for a product and persist them.
+   * Keeps data normalized: lowercased, trimmed, punctuation-normalized, deduped.
+   */
+  private async computeAndSyncProductSearchFields(productId: Types.ObjectId, ctx?: WriteContext) {
+    const opt = eo(ctx);
+    const p = await this.products.findById(productId, eoSelect(ctx, undefined, "title slug searchText brand categoryIds"));
+    if (!p) return;
+
+    // Gather variant-level tokens
+    const variants = await this.variants.listByProduct(productId, { ...eo(ctx), status: "published", limit: 1000 });
+    const variantSkus = variants.map((v) => (v.sku as string) ?? "");
+    const variantItemNumbers = variants.map((v) => (v.itemNumber as string) ?? "");
+    const variantMpns = variants.map((v) => (v.mpn as string) ?? "");
+    const variantBlob = variants.map((v) => (v.searchBlob as string) ?? "").join(" ");
+
+    // Gather category tokens (slug, path, title)
+    const catIds = (p.categoryIds ?? []) as Types.ObjectId[];
+    const catTokens: string[] = [];
+    for (const cid of catIds) {
+      const c = await this.categories.findById(cid, opt);
+      if (!c) continue;
+      if (typeof c.slug === "string") catTokens.push(String(c.slug));
+      if (typeof c.path === "string") catTokens.push(String(c.path));
+      if (typeof c.title === "string") catTokens.push(String(c.title));
+    }
+
+    // Gather spec row tokens from variants' specRowId
+    const specRowIds = new Set<string>();
+    for (const v of variants) if (v.specRowId) specRowIds.add(String(v.specRowId));
+    const specTokens: string[] = [];
+    for (const sid of Array.from(specRowIds)) {
+      try {
+        const r = await this.specRows.findById(toObjectId(sid), opt);
+        if (!r) continue;
+        // values may be stored as a Map — extract safely
+        const vals: string[] = [];
+        if (r.values instanceof Map) {
+          for (const v of Array.from(r.values.values())) if (typeof v === "string") vals.push(v);
+        } else if (typeof r.values === "object" && r.values !== null) {
+          for (const v of Object.values(r.values as Record<string, string>)) if (typeof v === "string") vals.push(v);
+        }
+        specTokens.push(r._id.toString(), ...vals);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    // Compose searchable fields
+    const title = String(p.title ?? "");
+    const slug = String(p.slug ?? "");
+    const brand = String(p.brand ?? "");
+    const searchText = String(p.searchText ?? "");
+
+    const tokens = normalizeAndTokenize(title, slug, searchText, brand, ...variantSkus, ...variantItemNumbers, ...variantMpns, ...catTokens, ...specTokens);
+    const blob = normalizeForBlob(title, slug, searchText, brand, variantBlob, ...catTokens, ...specTokens);
+    const brands = normalizeArrayStrings([brand]);
+    const categories = normalizeArrayStrings(catTokens);
+    const specs = normalizeArrayStrings(specTokens);
+
+    await this.products.updateById(productId, {
+      searchTokens: tokens,
+      searchBlob: blob,
+      searchableBrands: brands,
+      searchableCategories: categories,
+      searchableSpecs: specs,
+    }, eo(ctx));
   }
 
   /**
@@ -390,6 +460,13 @@ export class ProductService {
         eo(ctx),
       );
       await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      // Sync denormalized searchable fields for new product
+      try {
+        await this.computeAndSyncProductSearchFields(created._id, ctx);
+      } catch (err) {
+        // Don't block creation on search sync failures; log and continue
+        console.error("[search-sync] failed to compute searchable fields:", err instanceof Error ? err.message : err);
+      }
       return created;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -474,6 +551,11 @@ export class ProductService {
       if (!p) throw resourceNotFound("Product", id);
       for (const pid of orphanPublicIds) await this.cloudinary.destroy(pid);
       await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      try {
+        await this.computeAndSyncProductSearchFields(p._id, ctx);
+      } catch (err) {
+        console.error("[search-sync] failed to compute searchable fields:", err instanceof Error ? err.message : err);
+      }
       return p;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -578,6 +660,12 @@ export class ProductService {
         eo(ctx),
       );
       await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      // Sync product-level searchable fields since variants changed
+      try {
+        await this.computeAndSyncProductSearchFields(toObjectId(productId), ctx);
+      } catch (err) {
+        console.error("[search-sync] failed to compute searchable fields:", err instanceof Error ? err.message : err);
+      }
       return created;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -645,6 +733,11 @@ export class ProductService {
       );
       if (!v) throw resourceNotFound("ProductVariant", variantId);
       await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+      try {
+        await this.computeAndSyncProductSearchFields(v.productId as Types.ObjectId, ctx);
+      } catch (err) {
+        console.error("[search-sync] failed to compute searchable fields:", err instanceof Error ? err.message : err);
+      }
       return v;
     } catch (e) {
       const mapped = mapMongoDuplicate(e);
@@ -656,6 +749,13 @@ export class ProductService {
   async deleteVariant(variantId: string, ctx?: WriteContext) {
     const deleted = await this.variants.deleteById(toObjectId(variantId), eo(ctx));
     await invalidateCatalogCache(["product", "search", "category", "homepage"]);
+    // Recompute parent product searchable fields (best-effort)
+    try {
+      const prodId = toObjectId((deleted as any)?.productId);
+      if (prodId) await this.computeAndSyncProductSearchFields(prodId, ctx);
+    } catch (err) {
+      console.error("[search-sync] failed to compute searchable fields after delete:", err instanceof Error ? err.message : err);
+    }
     return deleted;
   }
 

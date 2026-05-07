@@ -1,19 +1,16 @@
-"use client";
-
-import Link from "next/link";
-import { Fragment, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { CatalogSpecMatrix } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import SpecMatrixRowClient from "./spec-matrix-row.client";
 
 interface SpecMatrixTableProps {
   matrix: CatalogSpecMatrix;
 }
 
+// Server component: render table header and rows server-side. Each row
+// is a small client component responsible only for expand/collapse and
+// cart interactions. This reduces hydration by keeping table structure on
+// the server and isolating interactive islands.
 export function SpecMatrixTable({ matrix }: SpecMatrixTableProps) {
-  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
-
   return (
     <section className="overflow-x-auto border border-line bg-white">
       <table className="min-w-[980px] w-full border-collapse">
@@ -36,65 +33,9 @@ export function SpecMatrixTable({ matrix }: SpecMatrixTableProps) {
           </tr>
         </thead>
         <tbody>
-          {matrix.rows.map((row) => {
-            const isOpen = expandedRowId === row.id;
-            return (
-              <Fragment key={row.id}>
-                <tr className="border-b border-line">
-                  <td className="px-2 py-1.5 align-top">
-                    <button
-                      type="button"
-                      onClick={() => setExpandedRowId(isOpen ? null : row.id)}
-                      className="h-6 w-6 border border-line bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
-                    >
-                      {isOpen ? "-" : "+"}
-                    </button>
-                  </td>
-                  {matrix.columns.map((column) => (
-                    <td
-                      key={`${row.id}-${column.id}`}
-                      className="px-2 py-1.5 align-top text-[11px] text-slate-800"
-                    >
-                      {row.values[column.id]}
-                    </td>
-                  ))}
-                </tr>
-                {isOpen ? (
-                  <tr className="border-b border-line bg-slate-50">
-                    <td />
-                    <td colSpan={matrix.columns.length} className="px-2 py-2">
-                      <div className="grid gap-2 md:grid-cols-[1fr_auto_auto] md:items-end">
-                        <div>
-                          <Link
-                            href={row.productSlug && row.productSlug !== "—" ? `/product/${row.productSlug}` : "#"}
-                            className="text-xs font-bold text-slate-900 hover:text-brand hover:underline"
-                          >
-                            {row.productTitle}
-                          </Link>
-                          <p className="mt-0.5 text-[11px] text-slate-600">
-                            Item #: {row.itemNumber} | SKU: {row.sku}
-                          </p>
-                          <p className="mt-0.5 text-[11px] font-semibold text-emerald-700">
-                            {row.availability}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-slate-500">Qty</p>
-                          <Input defaultValue="1" className="h-7 w-16 px-1.5 text-xs" />
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-bold text-slate-900">{row.unitPrice}</p>
-                          <Button variant="primary" size="sm" className="h-7 text-[11px]">
-                            Add to Cart
-                          </Button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ) : null}
-              </Fragment>
-            );
-          })}
+          {matrix.rows.map((row) => (
+            <SpecMatrixRowClient key={row.id} row={row} columns={matrix.columns} columnCount={matrix.columns.length} />
+          ))}
         </tbody>
       </table>
     </section>

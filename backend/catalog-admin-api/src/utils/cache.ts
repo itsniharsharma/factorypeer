@@ -6,48 +6,7 @@ type CacheScope =
   | "search"
   | "supplier"
   | "taxonomy";
-
-function redisBaseUrl(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_URL"]?.trim().replace(/\/$/, "") || undefined;
-}
-
-function redisToken(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_TOKEN"]?.trim() || undefined;
-}
-
-function isRedisConfigured(): boolean {
-  return Boolean(redisBaseUrl() && redisToken());
-}
-
-async function redisFetch(path: string, init?: RequestInit): Promise<Response> {
-  const base = redisBaseUrl();
-  const token = redisToken();
-  if (!base || !token) {
-    return new Response(null, { status: 503 });
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    const res = await fetch(`${base}/${path.replace(/^\//, "")}`, {
-      ...init,
-      cache: "no-store",
-      headers: {
-        authorization: `Bearer ${token}`,
-        ...(init?.headers ?? {}),
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    return res;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    // Fail gracefully - don't crash the API
-    console.error("[cache] redis fetch error:", err instanceof Error ? err.message : err);
-    return new Response(null, { status: 503 });
-  }
-}
+import { isRedisConfigured, redisFetch } from "./redis-client.js";
 
 async function redisGetVersion(scope: CacheScope): Promise<number> {
   if (!isRedisConfigured()) return 0;

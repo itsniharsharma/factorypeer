@@ -101,6 +101,36 @@ export class ProductRepository {
     filter?: ProductListFilter,
     opts?: ExecOpts,
   ) {
+    // Prefer product-level denormalized search: use searchTokens/searchBlob
+    if (filter?.q?.trim()) {
+      const qtext = filter.q.trim();
+      const rx = new RegExp(escapeRegex(qtext), "i");
+      const tokens = qtext.split(/\s+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+
+      const match: Record<string, unknown> = { ...this.tq() };
+      if (filter?.status) match["status"] = filter.status;
+      if (filter?.categoryId) match["categoryIds"] = filter.categoryId;
+      if (filter?.ids && filter.ids.length > 0) {
+        match["_id"] = { $in: filter.ids };
+        const q = this.models.Product.find(match).skip(skip).limit(limit);
+        const select = (opts as ExecOpts & { select?: string }).select;
+        if (select) q.select(select);
+        return withSession(q, opts?.session).exec();
+      }
+
+      // Match if searchBlob regex matches OR any token is present in searchTokens
+      match["$or"] = [{ searchBlob: rx }];
+      if (tokens.length > 0) (match["$or"] as any[]).push({ searchTokens: { $in: tokens } });
+
+      const sort = sortFromFilter(filter?.sort);
+      let q = this.models.Product.find(match).sort(sort).skip(skip).limit(limit);
+      const select = (opts as ExecOpts & { select?: string }).select;
+      if (select) q.select(select);
+      q = withSession(q, opts?.session);
+      return q.exec();
+    }
+
+    // Fallback to previous filter path for non-text queries
     const mongoFilter = await this.buildListFilter(filter, opts);
     const sort = sortFromFilter(filter?.sort);
     let q = this.models.Product.find(mongoFilter).sort(sort).skip(skip).limit(limit);
@@ -113,6 +143,28 @@ export class ProductRepository {
   }
 
   async count(filter?: ProductListFilter, opts?: ExecOpts) {
+    if (filter?.q?.trim()) {
+      const qtext = filter.q.trim();
+      const rx = new RegExp(escapeRegex(qtext), "i");
+      const tokens = qtext.split(/\s+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+      const match: Record<string, unknown> = { ...this.tq() };
+      if (filter?.status) match["status"] = filter.status;
+      if (filter?.categoryId) match["categoryIds"] = filter.categoryId;
+      if (filter?.ids && filter.ids.length > 0) {
+        match["_id"] = { $in: filter.ids };
+        let q = this.models.Product.countDocuments(match);
+        q = withSession(q, opts?.session);
+        return q.exec();
+      }
+
+      match["$or"] = [{ searchBlob: rx }];
+      if (tokens.length > 0) (match["$or"] as any[]).push({ searchTokens: { $in: tokens } });
+
+      let q = this.models.Product.countDocuments(match);
+      q = withSession(q, opts?.session);
+      return q.exec();
+    }
+
     const mongoFilter = await this.buildListFilter(filter, opts);
     let q = this.models.Product.countDocuments(mongoFilter);
     q = withSession(q, opts?.session);
@@ -208,6 +260,12 @@ export class ProductRepository {
       shippingWeight?: string | null;
       branchAvailabilityPlaceholder?: string | null;
       logisticsMeta?: Array<{ label: string; value: string }> | null;
+      // denormalized searchable fields
+      searchBlob?: string | null;
+      searchTokens?: string[];
+      searchableBrands?: string[];
+      searchableCategories?: string[];
+      searchableSpecs?: string[];
     }>,
     opts?: ExecOpts,
   ) {

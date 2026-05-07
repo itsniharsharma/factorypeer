@@ -23,21 +23,11 @@ type CacheReadOptions<T> = {
   loader: () => Promise<T>;
 };
 
+import { redisGetJson, redisSetJson } from "./redis-client.js";
+
 const pendingLoads = new Map<string, Promise<unknown>>();
 const memoryCache = new Map<string, CacheEnvelope<unknown>>();
 const scopeVersionMemo = new Map<CacheScope, { version: number; loadedAt: number }>();
-
-function redisBaseUrl(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_URL"]?.trim().replace(/\/$/, "") || undefined;
-}
-
-function redisToken(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_TOKEN"]?.trim() || undefined;
-}
-
-function isRedisConfigured(): boolean {
-  return Boolean(redisBaseUrl() && redisToken());
-}
 
 function cacheKey(scope: CacheScope, key: string): string {
   return `fp:admin:${scope}:${key}`;
@@ -47,49 +37,7 @@ function scopeVersionKey(scope: CacheScope): string {
   return `fp:version:${scope}`;
 }
 
-async function redisFetch(path: string, init?: RequestInit): Promise<Response> {
-  const base = redisBaseUrl();
-  const token = redisToken();
-  if (!base || !token) {
-    return new Response(null, { status: 503 });
-  }
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-  try {
-    const res = await fetch(`${base}/${path.replace(/^\//, "")}`, {
-      ...init,
-      cache: "no-store",
-      headers: {
-        authorization: `Bearer ${token}`,
-        ...(init?.headers ?? {}),
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-    return res;
-  } catch {
-    clearTimeout(timeoutId);
-    return new Response(null, { status: 503 });
-  }
-}
-
-async function redisGetJson<T>(key: string): Promise<T | undefined> {
-  if (!isRedisConfigured()) return undefined;
-  const res = await redisFetch(`get/${encodeURIComponent(key)}`);
-  if (!res.ok) return undefined;
-  try {
-    const payload = (await res.json()) as { result?: T };
-    return payload.result;
-  } catch {
-    return undefined;
-  }
-}
-
-async function redisSetJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
-  if (!isRedisConfigured()) return;
-  const body = encodeURIComponent(JSON.stringify(value));
-  await redisFetch(`set/${encodeURIComponent(key)}/${body}?ex=${ttlSeconds}`, { method: "POST" });
-}
+// redisGetJson and redisSetJson are imported from redis-client
 
 async function getScopeVersion(scope: CacheScope): Promise<number> {
   const now = Date.now();

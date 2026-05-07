@@ -23,6 +23,12 @@
     "migrate:media": "tsx src/scripts/migrate-legacy-media-to-cloudinary.ts",
     "reset:electrical-showcase": "tsx src/scripts/reset-catalog-and-rebuild-electrical.ts",
     "repair:spec-linkage": "tsx src/scripts/repair-spec-linkage.ts"
+    ,
+    "create:indexes": "tsx src/scripts/create-search-indexes.ts",
+    "backup:search-fields": "tsx src/scripts/backup-search-fields.ts",
+    "migrate:search-fields": "tsx src/scripts/migrate-search-fields.ts",
+    "verify:search-fields": "tsx src/scripts/verify-search-fields.ts",
+    "benchmark:search": "tsx src/scripts/benchmark-search.ts"
   },
   "dependencies": {
     "@factorypeer/catalog-models": "file:../catalog-models",
