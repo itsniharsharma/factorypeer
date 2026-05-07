@@ -101,7 +101,6 @@ export interface CatalogCategoryPageData {
   subcategories: CatalogLinkItem[];
   featuredSubcategories: CategoryTile[];
   relatedCategories: CatalogLinkItem[];
-  featuredProducts: Product[];
 }
 
 export interface ProductListingPageData {

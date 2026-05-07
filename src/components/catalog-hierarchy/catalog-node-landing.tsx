@@ -1,20 +1,17 @@
 import Image from "next/image";
 import CategoryTileCard from "@/components/catalog/category-tile-card";
-import { ProductCard } from "@/components/ui/product-card";
-import { CatalogBreadcrumb, CatalogTaxonomyNode, Product } from "@/lib/types";
+import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
 
 interface CatalogNodeLandingProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
-  featuredProducts?: Product[];
 }
 
 export function CatalogNodeLanding({
   node,
   breadcrumbs,
   pathSegments,
-  featuredProducts = [],
 }: CatalogNodeLandingProps) {
   const sectionTitle =
     pathSegments.length === 1
@@ -91,19 +88,6 @@ export function CatalogNodeLanding({
           </div>
         </section>
       </section>
-
-      {featuredProducts.length > 0 ? (
-        <section className="border border-line bg-white p-2.5">
-          <h2 className="mb-1.5 text-xs font-bold uppercase tracking-[0.15em] text-slate-700">
-            Featured Products
-          </h2>
-          <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }

@@ -1,19 +1,17 @@
 import { CatalogNodeLanding } from "@/components/catalog-hierarchy/catalog-node-landing";
 import { SpecMatrixRenderer } from "@/components/catalog-hierarchy/spec-matrix-renderer";
-import { CatalogBreadcrumb, CatalogTaxonomyNode, Product } from "@/lib/types";
+import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
 
 interface CatalogHierarchyRendererProps {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
-  featuredProducts?: Product[];
 }
 
 export function CatalogHierarchyRenderer({
   node,
   breadcrumbs,
   pathSegments,
-  featuredProducts = [],
 }: CatalogHierarchyRendererProps) {
   if (node.matrix) {
     return (
@@ -30,7 +28,6 @@ export function CatalogHierarchyRenderer({
       node={node}
       breadcrumbs={breadcrumbs}
       pathSegments={pathSegments}
-      featuredProducts={featuredProducts}
     />
   );
 }

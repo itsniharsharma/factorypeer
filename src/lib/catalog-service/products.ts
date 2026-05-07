@@ -488,37 +488,3 @@ export async function getProductListingSlugs(): Promise<string[]> {
 }
 
 /** Recently updated published products for the home page (with first variant for price/SKU). */
-export async function getFeaturedHomeProducts(limit = 6): Promise<Product[]> {
-  return cacheAside({
-    namespace: "homepage",
-    key: `featured-products:${limit}`,
-    ttlSeconds: 10 * 60,
-    staleWhileRevalidateSeconds: 3 * 60,
-    label: "featured-products",
-    loader: async () => {
-      const { data: products } = await catalogServerJsonList<ProductDoc[]>(
-        `/products?status=published&limit=${limit}&sort=-updatedAt`,
-      );
-      const cards = await summaryCardsMapForProducts(products, {
-        next: { revalidate: 60, tags: ["catalog", "featured-summary-cards"] },
-      });
-      return products.map((p) => {
-        const row = cards.get(String(p._id));
-        const price = row?.price ?? "—";
-        return {
-          id: p._id,
-          slug: p.slug,
-          title: p.title,
-          sku: row?.sku ?? "—",
-          itemNumber: row?.itemNumber,
-          manufacturer: row?.manufacturer ?? p.brand ?? "—",
-          thumbnail: productThumbnailUrl(p),
-          price,
-          uom: row?.uom ?? "Each",
-          status: mapVariantStatus(row?.availability),
-          leadTime: "—",
-        };
-      });
-    },
-  });
-}

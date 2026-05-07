@@ -32,7 +32,6 @@ export {
   getProductListingBySlug,
   getProductListingSlugs,
   getProductsByIds,
-  getFeaturedHomeProducts,
 } from "./products";
 export {
   getHomepagePromoBanners,
