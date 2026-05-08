@@ -102,7 +102,7 @@ async function redisFetch(path: string, init?: RequestInit): Promise<Response> {
   }
 }
 
-async function redisGetJson<T>(key: string): Promise<T | undefined> {
+export async function redisGetJson<T>(key: string): Promise<T | undefined> {
   if (!isRedisConfigured()) return undefined;
   try {
     const res = await redisFetch(`get/${encodeURIComponent(key)}`);
@@ -120,7 +120,7 @@ async function redisGetJson<T>(key: string): Promise<T | undefined> {
   }
 }
 
-async function redisSetJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+export async function redisSetJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
   if (!isRedisConfigured()) return;
   try {
     const body = encodeURIComponent(JSON.stringify(value));
@@ -152,6 +152,23 @@ async function redisDelete(key: string): Promise<void> {
     }
   } catch (err) {
     logCache("redis-delete-error", { key, error: String(err) });
+  }
+}
+
+export async function deleteRedisKey(key: string): Promise<void> {
+  await redisDelete(key);
+}
+
+export async function incrementRedisKey(key: string): Promise<number | undefined> {
+  if (!isRedisConfigured()) return undefined;
+  try {
+    const res = await redisFetch(`incr/${encodeURIComponent(key)}`, { method: "POST" });
+    if (!res.ok) return undefined;
+    const payload = (await res.json()) as { result?: number };
+    return typeof payload.result === "number" && Number.isFinite(payload.result) ? payload.result : undefined;
+  } catch (err) {
+    logCache("redis-increment-error", { key, error: String(err) });
+    return undefined;
   }
 }
 

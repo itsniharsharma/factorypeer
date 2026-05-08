@@ -1,55 +1,18 @@
 import { cache } from "react";
-import type { CategoryDoc } from "@/lib/admin-api/types";
 import type {
   CatalogBreadcrumb,
   CatalogTaxonomyNode,
   MegaMenuRootGroup,
 } from "@/lib/types";
-import { catalogServerJson } from "./fetch";
 import { buildSpecMatrixPage, DEFAULT_MATRIX_PAGE_SIZE } from "./matrix";
 import { cacheAside } from "@/lib/cache/redis-cache";
+import graphStore from "@/lib/taxonomy/graph-store";
 
 export type CatalogRouteContext = {
   node: CatalogTaxonomyNode;
   breadcrumbs: CatalogBreadcrumb[];
   pathSegments: string[];
 };
-
-function filterPublished(nodes: CategoryDoc[]): CategoryDoc[] {
-  return nodes
-    .filter((n) => n.status === "published")
-    .map((n) => ({
-      ...n,
-      children: n.children?.length ? filterPublished(n.children) : [],
-    }));
-}
-
-function categoryToTaxonomyNode(doc: CategoryDoc): CatalogTaxonomyNode {
-  const children = (doc.children ?? []).map(categoryToTaxonomyNode);
-  // Use denormalized productCount when available, otherwise compute from children.
-  const ownCount = typeof (doc as any).productCount === "number" ? (doc as any).productCount : 0;
-  const aggregated = ownCount + children.reduce((s, c) => s + (c.productCount ?? 0), 0);
-
-  return {
-    id: doc._id,
-    slug: doc.slug,
-    title: doc.title,
-    description: doc.description ?? "",
-    productCount: aggregated,
-    landingImage: doc.landingImage?.url
-      ? {
-          url: doc.landingImage.url,
-          alt: doc.landingImage.alt,
-        }
-      : undefined,
-    children,
-    filters: [],
-    matrix: undefined,
-    kind: doc.kind,
-    activeSpecSchemaId: doc.activeSpecSchemaId ?? null,
-    sortOrder: doc.sortOrder ?? 0,
-  };
-}
 
 /** Deterministic sibling order from admin `sortOrder`. */
 export function sortTaxonomySiblings(nodes: CatalogTaxonomyNode[]): CatalogTaxonomyNode[] {
@@ -86,6 +49,7 @@ export function buildMegaMenuGroups(tree: CatalogTaxonomyNode[]): MegaMenuRootGr
 }
 
 export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> => {
+  // Backwards-compatible: reconstruct the recursive tree from the canonical graph
   return cacheAside({
     namespace: "taxonomy",
     key: "tree",
@@ -93,8 +57,29 @@ export const getTaxonomyTree = cache(async (): Promise<CatalogTaxonomyNode[]> =>
     staleWhileRevalidateSeconds: 15 * 60,
     label: "taxonomy-tree",
     loader: async () => {
-      const raw = await catalogServerJson<CategoryDoc[]>("/categories/tree");
-      return sortTreeRecursive(filterPublished(raw).map(categoryToTaxonomyNode));
+      const g = await graphStore.getCanonicalGraph();
+      // Recreate nested CatalogTaxonomyNode structure from graph (small, fast in-memory transform)
+      function nodeFromId(id: string): CatalogTaxonomyNode {
+        const meta = g.byId[id];
+        const children = (g.childrenByParent[id] ?? []).map((cid) => nodeFromId(cid));
+        return {
+          id: meta.id,
+          slug: meta.slug,
+          title: meta.title,
+          description: meta.description ?? "",
+          productCount: meta.productCount ?? 0,
+          landingImage: meta.landingImage,
+          children,
+          filters: [],
+          matrix: undefined,
+          kind: meta.kind,
+          activeSpecSchemaId: meta.activeSpecSchemaId ?? null,
+          sortOrder: meta.sortOrder ?? 0,
+        };
+      }
+
+      const roots = g.rootNodes.map((id) => nodeFromId(id));
+      return sortTreeRecursive(roots);
     },
   });
 });
@@ -128,37 +113,6 @@ export function findTaxonomyNodeById(
   return undefined;
 }
 
-function findNodeAtPath(
-  segments: string[],
-  nodes: CatalogTaxonomyNode[],
-): CatalogTaxonomyNode | undefined {
-  if (segments.length === 0) return undefined;
-  const [head, ...rest] = segments;
-  const n = nodes.find((c) => c.slug === head);
-  if (!n) return undefined;
-  if (rest.length === 0) return n;
-  return findNodeAtPath(rest, n.children);
-}
-
-function buildBreadcrumbTrail(
-  segments: string[],
-  tree: CatalogTaxonomyNode[],
-): CatalogBreadcrumb[] {
-  const crumbs: CatalogBreadcrumb[] = [];
-  const acc: string[] = [];
-  for (const seg of segments) {
-    acc.push(seg);
-    const node = findNodeAtPath(acc, tree);
-    if (node) {
-      crumbs.push({
-        label: node.title,
-        href: `/category/${acc.join("/")}`,
-      });
-    }
-  }
-  return crumbs;
-}
-
 /**
  * @param pathKey - Category path as `segment/segment/...` (primitives for React `cache` key stability).
  * @param matrixPage - 0-based matrix page for family nodes (`?m=` on category URL).
@@ -168,10 +122,40 @@ export const getRouteContext = cache(
     const pathSegments = pathKey.length > 0 ? pathKey.split("/") : [];
     const page = Math.max(0, Math.floor(matrixPage));
     if (pathSegments.length === 0) return undefined;
-    const tree = await getTaxonomyTree();
-    const node = findNodeAtPath(pathSegments, tree);
-    if (!node) return undefined;
-    const breadcrumbs = buildBreadcrumbTrail(pathSegments, tree);
+    // Fast path: use canonical graph for O(1) lookups
+    const nodeMeta = await graphStore.getNodeBySlugPath(pathSegments);
+    if (!nodeMeta) return undefined;
+    const breadcrumbs = await graphStore.getBreadcrumbsForNode(nodeMeta.id);
+    // Build a minimal CatalogTaxonomyNode for the current node with immediate children
+    const children = (await graphStore.getChildren(nodeMeta.id)).map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      title: c.title,
+      description: c.description ?? "",
+      productCount: c.productCount ?? 0,
+      landingImage: c.landingImage,
+      children: [],
+      filters: [],
+      matrix: undefined,
+      kind: c.kind,
+      activeSpecSchemaId: c.activeSpecSchemaId ?? null,
+      sortOrder: c.sortOrder ?? 0,
+    }));
+
+    const node: CatalogTaxonomyNode = {
+      id: nodeMeta.id,
+      slug: nodeMeta.slug,
+      title: nodeMeta.title,
+      description: nodeMeta.description ?? "",
+      productCount: nodeMeta.productCount ?? 0,
+      landingImage: nodeMeta.landingImage,
+      children,
+      filters: [],
+      matrix: undefined,
+      kind: nodeMeta.kind,
+      activeSpecSchemaId: nodeMeta.activeSpecSchemaId ?? null,
+      sortOrder: nodeMeta.sortOrder ?? 0,
+    };
 
     let enriched: CatalogTaxonomyNode = node;
     if (node.kind === "family" && node.activeSpecSchemaId) {
@@ -197,4 +181,3 @@ export const getRouteContext = cache(
     };
   },
 );
-
