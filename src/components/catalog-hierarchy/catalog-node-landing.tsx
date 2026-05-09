@@ -1,5 +1,6 @@
-import Image from "next/image";
 import CategoryTileCard from "@/components/catalog/category-tile-card";
+import { CategoryCompositionComponent } from "@/components/composition";
+import { getCompositionBySlugPath } from "@/lib/composition/loader";
 import { CatalogBreadcrumb, CatalogTaxonomyNode } from "@/lib/types";
 
 interface CatalogNodeLandingProps {
@@ -8,7 +9,7 @@ interface CatalogNodeLandingProps {
   pathSegments: string[];
 }
 
-export function CatalogNodeLanding({
+export async function CatalogNodeLanding({
   node,
   breadcrumbs,
   pathSegments,
@@ -20,6 +21,10 @@ export function CatalogNodeLanding({
         ? "Child Families"
         : "Child Subcategories";
 
+  // Load composition if it exists for this category
+  const slugPath = pathSegments.join("/");
+  const composition = await getCompositionBySlugPath(slugPath);
+
   return (
     <div className="space-y-2">
       <section className="border border-line bg-white px-2.5 py-1.5">
@@ -30,6 +35,14 @@ export function CatalogNodeLanding({
           <blockquote className="mt-2 border-l-2 border-slate-100 pl-3 italic text-[13px] text-slate-600">{node.description}</blockquote>
         ) : null}
       </section>
+
+      {/* Render composition if it exists */}
+      {composition && (
+        <CategoryCompositionComponent
+          composition={composition}
+          productCount={node.productCount}
+        />
+      )}
 
       <section className="grid gap-2 lg:grid-cols-[220px_1fr]">
         <aside className="border border-line bg-white">

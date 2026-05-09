@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { getRedisConfig, isDebugEnabled } from "@/config/server-env";
 
 type CacheNamespace =
   | "category"
@@ -30,20 +31,13 @@ const pendingLoads = new Map<string, Promise<unknown>>();
 const inMemoryCache = new Map<string, CacheEnvelope<unknown>>();
 const scopeVersions = new Map<CacheNamespace, { version: number; loadedAt: number }>();
 
-function redisBaseUrl(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_URL"]?.trim().replace(/\/$/, "") || undefined;
-}
-
-function redisToken(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_TOKEN"]?.trim() || undefined;
-}
-
 function isRedisConfigured(): boolean {
-  return Boolean(redisBaseUrl() && redisToken());
+  const { baseUrl, token } = getRedisConfig();
+  return Boolean(baseUrl && token);
 }
 
 function shouldLogCache(): boolean {
-  return process.env["NODE_ENV"] !== "production" || process.env["FP_CACHE_LOG"] === "1";
+  return isDebugEnabled("FP_CACHE_LOG");
 }
 
 function logCache(event: string, details: Record<string, unknown>) {
@@ -64,8 +58,7 @@ function hashQuery(input: string): string {
 }
 
 async function redisFetch(path: string, init?: RequestInit): Promise<Response> {
-  const base = redisBaseUrl();
-  const token = redisToken();
+  const { baseUrl: base, token } = getRedisConfig();
   if (!base || !token) {
     return new Response(null, { status: 503, statusText: "Redis not configured" });
   }

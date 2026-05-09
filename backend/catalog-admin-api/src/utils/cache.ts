@@ -1,5 +1,6 @@
-type CacheScope =
+export type CacheScope =
   | "category"
+  | "composition"
   | "homepage"
   | "navigation"
   | "product"

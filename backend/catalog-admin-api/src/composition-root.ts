@@ -8,6 +8,7 @@ import {
   ProductRepository,
   ProductVariantRepository,
   NavigationRepository,
+  CategoryCompositionRepository,
 } from "./repositories/index.js";
 import { HomepageRepository } from "./repositories/homepage.repository.js";
 import { CategoryService } from "./services/category.service.js";
@@ -16,6 +17,7 @@ import { ProductService } from "./services/product.service.js";
 import { HomepageService } from "./services/homepage.service.js";
 import { NavigationService } from "./services/navigation.service.js";
 import { CloudinaryService } from "./services/cloudinary.service.js";
+import { CategoryCompositionService } from "./services/category-composition.service.js";
 
 export type CatalogAdminServices = {
   categories: CategoryService;
@@ -24,6 +26,7 @@ export type CatalogAdminServices = {
   homepage: HomepageService;
   navigation: NavigationService;
   cloudinary: CloudinaryService;
+  compositions: CategoryCompositionService;
 };
 
 export function createCatalogAdminServices(
@@ -38,6 +41,7 @@ export function createCatalogAdminServices(
   const variantRepo = new ProductVariantRepository(models, tenantId);
   const homepageRepo = new HomepageRepository(models, tenantId);
   const navigationRepo = new NavigationRepository(models, tenantId);
+  const compositionRepo = new CategoryCompositionRepository(models, tenantId);
   const cloudinary = new CloudinaryService();
 
   return {
@@ -47,5 +51,6 @@ export function createCatalogAdminServices(
     homepage: new HomepageService(homepageRepo, cloudinary),
     navigation: new NavigationService(navigationRepo),
     cloudinary,
+    compositions: new CategoryCompositionService(compositionRepo, categoryRepo),
   };
 }

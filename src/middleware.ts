@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getAdminSessionToken } from "@/config/server-env";
 
 export const ADMIN_SESSION_COOKIE = "fp_admin_token";
 
@@ -31,7 +32,7 @@ export function middleware(request: NextRequest) {
   const requestHeaders = forwardHeaders(request);
   const { pathname } = request.nextUrl;
 
-  const secret = process.env.NEXT_ADMIN_TOKEN?.trim();
+  const secret = getAdminSessionToken();
   if (!secret) {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }

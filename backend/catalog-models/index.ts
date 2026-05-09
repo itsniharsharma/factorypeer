@@ -51,6 +51,10 @@ import {
   registerFooterContentSchema,
   type FooterContentModel,
 } from "./schemas/footer-content.schema.js";
+import {
+  registerCategoryCompositionSchema,
+  type CategoryCompositionModel,
+} from "./schemas/category-composition.schema.js";
 
 /** Stable model registry type for repositories (avoids `?? model()` union inference). */
 export interface CatalogRegisteredModels {
@@ -65,6 +69,7 @@ export interface CatalogRegisteredModels {
   HomepageSupportCard: HomepageSupportCardModel;
   SiteLinkGroup: SiteLinkGroupModel;
   FooterContent: FooterContentModel;
+  CategoryComposition: CategoryCompositionModel;
 }
 
 export * from "./contracts.js";
@@ -81,6 +86,7 @@ export * from "./schemas/homepage-category-tile.schema.js";
 export * from "./schemas/homepage-support-card.schema.js";
 export * from "./schemas/site-link-group.schema.js";
 export * from "./schemas/footer-content.schema.js";
+export * from "./schemas/category-composition.schema.js";
 
 export function registerCatalogModels(mongoose: Mongoose): CatalogRegisteredModels {
   const CatalogCategory = (
@@ -135,6 +141,11 @@ export function registerCatalogModels(mongoose: Mongoose): CatalogRegisteredMode
     mongoose.models.FooterContent ?? mongoose.model("FooterContent", registerFooterContentSchema())
   ) as FooterContentModel;
 
+  const CategoryComposition = (
+    mongoose.models.CategoryComposition ??
+    mongoose.model("CategoryComposition", registerCategoryCompositionSchema())
+  ) as CategoryCompositionModel;
+
   return {
     CatalogCategory,
     CatalogSpecSchema,
@@ -147,5 +158,6 @@ export function registerCatalogModels(mongoose: Mongoose): CatalogRegisteredMode
     HomepageSupportCard,
     SiteLinkGroup,
     FooterContent,
+    CategoryComposition,
   };
 }

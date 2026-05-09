@@ -3,7 +3,10 @@ export function redisBaseUrl(): string | undefined {
 }
 
 export function redisToken(): string | undefined {
-  return process.env["UPSTASH_REDIS_REST_TOKEN"]?.trim() || undefined;
+  const token = process.env["UPSTASH_REDIS_REST_TOKEN"]?.trim() || undefined;
+  if (!token) return undefined;
+  if (token.includes("REPLACE_WITH_YOUR_REAL_TOKEN")) return undefined;
+  return token;
 }
 
 export function isRedisConfigured(): boolean {

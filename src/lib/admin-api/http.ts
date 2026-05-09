@@ -1,4 +1,5 @@
 import { ADMIN_CATALOG_API_BASE } from "./config";
+import { getCatalogActorId } from "@/config/public-env";
 
 export type ApiErrorBody = {
   error?: string;
@@ -45,7 +46,7 @@ async function requireOkResponse(res: Response): Promise<Response> {
 
 function actorHeaders(): HeadersInit {
   const id = typeof window !== "undefined" ? localStorage.getItem("catalogActorId") : null;
-  const fromEnv = process.env["NEXT_PUBLIC_CATALOG_ACTOR_ID"];
+  const fromEnv = getCatalogActorId();
   const actor = id ?? fromEnv;
   return actor && /^[a-f\d]{24}$/i.test(actor)
     ? { "x-catalog-actor-id": actor }

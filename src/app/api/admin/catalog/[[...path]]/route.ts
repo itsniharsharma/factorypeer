@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getCatalogAdminApiBaseUrl } from "@/config/catalog-env";
+import { getCatalogAdminAuthHeader, getCatalogAdminBearerToken, logCatalogRequest } from "@/lib/catalog-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +10,7 @@ export const dynamic = "force-dynamic";
 const UPSTREAM_TIMEOUT_MS = 25_000;
 
 function upstreamApiKey(): string | undefined {
-  const k = process.env["CATALOG_ADMIN_API_KEY"]?.trim();
-  return k && k.length >= 16 ? k : undefined;
+  return getCatalogAdminBearerToken();
 }
 
 function upstreamBase(): string {
@@ -51,6 +51,7 @@ async function proxy(
   } else if (incomingAuth) {
     headers.set("authorization", incomingAuth);
   }
+  logCatalogRequest("admin-catalog-route", url, headers.get("authorization")?.replace(/^Bearer\s+/i, ""));
   const rid = req.headers.get("x-request-id")?.trim() || randomUUID();
   headers.set("x-request-id", rid);
 

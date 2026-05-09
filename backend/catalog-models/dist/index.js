@@ -19,6 +19,7 @@ import { registerHomepageCategoryTileSchema, } from "./schemas/homepage-category
 import { registerHomepageSupportCardSchema, } from "./schemas/homepage-support-card.schema.js";
 import { registerSiteLinkGroupSchema, } from "./schemas/site-link-group.schema.js";
 import { registerFooterContentSchema, } from "./schemas/footer-content.schema.js";
+import { registerCategoryCompositionSchema, } from "./schemas/category-composition.schema.js";
 export * from "./contracts.js";
 export * from "./enums.js";
 export * from "./schemas/catalog-media-asset.schema.js";
@@ -33,6 +34,7 @@ export * from "./schemas/homepage-category-tile.schema.js";
 export * from "./schemas/homepage-support-card.schema.js";
 export * from "./schemas/site-link-group.schema.js";
 export * from "./schemas/footer-content.schema.js";
+export * from "./schemas/category-composition.schema.js";
 export function registerCatalogModels(mongoose) {
     const CatalogCategory = (mongoose.models.CatalogCategory ??
         mongoose.model("CatalogCategory", registerCatalogCategorySchema()));
@@ -53,6 +55,8 @@ export function registerCatalogModels(mongoose) {
         mongoose.model("HomepageSupportCard", registerHomepageSupportCardSchema()));
     const SiteLinkGroup = (mongoose.models.SiteLinkGroup ?? mongoose.model("SiteLinkGroup", registerSiteLinkGroupSchema()));
     const FooterContent = (mongoose.models.FooterContent ?? mongoose.model("FooterContent", registerFooterContentSchema()));
+    const CategoryComposition = (mongoose.models.CategoryComposition ??
+        mongoose.model("CategoryComposition", registerCategoryCompositionSchema()));
     return {
         CatalogCategory,
         CatalogSpecSchema,
@@ -65,5 +69,6 @@ export function registerCatalogModels(mongoose) {
         HomepageSupportCard,
         SiteLinkGroup,
         FooterContent,
+        CategoryComposition,
     };
 }

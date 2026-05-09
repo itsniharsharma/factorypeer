@@ -1,15 +1,14 @@
 /** Server-only catalog API fetch (direct to catalog-admin-api; same DB as admin UI proxy). */
 
 import { getCatalogAdminApiBaseUrl } from "@/config/catalog-env";
+import { getCatalogAdminAuthHeader, getCatalogAdminBearerToken, logCatalogRequest } from "@/lib/catalog-auth";
 
 function catalogUpstreamBase(): string {
   return getCatalogAdminApiBaseUrl();
 }
 
 function catalogAdminAuthHeader(): Record<string, string> {
-  const key = process.env["CATALOG_ADMIN_API_KEY"]?.trim();
-  if (!key || key.length < 16) return {};
-  return { authorization: `Bearer ${key}` };
+  return getCatalogAdminAuthHeader();
 }
 
 export const DEFAULT_REVALIDATE_SECONDS = 60;
@@ -29,6 +28,7 @@ async function catalogFetchOrThrow(
   init?: RequestInit & { next?: { revalidate?: number; tags?: string[] } },
 ): Promise<Response> {
   try {
+    logCatalogRequest("catalog-fetch", url, getCatalogAdminBearerToken());
     return await fetch(url, init);
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);

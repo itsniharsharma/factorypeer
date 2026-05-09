@@ -1,5 +1,6 @@
 import { ADMIN_CATALOG_API_BASE } from "./config";
 import { AdminApiError } from "./http";
+import { getCatalogActorId } from "@/config/public-env";
 
 export type UploadedMediaAsset = {
   url: string;
@@ -12,7 +13,7 @@ export type UploadedMediaAsset = {
 
 function actorHeaders(): HeadersInit {
   const id = typeof window !== "undefined" ? localStorage.getItem("catalogActorId") : null;
-  const fromEnv = process.env["NEXT_PUBLIC_CATALOG_ACTOR_ID"];
+  const fromEnv = getCatalogActorId();
   const actor = id ?? fromEnv;
   return actor && /^[a-f\d]{24}$/i.test(actor)
     ? { "x-catalog-actor-id": actor }

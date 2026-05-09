@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ADMIN_SESSION_COOKIE } from "@/middleware";
+import { getAdminSessionToken } from "@/config/server-env";
 import { incrementRedisKey, invalidateCacheScopes, redisSetJson } from "@/lib/cache/redis-cache";
 import { generateCanonicalGraph } from "@/lib/taxonomy/graph-generator";
 import graphStore from "@/lib/taxonomy/graph-store";
@@ -24,7 +25,7 @@ function unauthorized(message: string, status = 401) {
 }
 
 export async function POST() {
-  const configured = process.env["NEXT_ADMIN_TOKEN"]?.trim();
+  const configured = getAdminSessionToken();
   if (!configured) {
     return unauthorized("NEXT_ADMIN_TOKEN is not set on the server.", 501);
   }

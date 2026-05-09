@@ -7,3 +7,4 @@ export type { VariantBindingInput } from "./spec-row.repository.js";
 export { ProductRepository, type ProductListFilter } from "./product.repository.js";
 export { ProductVariantRepository } from "./product-variant.repository.js";
 export { NavigationRepository } from "./navigation.repository.js";
+export { CategoryCompositionRepository } from "./category-composition.repository.js";

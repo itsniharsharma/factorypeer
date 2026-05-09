@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE } from "@/middleware";
+import { getAdminSessionToken } from "@/config/server-env";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,7 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const configured = process.env.NEXT_ADMIN_TOKEN?.trim();
+  const configured = getAdminSessionToken();
   if (!configured) {
     return NextResponse.json(
       { error: "AUTH_NOT_CONFIGURED", message: "NEXT_ADMIN_TOKEN is not set on the server." },

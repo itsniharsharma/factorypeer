@@ -125,3 +125,14 @@ export function specRowNotLinkedToProductFamily(): AppError {
     CatalogErrorCodes.SPEC_MISMATCH,
   );
 }
+
+export function categoryNotFound(id: string): NotFoundError {
+  return new NotFoundError("CatalogCategory", id);
+}
+
+export function compositionAlreadyExists(categoryId: string): ConflictError {
+  return new ConflictError(
+    `A composition already exists for category ${categoryId}. Use the existing composition or delete it first.`,
+    CatalogErrorCodes.CONFLICT,
+  );
+}
