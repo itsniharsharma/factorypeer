@@ -12,6 +12,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm --workspace=@factorypeer/catalog-models run build --if-present",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
